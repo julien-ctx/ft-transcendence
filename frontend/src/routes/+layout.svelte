@@ -1,10 +1,10 @@
 <script>
-	import Header from './Header.svelte';
-	import './styles.css';
-</script>
+	// import Header from './Header.svelte';
+	import './styles.css'; 
+</script> 
 
-<div class="app">
-	<Header />
+<div>
+	<!-- <Header /> -->
 
 	<main>
 		<slot />
@@ -12,13 +12,13 @@
 </div>
 
 <style>
-	.app {
+	/* .app {
 		display: flex;
 		flex-direction: column;
 		min-height: 100vh;
-	}
+	} */
 
-	main {
+	/* main {
 		flex: 1;
 		display: flex;
 		flex-direction: column;
@@ -27,9 +27,9 @@
 		max-width: 64rem;
 		margin: 0 auto;
 		box-sizing: border-box;
-	}
+	} */
 
-	footer {
+	/* footer {
 		display: flex;
 		flex-direction: column;
 		justify-content: center;
@@ -45,5 +45,5 @@
 		footer {
 			padding: 12px 0;
 		}
-	}
+	} */
 </style>

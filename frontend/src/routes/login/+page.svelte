@@ -1,13 +1,12 @@
-<svelte:head>
-	<title>Login</title>
-	<meta name="description" content="About this app" />
-</svelte:head>
-
 <script>
+	import Header from "../Header.svelte";
     import { onMount } from "svelte";
 	import axios from "axios";
+    import { goto } from "$app/navigation";
+    import { setJwt } from "$lib/jwtUtils";
 
 	onMount(async () => {
+		console.log("on mount");
 		const urlParams = new URLSearchParams(window.location.search);
 		const hasCode = urlParams.has("code");
 		if (hasCode) {
@@ -36,19 +35,19 @@
 						img_link: res.data.image.link
 					})
 					.then((res) => {
-						window.localStorage.setItem("jwt", res.data.access_token);
-						// window.location.href("/")
-						console.log(res.data);
+						setJwt(res.data.access_token);
+						goto("/");
 					})
 					.catch((err) => console.log(err))
 				})
 				.catch((err) => console.log(err))
 			})
 			.catch((err) => console.log(err));
+		} else {
+			goto("https://api.intra.42.fr/oauth/authorize?client_id=u-s4t2ud-30852b8b9a7314be3ebf1c95396eaf181b1395e1320bd92b2dc092f4ffbb8aa6&redirect_uri=http%3A%2F%2Flocalhost%3A5173%2Flogin&response_type=code")
 		}
 	})
 </script>
-
 <section>
 	login
 </section>

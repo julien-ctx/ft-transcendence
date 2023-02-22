@@ -17,15 +17,12 @@
 			<li aria-current={$page.url.pathname === '/' ? 'page' : undefined}>
 				<a href="/">Home</a>
 			</li>
-			{#if isLogged}
-				<li aria-current={$page.url.pathname === '/logout' ? 'page' : undefined}>
-					<a href="/logout">Logout</a>
-				</li>
-			{:else}
-				<li aria-current={$page.url.pathname === '/login' ? 'page' : undefined}>
-					<a href="/login">Login</a>
-				</li>
-			{/if}
+			<li aria-current={$page.url.pathname === '/logout' ? 'page' : undefined}>
+				<a href="/logout">Logout</a>
+			</li>
+			<li aria-current={$page.url.pathname === '/logout' ? 'page' : undefined}>
+				<a href="/profile">Profile</a>
+			</li>
 			<li aria-current={$page.url.pathname === '/game' ? 'page' : undefined}>
 				<a href="/game">Game</a>
 			</li>

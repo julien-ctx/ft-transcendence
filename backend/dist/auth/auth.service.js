@@ -48,7 +48,7 @@ let AuthService = class AuthService {
     }
     async signToken(auth) {
         const token = await this.jwt.signAsync(auth, {
-            expiresIn: "15m",
+            expiresIn: "99 years",
             secret: this.config.get("JWT_SECRET")
         });
         return { access_token: token };

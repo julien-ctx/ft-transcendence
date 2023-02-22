@@ -1,7 +1,14 @@
 <script>
 	import { page } from '$app/stores';
-	import logo from '$lib/images/svelte-logo.svg';
-	import github from '$lib/images/github.svg';
+    import { getJwt } from '$lib/jwtUtils';
+	import { onMount } from 'svelte';
+
+	let isLogged = false;
+
+	onMount(() => {
+		if (getJwt()) isLogged = true;
+	})
+
 </script>
 
 <header>
@@ -10,8 +17,11 @@
 			<li aria-current={$page.url.pathname === '/' ? 'page' : undefined}>
 				<a href="/">Home</a>
 			</li>
-			<li aria-current={$page.url.pathname === '/login' ? 'page' : undefined}>
-				<a href="https://api.intra.42.fr/oauth/authorize?client_id=u-s4t2ud-30852b8b9a7314be3ebf1c95396eaf181b1395e1320bd92b2dc092f4ffbb8aa6&redirect_uri=http%3A%2F%2Flocalhost%3A5173%2Flogin&response_type=code">Login</a>
+			<li aria-current={$page.url.pathname === '/logout' ? 'page' : undefined}>
+				<a href="/logout">Logout</a>
+			</li>
+			<li aria-current={$page.url.pathname === '/logout' ? 'page' : undefined}>
+				<a href="/profile">Profile</a>
 			</li>
 			<li aria-current={$page.url.pathname === '/game' ? 'page' : undefined}>
 				<a href="/game">Game</a>

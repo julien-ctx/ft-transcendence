@@ -1,30 +1,25 @@
 <script lang="ts">
-    import { getJwt } from "$lib/getJwt";
-    import axios from "axios";
+	import Header from "../Header.svelte";
     import { onMount } from "svelte";
-
+	import { AuthGuard } from "../../modules/AuthGuard";
+    import { goto } from "$app/navigation";
+    import { removeJwt } from "$lib/jwtUtils";
+	let isLogged = false;
 	onMount(async () => {
-		let jwt : string = getJwt();
-		console.log(jwt);
-		await axios.get("http://localhost:4000/users/me", {
-			headers :
-			{
-				Authorization: `Bearer ${getJwt()}`
-			}
-		})
+		AuthGuard()
 		.then((res) => {
-			console.log(res);
+			isLogged = true;
 		})
 		.catch((err) => {
-			console.log(err);
+			removeJwt();
+			goto("/login")
 		})
-		// AuthGuard()
-		// .then((res) => {
-		// 	user.isLogged = true;
-		// 	console.log(res);
-		// });
 	});
 </script>
+
 <section>
 	game
+	{#if isLogged}
+		gg tes loggin mec
+	{/if}
 </section>

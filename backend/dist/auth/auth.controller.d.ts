@@ -5,8 +5,7 @@ export declare class AuthController {
     private authService;
     private prisma;
     constructor(authService: AuthService, prisma: PrismaService);
-    signin(dto: AuthDto): Promise<{
+    signin(dto: AuthDto): Promise<void> | Promise<{
         access_token: string;
-    }> | Promise<void>;
-    me(req: any): any;
+    }>;
 }

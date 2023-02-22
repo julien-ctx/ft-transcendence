@@ -14,13 +14,11 @@ const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
 const jwt_1 = require("@nestjs/jwt");
 const prisma_service_1 = require("../prisma/prisma.service");
-const jwt_strategy_1 = require("./strategy/jwt.strategy");
 let AuthService = class AuthService {
-    constructor(prisma, jwt, config, jwtStrategy) {
+    constructor(prisma, jwt, config) {
         this.prisma = prisma;
         this.jwt = jwt;
         this.config = config;
-        this.jwtStrategy = jwtStrategy;
     }
     async signup(auth) {
         await this.prisma.user.create({
@@ -53,14 +51,10 @@ let AuthService = class AuthService {
         });
         return { access_token: token };
     }
-    async me(token) {
-        const user = this.jwt.decode(token);
-        console.log(user);
-    }
 };
 AuthService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService, jwt_1.JwtService, config_1.ConfigService, jwt_strategy_1.JwtStrategy])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService, jwt_1.JwtService, config_1.ConfigService])
 ], AuthService);
 exports.AuthService = AuthService;
 //# sourceMappingURL=auth.service.js.map

@@ -1,5 +1,11 @@
 import { writable } from "svelte/store";
 
-export const userData = writable({});
+export const profileDataStore = writable({});
 
-export const usersData = writable([{}]);
+export const usersDataStore = writable([{}]);
+
+export const userProfileStore = writable({});
+
+export const searchInputStore = writable("");
+
+export const usersComponentStore = writable([]);

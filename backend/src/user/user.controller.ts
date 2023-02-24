@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Req, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, Req, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { UserService } from "./user.service";
@@ -28,6 +28,12 @@ export class UserController{
 	@Get("getAll")
 	getAll(@User() user : UserDto) {
 		return this.userService.getAll(user.id);
+	}
+
+	@Get(":id")
+	getOne(@Param("id") id : string) {
+		let idNumber : number = +id;
+		return this.userService.getOne(idNumber);
 	}
 
 	@Post("updateImg")

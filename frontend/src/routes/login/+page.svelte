@@ -7,7 +7,7 @@
 	onMount(async () => {
 		const urlParams = new URLSearchParams(window.location.search);
 		const hasCode = urlParams.has("code");
-		if (hasCode) {
+		if (hasCode && urlParams.get("code") != "") {
 			const code = urlParams.get("code");
 			await axios.post("https://api.intra.42.fr/oauth/token", {
 				grant_type : "authorization_code",

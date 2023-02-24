@@ -40,6 +40,10 @@ let UserController = class UserController {
     getAll(user) {
         return this.userService.getAll(user.id);
     }
+    getOne(id) {
+        let idNumber = +id;
+        return this.userService.getOne(idNumber);
+    }
     updateImg(file, user) {
         return this.userService.updateMe({ img_link: file.path }, user.id);
     }
@@ -64,6 +68,13 @@ __decorate([
     __metadata("design:paramtypes", [user_dto_1.UserDto]),
     __metadata("design:returntype", void 0)
 ], UserController.prototype, "getAll", null);
+__decorate([
+    (0, common_1.Get)(":id"),
+    __param(0, (0, common_1.Param)("id")),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], UserController.prototype, "getOne", null);
 __decorate([
     (0, common_1.Post)("updateImg"),
     (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('file', {

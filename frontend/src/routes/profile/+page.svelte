@@ -1,13 +1,13 @@
 <script lang="ts">
     import { UpdateProfileImg, UpdateProfileLogin, UpdateProfileToStore } from "$lib/profileUtils";
 	import { Avatar, Card, Dropdown, DropdownItem, MenuButton } from "flowbite-svelte";
-    import { userData } from "../../store";
+    import { profileDataStore } from "../../store";
 
 	let fileInput : any;
 	let isEditLogin : boolean = false;
 	let user : any;
 
-	userData.subscribe(val => {
+	profileDataStore.subscribe(val => {
 		user = val;
 	})
 

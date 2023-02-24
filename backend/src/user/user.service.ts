@@ -17,6 +17,14 @@ export class UserService {
 		});
 	}
 
+	async getOne(id : number) {
+		return this.prisma.user.findUnique({
+			where: {
+				id
+			}
+		});
+	}
+
 	async getAll(id : number) {
 		return this.prisma.user.findMany({
 			where: {

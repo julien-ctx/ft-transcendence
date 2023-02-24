@@ -24,6 +24,13 @@ let UserService = class UserService {
             data: Object.assign({}, params)
         });
     }
+    async getOne(id) {
+        return this.prisma.user.findUnique({
+            where: {
+                id
+            }
+        });
+    }
     async getAll(id) {
         return this.prisma.user.findMany({
             where: {

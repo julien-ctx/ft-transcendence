@@ -1,5 +1,5 @@
 import { getJwt } from "$lib/jwtUtils";
-import { userData } from "../store";
+import { profileDataStore } from "../store";
 import axios from "axios"
 
 export async function UpdateProfileImg(formData : any) {
@@ -17,7 +17,7 @@ export function UpdateProfileToStore(params : any) {
 		const path = tmp.img_link.split("/");
 		tmp.img_link = `/${path[path.length - 1]}`
 	}
-	userData.set(tmp);
+	profileDataStore.set(tmp);
 }
 
 export function UpdateProfileConnected(connected : boolean) {

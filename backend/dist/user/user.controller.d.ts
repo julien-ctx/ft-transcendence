@@ -6,6 +6,7 @@ export declare class UserController {
     constructor(userService: UserService);
     getMe(user: UserDto): UserDto;
     getAll(user: UserDto): Promise<import(".prisma/client").User[]>;
+    getOne(id: string): Promise<import(".prisma/client").User>;
     updateImg(file: Express.Multer.File, user: UserDto): Promise<import(".prisma/client").User>;
     updateLogin(login: any, user: UserDto): Promise<import(".prisma/client").User>;
     updateConnected(connected: any, user: UserDto): Promise<import(".prisma/client").User>;

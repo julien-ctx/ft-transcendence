@@ -2,14 +2,14 @@
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
     import { AuthGuard } from '../modules/AuthGuard';
-    import { userData } from '../store';
+    import { profileDataStore } from '../store';
     import { UpdateProfileConnected, UpdateProfileToStore } from '$lib/profileUtils';
     import AvatarProfile from '../modules/avatarProfile.svelte';
     import SearchUsers from '../modules/searchUsers.svelte';
 
 	let user : any;
 
-	userData.subscribe(val => {
+	profileDataStore.subscribe(val => {
 		user = val;
 	});
 

@@ -22,19 +22,11 @@ let AuthController = class AuthController {
         this.authService = authService;
         this.prisma = prisma;
     }
-    signin(dto) {
-        try {
-            const user = this.prisma.user.findUnique({ where: { id_user: dto.id } });
-            if (user) {
-                return this.authService.signin(dto);
-            }
-            else {
-                return this.authService.signup(dto);
-            }
-        }
-        catch (err) {
-            throw err;
-        }
+    async signin(dto) {
+        return await this.authService.authUser(dto)
+            .then((res) => {
+            console.log(res);
+        });
     }
 };
 __decorate([
@@ -42,7 +34,7 @@ __decorate([
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [dto_1.AuthDto]),
-    __metadata("design:returntype", void 0)
+    __metadata("design:returntype", Promise)
 ], AuthController.prototype, "signin", null);
 AuthController = __decorate([
     (0, common_1.Controller)("auth"),

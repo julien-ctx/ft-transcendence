@@ -1,5 +1,4 @@
 <script>
-	import Header from "../Header.svelte";
     import { onMount } from "svelte";
 	import axios from "axios";
     import { goto } from "$app/navigation";
@@ -34,8 +33,9 @@
 						img_link: res.data.image.link
 					})
 					.then((res) => {
+						console.log(res);
 						setJwt(res.data.access_token);
-						goto("/");
+						// goto("/");
 					})
 					.catch((err) => console.log(err))
 				})

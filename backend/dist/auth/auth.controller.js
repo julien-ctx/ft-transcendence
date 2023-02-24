@@ -23,9 +23,9 @@ let AuthController = class AuthController {
         this.authService = authService;
         this.prisma = prisma;
     }
-    signin(dto) {
+    async signin(dto) {
         try {
-            const user = this.prisma.user.findUnique({ where: { id_user: dto.id } });
+            const user = await this.prisma.user.findUnique({ where: { id_user: dto.id } });
             if (user) {
                 return this.authService.signin(dto);
             }
@@ -46,7 +46,7 @@ __decorate([
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [dto_1.AuthDto]),
-    __metadata("design:returntype", void 0)
+    __metadata("design:returntype", Promise)
 ], AuthController.prototype, "signin", null);
 __decorate([
     (0, common_1.UseGuards)((0, passport_1.AuthGuard)("jwt")),

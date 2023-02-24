@@ -16,5 +16,7 @@ export declare class AuthService {
     signToken(auth: AuthDto): Promise<{
         access_token: string;
     }>;
-    me(token: any): Promise<void>;
+    me(token: any): Promise<string | {
+        [key: string]: any;
+    }>;
 }

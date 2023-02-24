@@ -55,7 +55,7 @@ let AuthService = class AuthService {
     }
     async me(token) {
         const user = this.jwt.decode(token);
-        console.log(user);
+        return user;
     }
 };
 AuthService = __decorate([

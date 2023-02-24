@@ -10,9 +10,9 @@ export class AuthController{
 	constructor(private authService: AuthService, private prisma : PrismaService) {}
 
 	@Post("signin")
-	signin(@Body() dto: AuthDto) {
+	async signin(@Body() dto: AuthDto) {
 		try {
-			const user = this.prisma.user.findUnique( { where : {id_user : dto.id} });
+			const user = await this.prisma.user.findUnique( { where : {id_user : dto.id} });
 			if (user) {
 				return this.authService.signin(dto);
 			} else {

@@ -1,27 +1,42 @@
-import { WebSocketGateway, WebSocketServer, SubscribeMessage, OnGatewayConnection, OnGatewayDisconnect, } from '@nestjs/websockets';
+import { 
+	SubscribeMessage,
+	WebSocketGateway, 
+	WebSocketServer, 
+	OnGatewayDisconnect, 
+	OnGatewayConnection,
+	MessageBody,
+	ConnectedSocket,
+	} from '@nestjs/websockets';
+import { Server } from 'socket.io';
 
-@WebSocketGateway()
-export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
-
-	@WebSocketServer() server;
-	users: number = 0;
+@WebSocketGateway({
+	path : '/chat',
+	cors: {
+		origin: '*',
+	  },
+})
+export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection{
+	constructor() {}
 	
-	async handleConnection() {
-		// A client has connected
-		this.users++;
-		// Notify connected clients of current users
-		this.server.emit('users', this.users);
+	@WebSocketServer()
+	server: Server;
+
+
+	async handleConnection(client: any, ...args: any[]) {
+
 	}
 
-	async handleDisconnect() {
-		// A client has disconnected
-		this.users--;
-		// Notify connected clients of current users
-		this.server.emit('users', this.users);
+	@SubscribeMessage('createRoom')
+	async handleCreateRoom(@ConnectedSocket() client, @MessageBody() data: any) {
+
 	}
 
-	@SubscribeMessage('chat')
-	async onChat(client, message) {
-		client.broadcast.emit('chat', message);
+	@SubscribeMessage('joinRoom')
+	async handleJoinRoom(@ConnectedSocket() client, @MessageBody() data: any) {
+		
+	}
+
+	handleDisconnect(client: any) {
+		console.log('Client disconnected');
 	}
 }

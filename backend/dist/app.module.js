@@ -12,6 +12,7 @@ const config_1 = require("@nestjs/config");
 const auth_module_1 = require("./auth/auth.module");
 const prisma_module_1 = require("./prisma/prisma.module");
 const user_module_1 = require("./user/user.module");
+const tmp_module_1 = require("./tmp/tmp.module");
 let AppModule = class AppModule {
 };
 AppModule = __decorate([
@@ -22,7 +23,8 @@ AppModule = __decorate([
             }),
             auth_module_1.AuthModule,
             user_module_1.UserModule,
-            prisma_module_1.PrismaModule
+            prisma_module_1.PrismaModule,
+            tmp_module_1.TmpModule
         ]
     })
 ], AppModule);

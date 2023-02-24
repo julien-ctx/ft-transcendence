@@ -8,10 +8,13 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TmpModule = void 0;
 const common_1 = require("@nestjs/common");
+const tmp_gateway_1 = require("./tmp.gateway");
 let TmpModule = class TmpModule {
 };
 TmpModule = __decorate([
-    (0, common_1.Module)({})
+    (0, common_1.Module)({
+        providers: [tmp_gateway_1.ChatGateway]
+    })
 ], TmpModule);
 exports.TmpModule = TmpModule;
 //# sourceMappingURL=tmp.module.js.map

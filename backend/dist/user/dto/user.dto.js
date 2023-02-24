@@ -53,5 +53,9 @@ __decorate([
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], UserDto.prototype, "login", void 0);
+__decorate([
+    (0, class_validator_1.IsBoolean)(),
+    __metadata("design:type", Boolean)
+], UserDto.prototype, "connected", void 0);
 exports.UserDto = UserDto;
 //# sourceMappingURL=user.dto.js.map

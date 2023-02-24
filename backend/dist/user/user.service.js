@@ -16,12 +16,21 @@ let UserService = class UserService {
     constructor(prisma) {
         this.prisma = prisma;
     }
-    async updateMe(user) {
+    async updateMe(params, id) {
         return this.prisma.user.update({
             where: {
-                id: user.id
+                id
             },
-            data: Object.assign({}, user)
+            data: Object.assign({}, params)
+        });
+    }
+    async getAll(id) {
+        return this.prisma.user.findMany({
+            where: {
+                id: {
+                    not: id
+                }
+            }
         });
     }
 };

@@ -19,3 +19,7 @@ export function UpdateProfileToStore(params : any) {
 	}
 	userData.set(tmp);
 }
+
+export function UpdateProfileConnected(connected : boolean) {
+	return axios.post("http://localhost:4000/users/updateConnected", {connected}, {headers : { Authorization : `Bearer ${getJwt()}` }});
+}

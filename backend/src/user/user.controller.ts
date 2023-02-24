@@ -6,6 +6,8 @@ import { diskStorage } from "multer";
 import { extname } from "path";
 import { ConfigService } from "@nestjs/config";
 import { access, accessSync, createReadStream } from "fs";
+import { UserDto } from "./dto/user.dto";
+import { User } from "./user.decorator";
 
 @UseGuards(AuthGuard("jwt"))
 @Controller("users")
@@ -13,14 +15,19 @@ export class UserController{
 	constructor(private userService : UserService) {}
 	
 	@Get("me")
-	getMe(@Req() req : any) {
+	getMe(@User() user : UserDto) {
 		try {
-			accessSync(req.user.img_link);
-			return req.user;
-		} catch (err) {
-			const user = {...req.user, img_link: "/avatar.png"};
+			accessSync(user.img_link);
 			return user;
+		} catch (err) {
+			const tmp = {...user, img_link: "/avatar.png"};
+			return tmp;
 		}
+	}
+
+	@Get("getAll")
+	getAll(@User() user : UserDto) {
+		return this.userService.getAll(user.id);
 	}
 
 	@Post("updateImg")
@@ -33,13 +40,17 @@ export class UserController{
 		  },
 		}),
 	}))
-	updateImg(@UploadedFile() file: Express.Multer.File, @Req() req : any) {
-		// console.log(file.path);
-		return this.userService.updateMe({...req.user, img_link: file.path});
+	updateImg(@UploadedFile() file: Express.Multer.File, @User() user : UserDto) {		
+		return this.userService.updateMe({ img_link: file.path }, user.id);
 	}
 
 	@Post("updateLogin")
-	updateLogin(@Body("login") login : any, @Req() req : any) {
-		return this.userService.updateMe({...req.user, login});
+	updateLogin(@Body("login") login : any, @User() user : UserDto) {
+		return this.userService.updateMe({ login }, user.id);
+	}
+
+	@Post("updateConnected")
+	updateConnected(@Body("connected") connected : any, @User() user : UserDto) {
+		return this.userService.updateMe({ connected }, user.id);
 	}
 }

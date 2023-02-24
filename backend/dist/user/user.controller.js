@@ -21,34 +21,49 @@ const multer_1 = require("multer");
 const path_1 = require("path");
 const config_1 = require("@nestjs/config");
 const fs_1 = require("fs");
+const user_dto_1 = require("./dto/user.dto");
+const user_decorator_1 = require("./user.decorator");
 let UserController = class UserController {
     constructor(userService) {
         this.userService = userService;
     }
-    getMe(req) {
+    getMe(user) {
         try {
-            (0, fs_1.accessSync)(req.user.img_link);
-            return req.user;
-        }
-        catch (err) {
-            const user = Object.assign(Object.assign({}, req.user), { img_link: "/avatar.png" });
+            (0, fs_1.accessSync)(user.img_link);
             return user;
         }
+        catch (err) {
+            const tmp = Object.assign(Object.assign({}, user), { img_link: "/avatar.png" });
+            return tmp;
+        }
     }
-    updateImg(file, req) {
-        return this.userService.updateMe(Object.assign(Object.assign({}, req.user), { img_link: file.path }));
+    getAll(user) {
+        return this.userService.getAll(user.id);
     }
-    updateLogin(login, req) {
-        return this.userService.updateMe(Object.assign(Object.assign({}, req.user), { login }));
+    updateImg(file, user) {
+        return this.userService.updateMe({ img_link: file.path }, user.id);
+    }
+    updateLogin(login, user) {
+        return this.userService.updateMe({ login }, user.id);
+    }
+    updateConnected(connected, user) {
+        return this.userService.updateMe({ connected }, user.id);
     }
 };
 __decorate([
     (0, common_1.Get)("me"),
-    __param(0, (0, common_1.Req)()),
+    __param(0, (0, user_decorator_1.User)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [user_dto_1.UserDto]),
     __metadata("design:returntype", void 0)
 ], UserController.prototype, "getMe", null);
+__decorate([
+    (0, common_1.Get)("getAll"),
+    __param(0, (0, user_decorator_1.User)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [user_dto_1.UserDto]),
+    __metadata("design:returntype", void 0)
+], UserController.prototype, "getAll", null);
 __decorate([
     (0, common_1.Post)("updateImg"),
     (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('file', {
@@ -61,19 +76,27 @@ __decorate([
         }),
     })),
     __param(0, (0, common_1.UploadedFile)()),
-    __param(1, (0, common_1.Req)()),
+    __param(1, (0, user_decorator_1.User)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:paramtypes", [Object, user_dto_1.UserDto]),
     __metadata("design:returntype", void 0)
 ], UserController.prototype, "updateImg", null);
 __decorate([
     (0, common_1.Post)("updateLogin"),
     __param(0, (0, common_1.Body)("login")),
-    __param(1, (0, common_1.Req)()),
+    __param(1, (0, user_decorator_1.User)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:paramtypes", [Object, user_dto_1.UserDto]),
     __metadata("design:returntype", void 0)
 ], UserController.prototype, "updateLogin", null);
+__decorate([
+    (0, common_1.Post)("updateConnected"),
+    __param(0, (0, common_1.Body)("connected")),
+    __param(1, (0, user_decorator_1.User)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, user_dto_1.UserDto]),
+    __metadata("design:returntype", void 0)
+], UserController.prototype, "updateConnected", null);
 UserController = __decorate([
     (0, common_1.UseGuards)((0, passport_1.AuthGuard)("jwt")),
     (0, common_1.Controller)("users"),

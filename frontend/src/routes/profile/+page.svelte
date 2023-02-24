@@ -17,8 +17,7 @@
 		UpdateProfileImg(formData)
 		.then((res) => {
 			UpdateProfileToStore(res.data);
-		})
-		.catch((err) => console.log(err));
+		});
 	}
 
 	async function submitFormLogin() {
@@ -26,12 +25,11 @@
 		.then((res) => {
 			UpdateProfileToStore(res.data);
 			isEditLogin = false;
-		})
-		.catch((err) => console.log(err));
+		});
 	}
 </script>
 
-{#if user.login}
+{#if user.first_name}
 	<div class="container mx-auto flex items-center flex-col">
 		<Card padding="sm" size="md">
 			<div class="flex items-center space-x-4">

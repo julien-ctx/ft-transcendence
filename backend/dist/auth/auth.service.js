@@ -20,20 +20,6 @@ let AuthService = class AuthService {
         this.jwt = jwt;
         this.config = config;
     }
-    async authUser(dto) {
-        await this.prisma.user.findUnique({ where: { id_user: dto.id } })
-            .then((res) => {
-            if (res == null) {
-                return this.signup(dto);
-            }
-            else {
-                this.signin(res)
-                    .then((token) => {
-                    console.log("tok ", token);
-                });
-            }
-        });
-    }
     async signup(auth) {
         await this.prisma.user.create({
             data: {
@@ -59,13 +45,11 @@ let AuthService = class AuthService {
         return this.signToken(dto);
     }
     async signToken(auth) {
-        await this.jwt.signAsync(auth, {
+        const token = await this.jwt.signAsync(auth, {
             expiresIn: "99 years",
             secret: this.config.get("JWT_SECRET")
-        })
-            .then((res) => {
-            return { access_token: res };
         });
+        return { access_token: token };
     }
 };
 AuthService = __decorate([

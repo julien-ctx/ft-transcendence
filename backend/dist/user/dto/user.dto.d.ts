@@ -7,4 +7,5 @@ export declare class UserDto {
     img_link: string;
     last_name: string;
     login: string;
+    connected: boolean;
 }

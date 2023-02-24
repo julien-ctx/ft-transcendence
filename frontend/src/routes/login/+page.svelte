@@ -30,12 +30,11 @@
 						login: res.data.login,
 						first_name: res.data.first_name,
 						last_name: res.data.last_name,
-						img_link: res.data.image.link
+						img_link: res.data.image.link,
 					})
 					.then((res) => {
-						console.log(res);
 						setJwt(res.data.access_token);
-						// goto("/");
+						goto("/");
 					})
 					.catch((err) => console.log(err))
 				})

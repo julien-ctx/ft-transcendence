@@ -23,10 +23,20 @@ let AuthController = class AuthController {
         this.prisma = prisma;
     }
     async signin(dto) {
-        return await this.authService.authUser(dto)
-            .then((res) => {
-            console.log(res);
-        });
+        try {
+            const user = await this.prisma.user.findUnique({ where: { id_user: dto.id } });
+            if (user) {
+                console.log(user);
+                return this.authService.signin(dto);
+            }
+            else {
+                console.log(user);
+                return this.authService.signup(dto);
+            }
+        }
+        catch (err) {
+            throw err;
+        }
     }
 };
 __decorate([

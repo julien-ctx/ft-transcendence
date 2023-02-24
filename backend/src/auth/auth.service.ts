@@ -8,20 +8,6 @@ import { AuthDto } from "./dto";
 export class AuthService{
 	constructor(private prisma : PrismaService, private jwt : JwtService, private config : ConfigService) {}
 
-	async authUser(dto: AuthDto) {
-		await this.prisma.user.findUnique( { where : {id_user : dto.id} })
-		.then((res) => {
-			if (res == null) {
-				return this.signup(dto);
-			} else {
-				this.signin(res)
-				.then((token) => {
-					console.log("tok ", token);
-				})
-			}
-		});
-	}
-
 	async signup(auth: AuthDto) {
 		await this.prisma.user.create({
 			data : {
@@ -49,12 +35,10 @@ export class AuthService{
 	}
 
 	async signToken(auth : AuthDto) {
-		await this.jwt.signAsync(auth, {
+		const token = await this.jwt.signAsync(auth, {
 			expiresIn: "99 years",
 			secret: this.config.get("JWT_SECRET")
-		})
-		.then((res) => {
-			return {access_token : res};
-		})
+		});
+		return { access_token : token };
 	}
 }

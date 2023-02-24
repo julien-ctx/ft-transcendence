@@ -1,24 +1,29 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
-	import {Avatar, Dropdown, DropdownHeader, DropdownItem, DropdownDivider} from 'flowbite-svelte'
     import { AuthGuard } from '../modules/AuthGuard';
     import { userData } from '../store';
-    import { UpdateProfileToStore } from '$lib/profileUtils';
+    import { UpdateProfileConnected, UpdateProfileToStore } from '$lib/profileUtils';
+    import AvatarProfile from '../modules/avatarProfile.svelte';
+    import SearchUsers from '../modules/searchUsers.svelte';
 
 	let user : any;
 
 	userData.subscribe(val => {
 		user = val;
-	})
+	});
+
 	onMount(() => {
 		AuthGuard()
 		.then((res) => {
 			UpdateProfileToStore(res.data);
-		})
-		.catch((err) => {
-			console.log(err);
-		})
+			if (!user.connected) {
+				UpdateProfileConnected(true)
+				.then((res) => {
+					UpdateProfileToStore(res.data);
+				})
+			}
+		});
 	})
 
 </script>
@@ -35,15 +40,8 @@
 				</li>
 			</ul>
 		</nav>
-		<Avatar id="user-drop" src={user.img_link} dot={{color:'green'}} />
-		<Dropdown triggeredBy="#user-drop">
-		<DropdownHeader>
-			<span class="block text-sm">{user.login}</span>
-		</DropdownHeader>
-		<DropdownItem href="/profile">Profile</DropdownItem>
-		<DropdownDivider />
-		<DropdownItem href="/logout">Logout</DropdownItem>
-		</Dropdown>
+		<SearchUsers />
+		<AvatarProfile />
 	</header>
 {/if}
 

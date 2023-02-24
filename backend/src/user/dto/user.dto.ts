@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsString } from "class-validator"
+import { IsBoolean, IsNotEmpty, IsNumber, IsString } from "class-validator"
 
 export class UserDto {
 
@@ -33,4 +33,7 @@ export class UserDto {
 	@IsNotEmpty()
 	@IsString()
 	login : string
+
+	@IsBoolean()
+	connected : boolean
 }

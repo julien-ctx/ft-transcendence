@@ -17,3 +17,13 @@ model User {
 	last_name String
 	img_link String
 }
+
+model Room {
+	id Int @id @default(autoincrement())
+	name String @unique
+	description String @default("")
+	status String
+	password String @default("")
+
+	// users User[]
+}

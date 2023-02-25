@@ -25,4 +25,10 @@ export class AuthController{
 			throw err;
 		}
 	}
+
+	@UseGuards(AuthGuard("jwt"))
+	@Get("me")
+	me(@Request() req) {
+		return req.user;
+	}
 }

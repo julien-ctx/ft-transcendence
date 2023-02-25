@@ -8,4 +8,5 @@ export declare class AuthController {
     signin(dto: AuthDto): Promise<void | {
         access_token: string;
     }>;
+    me(req: any): any;
 }

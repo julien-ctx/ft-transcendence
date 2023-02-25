@@ -19,7 +19,4 @@
 
 <section>
 	game
-	{#if isLogged}
-		gg tes loggin mec
-	{/if}
 </section>

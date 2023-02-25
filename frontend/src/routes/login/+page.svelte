@@ -44,10 +44,10 @@
 		}
 	})
 </script>
-<section>
+<div>
 	login
 	<br>
 	<a href="https://api.intra.42.fr/oauth/authorize?client_id=u-s4t2ud-30852b8b9a7314be3ebf1c95396eaf181b1395e1320bd92b2dc092f4ffbb8aa6&redirect_uri=http%3A%2F%2Flocalhost%3A5173%2Flogin&response_type=code">
 		Se connecter
 	</a>
-</section>
+</div>

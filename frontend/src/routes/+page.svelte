@@ -1,4 +1,4 @@
-<script lang="ts">
+<!-- <script lang="ts">
 	import io from 'socket.io-client'
 	const socket = io("http://localhost:4000/")
 	let messages : any = []
@@ -27,4 +27,6 @@
 		</div>
 	  </div>
 	</div>
-  </main>
+  </main> -->
+
+  <div>Home</div>

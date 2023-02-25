@@ -4,5 +4,5 @@ export declare class GameController {
     private gameService;
     private prisma;
     constructor(gameService: GameService, prisma: PrismaService);
-    game(): void;
+    game(): string;
 }

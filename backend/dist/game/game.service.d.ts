@@ -1,6 +1,10 @@
-import { PrismaService } from 'src/prisma/prisma.service';
 export declare class GameService {
+    private ball;
+    private rightPaddle;
+    private leftPaddle;
     private prisma;
-    constructor(prisma: PrismaService);
-    game(): void;
+    constructor();
+    game(): string;
+    private askIsMultiplayer;
+    updateState(): any;
 }

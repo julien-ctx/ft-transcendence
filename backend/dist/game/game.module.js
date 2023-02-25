@@ -15,7 +15,7 @@ let GameModule = class GameModule {
 GameModule = __decorate([
     (0, common_1.Module)({
         providers: [game_service_1.GameService],
-        controllers: [game_controller_1.GameController]
+        controllers: [game_controller_1.GameController],
     })
 ], GameModule);
 exports.GameModule = GameModule;

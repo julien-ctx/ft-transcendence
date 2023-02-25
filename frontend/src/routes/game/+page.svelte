@@ -25,8 +25,11 @@
 		if (ctx) {
 			ctx.fillStyle = 'black';
 			ctx.fillRect(0, 0, canvas.width, canvas.height);
+			ctx.fillStyle = 'blue';
+			ctx.fillRect(20, 20, 10, 100);
 		}
 	});
+
 </script>
 
 <canvas id="main-game-canvas" class="game-canvas">

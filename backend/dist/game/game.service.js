@@ -11,26 +11,27 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.GameService = void 0;
 const common_1 = require("@nestjs/common");
+const prisma_service_1 = require("../prisma/prisma.service");
 const objects_1 = require("./objects/objects");
 let GameService = class GameService {
-    constructor() {
-        this.ball = new objects_1.Ball();
-        this.rightPaddle = new objects_1.Paddle();
-        this.leftPaddle = new objects_1.Paddle();
+    constructor(ball, rightPaddle, leftPaddle, prisma) {
+        this.ball = ball;
+        this.rightPaddle = rightPaddle;
+        this.leftPaddle = leftPaddle;
+        this.prisma = prisma;
     }
     game() {
-        const isMultiplayer = this.askIsMultiplayer();
-        return `The game is ${isMultiplayer ? 'multiplayer' : 'single player'}.`;
-    }
-    askIsMultiplayer() {
-        return true;
-    }
-    updateState() {
+        let ball = new objects_1.Ball();
+        let rightPaddle = new objects_1.Paddle();
+        let leftPaddle = new objects_1.Paddle();
     }
 };
 GameService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [])
+    __metadata("design:paramtypes", [objects_1.Ball,
+        objects_1.Paddle,
+        objects_1.Paddle,
+        prisma_service_1.PrismaService])
 ], GameService);
 exports.GameService = GameService;
 //# sourceMappingURL=game.service.js.map

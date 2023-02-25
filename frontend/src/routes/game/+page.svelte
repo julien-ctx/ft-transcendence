@@ -17,40 +17,18 @@
 		})
 	});
 
-	let isStarted = false;
-	let buttonClicked = false;
-
-	const startGame = () => {
-  		isStarted = true;
-	};
-
+	onMount(() => {
+		const canvas = document.getElementById('main-game-canvas') as HTMLCanvasElement;
+		canvas.width = window.innerWidth;
+		canvas.height = window.innerHeight * 0.85;
+		const ctx = canvas.getContext('2d');
+		if (ctx) {
+			ctx.fillStyle = 'black';
+			ctx.fillRect(0, 0, canvas.width, canvas.height);
+		}
+	});
 </script>
 
-<style>
-	.game-frame {
-		width: 100vw;
-		height: 80vh;
-		background-color: black;
-		box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
-		display: flex;
-		justify-content: center;
-		align-items: center;
-
-	}
-
-	.game-frame p {
-		color: white;	
-	}
-</style>
-
-<div>
-	<div class="bg-gray-900 game-frame">
-	  {#if !buttonClicked}
-		<Button on:click={() => {buttonClicked = true; startGame();}}>Start game</Button>
-	  {/if}
-	  {#if isStarted}
-		<p>Game launched</p>
-	  {/if}
-	</div>
-  </div>
-  
+<canvas id="main-game-canvas" class="game-canvas">
+	<p>Game started</p>
+</canvas>

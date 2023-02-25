@@ -18,16 +18,39 @@
 	});
 
 	let isStarted = false;
+	let buttonClicked = false;
+
 	const startGame = () => {
   		isStarted = true;
 	};
+
 </script>
 
-<section>
-	<Button on:click={startGame}>Start game</Button>
-	{#if isStarted}
-	<div class="bg-gray-900">
+<style>
+	.game-frame {
+		width: 100vw;
+		height: 80vh;
+		background-color: black;
+		box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+		display: flex;
+		justify-content: center;
+		align-items: center;
+
+	}
+
+	.game-frame p {
+		color: white;	
+	}
+</style>
+
+<div>
+	<div class="bg-gray-900 game-frame">
+	  {#if !buttonClicked}
+		<Button on:click={() => {buttonClicked = true; startGame();}}>Start game</Button>
+	  {/if}
+	  {#if isStarted}
 		<p>Game launched</p>
+	  {/if}
 	</div>
-	{/if}
-</section>
+  </div>
+  

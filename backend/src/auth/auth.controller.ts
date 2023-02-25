@@ -3,7 +3,6 @@ import { AuthGuard } from "@nestjs/passport";
 import { PrismaService } from "src/prisma/prisma.service";
 import { AuthService } from "./auth.service";
 import { AuthDto } from "./dto";
-import { JwtStrategy } from "./strategy/jwt.strategy";
 
 @Controller("auth")
 export class AuthController{
@@ -14,8 +13,12 @@ export class AuthController{
 		try {
 			const user = await this.prisma.user.findUnique( { where : {id_user : dto.id} });
 			if (user) {
+				console.log(user);
+				
 				return this.authService.signin(dto);
 			} else {
+				console.log(user);
+
 				return this.authService.signup(dto);
 			}
 		} catch (err) {

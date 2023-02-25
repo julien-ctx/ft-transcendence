@@ -1,5 +1,4 @@
 <script>
-	import Header from "../Header.svelte";
     import { onMount } from "svelte";
 	import axios from "axios";
     import { goto } from "$app/navigation";
@@ -8,7 +7,7 @@
 	onMount(async () => {
 		const urlParams = new URLSearchParams(window.location.search);
 		const hasCode = urlParams.has("code");
-		if (hasCode) {
+		if (hasCode && urlParams.get("code") != "") {
 			const code = urlParams.get("code");
 			await axios.post("https://api.intra.42.fr/oauth/token", {
 				grant_type : "authorization_code",
@@ -31,7 +30,7 @@
 						login: res.data.login,
 						first_name: res.data.first_name,
 						last_name: res.data.last_name,
-						img_link: res.data.image.link
+						img_link: res.data.image.link,
 					})
 					.then((res) => {
 						setJwt(res.data.access_token);
@@ -45,10 +44,10 @@
 		}
 	})
 </script>
-<section>
+<div>
 	login
 	<br>
 	<a href="https://api.intra.42.fr/oauth/authorize?client_id=u-s4t2ud-30852b8b9a7314be3ebf1c95396eaf181b1395e1320bd92b2dc092f4ffbb8aa6&redirect_uri=http%3A%2F%2Flocalhost%3A5173%2Flogin&response_type=code">
 		Se connecter
 	</a>
-</section>
+</div>

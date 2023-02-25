@@ -1,10 +1,10 @@
 <script lang="ts">
 	import {Avatar, Dropdown, DropdownHeader, DropdownItem, DropdownDivider} from 'flowbite-svelte'
-    import { profileDataStore } from '../store';
+    import { myProfileDataStore } from '../store';
 	
 	let user : any;
 
-	profileDataStore.subscribe(val => {
+	myProfileDataStore.subscribe(val => {
 		user = val;
 	});
 </script>

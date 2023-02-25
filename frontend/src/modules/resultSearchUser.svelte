@@ -1,7 +1,7 @@
 <script lang="ts">
     import { GetOneUser } from '$lib/userUtils';
 	import {Card} from 'flowbite-svelte'
-    import { searchInputStore, userProfileStore, usersComponentStore } from '../store';
+    import { searchInputStore, userProfileDataStore, usersComponentStore } from '../store';
 
 
 	export let user : any;
@@ -9,7 +9,7 @@
 	function handleClick(){
 		GetOneUser(user.id)
 		.then((res) => {
-			userProfileStore.set(res.data);
+			userProfileDataStore.set(res.data);
 		})
 		searchInputStore.set("")
 		usersComponentStore.set([]);

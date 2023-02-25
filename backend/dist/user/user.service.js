@@ -21,24 +21,86 @@ let UserService = class UserService {
             where: {
                 id
             },
-            data: Object.assign({}, params)
+            data: Object.assign({}, params),
+            include: {
+                notif_friend: true
+            }
         });
     }
     async getOne(id) {
-        return this.prisma.user.findUnique({
+        return await this.prisma.user.findUnique({
             where: {
                 id
+            },
+            include: {
+                notif_friend: true
             }
         });
     }
     async getAll(id) {
-        return this.prisma.user.findMany({
+        return await this.prisma.user.findMany({
             where: {
                 id: {
                     not: id
                 }
+            },
+            include: {
+                notif_friend: true
             }
         });
+    }
+    async addNotifFriend(userSend, userReceive) {
+        try {
+            const currentUser = await this.getOne(userReceive.id);
+            await this.prisma.notifFriend.create({
+                data: {
+                    user: {
+                        connect: {
+                            id_user: currentUser.id_user
+                        }
+                    },
+                    id_user_send: userSend.id,
+                    login_send: userSend.login
+                }
+            });
+            return this.getOne(currentUser.id);
+        }
+        catch (error) {
+            console.log(error);
+        }
+    }
+    async acceptNotifFriend(user, notif) {
+        try {
+            let currentUser = await this.prisma.user.findUnique({
+                where: {
+                    id_user: user.id
+                },
+                include: {
+                    notif_friend: true
+                }
+            });
+            return await this.prisma.user.update({
+                where: {
+                    id: currentUser.id
+                },
+                data: {
+                    notif_friend: {
+                        delete: {
+                            id: notif.id
+                        }
+                    },
+                    friend_id: {
+                        set: [...currentUser.friend_id, notif.id_user_send]
+                    }
+                },
+                include: {
+                    notif_friend: true
+                }
+            });
+        }
+        catch (error) {
+            console.log(error);
+        }
     }
 };
 UserService = __decorate([

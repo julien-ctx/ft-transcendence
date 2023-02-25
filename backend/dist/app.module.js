@@ -26,7 +26,7 @@ AppModule = __decorate([
             user_module_1.UserModule,
             prisma_module_1.PrismaModule,
             chat_module_1.ChatModule,
-            game_module_1.GameModule
+            game_module_1.GameModule,
         ]
     })
 ], AppModule);

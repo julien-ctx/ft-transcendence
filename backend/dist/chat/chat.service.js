@@ -33,14 +33,6 @@ let ChatService = class ChatService {
         const verify = await argon2.verify(hash, password);
         return verify;
     }
-    async valide(room, password) {
-        const roomData = await this.prisma.room.findUnique({
-            where: {
-                name: room,
-            }
-        });
-        return await this.verifyPass(password, roomData.password);
-    }
 };
 ChatService = __decorate([
     (0, common_1.Injectable)(),

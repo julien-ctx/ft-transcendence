@@ -44,6 +44,7 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection{
 		this.client.push(user);
 	}
 
+
 	@SubscribeMessage('createRoom')
 	async handleCreateRoom(@ConnectedSocket() client, @MessageBody() data: any) {
 		const token = client.handshake.query.token as string;
@@ -53,7 +54,6 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection{
 		let err = new errors(data.roomStatus, data.roomName, data.roomDesc, data.roomPass, data.roomPassConfirm);
 		err.handle();
 		let already = await this.chatService.alreadyExist(data.roomName);
-		console.log({already})
 		if (already === true) {
 			err.errs.name = 'Room already exist';
 		}
@@ -62,11 +62,11 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection{
 			client.emit('errors', err.errs);
 			return ;
 		}
+
 		let mdp = '';
-		// console.log({data});
 		if (data.roomStatus === 'Protected')
 			mdp = await this.chatService.hashedPass(data.roomPass);
-		// console.log({mdp});
+
 		const room = await this.prisma.room.create({
 			data: {
 				name: data.roomName,
@@ -74,6 +74,27 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection{
 				status: data.roomStatus,
 				password: mdp,
 			}
+		});
+		console.log({user});
+		const idUser : number = user['id'];
+		const User = await this.prisma.user.findUnique({
+			where: {
+				id_user: idUser,
+			}
+		});
+		const relation = await this.prisma.roomToUser.create({
+			data: {
+				room: {
+					connect: {
+						id: room.id,
+					}
+				},
+				user: {
+					connect: {
+						id: User.id,
+					}
+			},
+		}
 		});
 		client.emit('successCreate');
 	}
@@ -83,18 +104,24 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection{
 		const token = client.handshake.query.token as string;
 		const user = await this.Auth.me(token);
 		if (user === undefined) return;
+
 		const room = await this.prisma.room.findUnique({
 			where: {
 				name: data.roomName,
 			}
 		});
+		const idUser : number = user['id'];
+		const User = await this.prisma.user.findUnique({
+			where: {
+				id_user: idUser,
+			}
+		});
 
-		// console.log({room});
 		if (room === null) {
 			client.emit('errors', {already : 'Room does not exist'});
 			return ;
 		}
-		console.log({room}, {data});
+		// console.log({room}, {data});
 		if (room.status === 'Protected' && data.roomPass === '') {
 			client.emit('needPass');
 			return;
@@ -106,11 +133,42 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection{
 				return;
 			}
 			else {
+				// Make him join ........
+				const relation = await this.prisma.roomToUser.create({
+					data: {
+						room: {
+							connect: {
+								id: room.id,
+							}
+						},
+						user: {
+							connect: {
+								id: User.id,
+							}
+					},
+				}
+				});
+
 				client.emit('successJoin');
 				return;
 			}
 		}
-		
+		const relation = await this.prisma.roomToUser.create({
+			data: {
+				room: {
+					connect: {
+						id: room.id,
+					}
+				},
+				user: {
+					connect: {
+						id: User.id,
+					}
+			},
+		}
+		});
+		client.emit('successJoin');
+		return ;
 	}
 
 	handleDisconnect(client: any) {

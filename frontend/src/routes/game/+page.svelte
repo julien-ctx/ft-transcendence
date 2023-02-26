@@ -4,6 +4,7 @@
 	import { AuthGuard } from "../../modules/AuthGuard";
     import { goto } from "$app/navigation";
     import { removeJwt } from "$lib/jwtUtils";
+	
 	let isLogged = false;
 	onMount(async () => {
 		AuthGuard()

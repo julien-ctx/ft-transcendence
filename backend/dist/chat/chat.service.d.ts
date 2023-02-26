@@ -5,5 +5,4 @@ export declare class ChatService {
     alreadyExist(name: string): Promise<boolean>;
     hashedPass(password: string): Promise<string>;
     verifyPass(password: string, hash: string): Promise<boolean>;
-    valide(room: string, password: any): Promise<boolean>;
 }

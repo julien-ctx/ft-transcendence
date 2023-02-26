@@ -46,7 +46,6 @@ let ChatGateway = class ChatGateway {
         let err = new errors_handle_1.errors(data.roomStatus, data.roomName, data.roomDesc, data.roomPass, data.roomPassConfirm);
         err.handle();
         let already = await this.chatService.alreadyExist(data.roomName);
-        console.log({ already });
         if (already === true) {
             err.errs.name = 'Room already exist';
         }
@@ -66,6 +65,27 @@ let ChatGateway = class ChatGateway {
                 password: mdp,
             }
         });
+        console.log({ user });
+        const idUser = user['id'];
+        const User = await this.prisma.user.findUnique({
+            where: {
+                id_user: idUser,
+            }
+        });
+        const relation = await this.prisma.roomToUser.create({
+            data: {
+                room: {
+                    connect: {
+                        id: room.id,
+                    }
+                },
+                user: {
+                    connect: {
+                        id: User.id,
+                    }
+                },
+            }
+        });
         client.emit('successCreate');
     }
     async handleJoinRoom(client, data) {
@@ -78,11 +98,16 @@ let ChatGateway = class ChatGateway {
                 name: data.roomName,
             }
         });
+        const idUser = user['id'];
+        const User = await this.prisma.user.findUnique({
+            where: {
+                id_user: idUser,
+            }
+        });
         if (room === null) {
             client.emit('errors', { already: 'Room does not exist' });
             return;
         }
-        console.log({ room }, { data });
         if (room.status === 'Protected' && data.roomPass === '') {
             client.emit('needPass');
             return;
@@ -94,10 +119,40 @@ let ChatGateway = class ChatGateway {
                 return;
             }
             else {
+                const relation = await this.prisma.roomToUser.create({
+                    data: {
+                        room: {
+                            connect: {
+                                id: room.id,
+                            }
+                        },
+                        user: {
+                            connect: {
+                                id: User.id,
+                            }
+                        },
+                    }
+                });
                 client.emit('successJoin');
                 return;
             }
         }
+        const relation = await this.prisma.roomToUser.create({
+            data: {
+                room: {
+                    connect: {
+                        id: room.id,
+                    }
+                },
+                user: {
+                    connect: {
+                        id: User.id,
+                    }
+                },
+            }
+        });
+        client.emit('successJoin');
+        return;
     }
     handleDisconnect(client) {
         console.log('Client disconnected');

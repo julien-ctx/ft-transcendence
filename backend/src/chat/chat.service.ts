@@ -26,13 +26,4 @@ export class ChatService {
 		const verify = await argon2.verify(hash, password);
 		return verify;
 	}
-
-	async valide(room : string, password) {
-		const roomData = await this.prisma.room.findUnique({
-			where: {
-				name: room,
-			}
-		});
-		return await this.verifyPass(password, roomData.password);
-	}
 }

@@ -8,22 +8,32 @@ datasource db {
 }
 
 model User {
-  id Int @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  id_user Int @unique
-	email String
-	login String
-	first_name String
-	last_name String
-	img_link String
+  id         Int      @id @default(autoincrement())
+  createdAt  DateTime @default(now())
+  id_user    Int      @unique
+  email      String
+  login      String
+  first_name String
+  last_name  String
+  img_link   String
+
+  RoomToUser RoomToUser[]
 }
 
 model Room {
-	id Int @id @default(autoincrement())
-	name String @unique
-	description String @default("")
-	status String
-	password String @default("")
+  id          Int    @id @default(autoincrement())
+  name        String @unique
+  description String @default("")
+  status      String
+  password    String @default("")
 
-	// users User[]
+  RoomToUser RoomToUser[]
+}
+
+model RoomToUser {
+  id      Int  @id @default(autoincrement())
+  room    Room @relation(fields: [id_room], references: [id])
+  id_room Int
+  user    User @relation(fields: [id_user], references: [id_user])
+  id_user Int
 }

@@ -1,7 +1,7 @@
 <script lang="ts">
     import { GetOneUser } from '$lib/userUtils';
 	import {Card} from 'flowbite-svelte'
-    import { searchInputStore, userProfileDataStore, usersComponentStore } from '../store';
+    import { searchInputStore, userProfileDataStore, usersComponentStore } from '$lib/store/user';
 
 
 	export let user : any;

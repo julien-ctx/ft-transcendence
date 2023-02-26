@@ -1,7 +1,7 @@
 <script lang="ts">
     import { UpdateProfileImg, UpdateProfileLogin, UpdateProfileToStore } from "$lib/profileUtils";
 	import { Avatar, Card, Dropdown, DropdownItem, MenuButton } from "flowbite-svelte";
-    import { myProfileDataStore } from "../../store";
+    import { myProfileDataStore } from "$lib/store/user";
 
 	let fileInput : any;
 	let isEditLogin : boolean = false;

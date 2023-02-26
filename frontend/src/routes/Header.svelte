@@ -2,11 +2,11 @@
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
     import { AuthGuard } from '../lib/AuthGuard';
-    import { myProfileDataStore } from '../store';
+    import { myProfileDataStore } from '$lib/store/user';
     import { UpdateProfileConnected, UpdateProfileToStore } from '$lib/profileUtils';
-    import AvatarProfile from '../modules/avatarProfile.svelte';
-    import SearchUsers from '../modules/searchUsers.svelte';
-    import Notifications from '../modules/notifications.svelte';
+    import AvatarProfile from '../modules/headerComponent/avatarProfile.svelte';
+    import SearchUsers from '../modules/headerComponent/searchComponent/searchUsers.svelte';
+    import Notifications from '../modules/headerComponent/notifications.svelte';
 
 	let user : any;
 

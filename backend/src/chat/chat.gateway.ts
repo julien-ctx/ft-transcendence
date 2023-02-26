@@ -41,7 +41,7 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection{
 		// const user = await this.Auth.me(token);
 		const user = await this.jwt.decode(token);
 		if (user === undefined) return;
-		console.log('Conncted user :', {user});
+		// console.log('Conncted user :', {user});
 		this.client.push(user);
 	}
 
@@ -77,7 +77,7 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection{
 				password: mdp,
 			}
 		});
-		console.log({user});
+		// console.log({user});
 		const idUser : number = user['id'];
 		const User = await this.prisma.user.findUnique({
 			where: {
@@ -175,7 +175,7 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection{
 	}
 
 	handleDisconnect(client: any) {
-		console.log('Client disconnected');
+		// console.log('Client disconnected');
 		this.client.splice(this.client.indexOf(client), 1);
 	}
 }

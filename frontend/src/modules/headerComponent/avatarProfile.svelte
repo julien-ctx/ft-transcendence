@@ -1,6 +1,6 @@
 <script lang="ts">
 	import {Avatar, Dropdown, DropdownHeader, DropdownItem, DropdownDivider} from 'flowbite-svelte'
-    import { myProfileDataStore } from '../store';
+    import { myProfileDataStore } from '$lib/store/user';
 	
 	let user : any;
 

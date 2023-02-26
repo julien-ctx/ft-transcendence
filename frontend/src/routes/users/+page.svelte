@@ -2,7 +2,7 @@
     import { GetOneUser } from '$lib/userUtils';
 	import { Avatar, Card } from "flowbite-svelte";
     import { onMount } from 'svelte';
-    import { myProfileDataStore, userProfileDataStore } from '../../store';
+    import { myProfileDataStore, userProfileDataStore } from '$lib/store/user';
 	import io from 'socket.io-client';
     import { getJwt } from '$lib/jwtUtils';
 

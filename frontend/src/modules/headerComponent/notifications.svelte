@@ -2,7 +2,7 @@
     import { Button, Dropdown, DropdownDivider, Toast } from "flowbite-svelte";
 	import io from 'socket.io-client';
 	import { onMount } from 'svelte';
-    import { myNotifLength, myProfileDataStore } from '../store';
+    import { myNotifLength, myProfileDataStore } from '$lib/store/user';
     import { getJwt } from '$lib/jwtUtils';
     import { UpdateProfileToStore } from "$lib/profileUtils";
 

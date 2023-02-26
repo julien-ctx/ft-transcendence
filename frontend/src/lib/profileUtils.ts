@@ -1,5 +1,5 @@
 import { getJwt } from "$lib/jwtUtils";
-import { myNotifLength, myProfileDataStore } from "../store";
+import { myNotifLength, myProfileDataStore } from "$lib/store/user";
 import axios from "axios"
 
 export async function UpdateProfileImg(formData : any) {

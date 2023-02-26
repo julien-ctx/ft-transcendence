@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Header from "../Header.svelte";
     import { onMount } from "svelte";
-	import { AuthGuard } from "../../modules/AuthGuard";
+	import { AuthGuard } from "../../lib/AuthGuard";
     import { goto } from "$app/navigation";
     import { removeJwt } from "$lib/jwtUtils";
 	import { Button } from 'flowbite-svelte'

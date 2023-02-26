@@ -8,4 +8,6 @@ export declare class UserDto {
     last_name: string;
     login: string;
     connected: boolean;
+    friend_id: number[];
+    notif_friend: [];
 }

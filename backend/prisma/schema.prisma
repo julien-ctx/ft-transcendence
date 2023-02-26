@@ -12,9 +12,21 @@ model User {
   createdAt DateTime @default(now())
   id_user Int @unique
 	email String
-	login String
+	login String @unique
 	first_name String
 	last_name String
 	img_link String
   connected Boolean @default(false)
+  notif_friend NotifFriend[]
+  friend_id Int[]
+  req_friend Int[]
+}
+
+model NotifFriend {
+  id Int @id @default(autoincrement())
+  user  User @relation(fields: [id_user_receive], references: [id])
+  id_user_receive Int
+  id_user_send Int
+  is_read Boolean @default(false)
+  login_send String
 }

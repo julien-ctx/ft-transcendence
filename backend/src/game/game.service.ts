@@ -16,5 +16,4 @@ export class GameService {
 		this.leftPaddle = leftPaddle;
 		this.ball = ball;
 	}
-
 }

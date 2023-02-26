@@ -12,5 +12,6 @@ export class GameGateway {
 	@SubscribeMessage('setObjectSize')
 	setObjectSize(client: any, objects: { rightPaddle: Paddle, leftPaddle: Paddle, ball: Ball }): void {
 		this.gameService.game(objects.rightPaddle, objects.leftPaddle, objects.ball);
+		client.emit('objectSizeSet', objects);
   	}
 }

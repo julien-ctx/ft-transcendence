@@ -2,22 +2,17 @@ import { Injectable } from "@nestjs/common";
 
 export class Ball {
 	constructor(
-		private x: number,
-		private y: number,
-		private size: number,
+		public x: number,
+		public y: number,
+		public size: number,
 	) {}
 }
 
 export class Paddle {
 	constructor(
-		private x: number,
-		private y: number,
-		private width: number,
-		private height: number
+		public x: number,
+		public y: number,
+		public width: number,
+		public height: number
 	) {}
-
-
-	setData(data: Object) {
-
-	}
 }

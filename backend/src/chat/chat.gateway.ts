@@ -38,7 +38,8 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection{
 	async handleConnection(client: any, ...args: any[]) {
 		// console.log({client});
 		const token = client.handshake.query.token as string;
-		const user = await this.Auth.me(token);
+		// const user = await this.Auth.me(token);
+		const user = await this.jwt.decode(token);
 		if (user === undefined) return;
 		console.log('Conncted user :', {user});
 		this.client.push(user);
@@ -48,7 +49,8 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection{
 	@SubscribeMessage('createRoom')
 	async handleCreateRoom(@ConnectedSocket() client, @MessageBody() data: any) {
 		const token = client.handshake.query.token as string;
-		const user = await this.Auth.me(token);
+		// const user = await this.Auth.me(token);
+		const user = await this.jwt.decode(token);
 		if (user === undefined) return;
 		
 		let err = new errors(data.roomStatus, data.roomName, data.roomDesc, data.roomPass, data.roomPassConfirm);
@@ -102,7 +104,8 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection{
 	@SubscribeMessage('joinRoom')
 	async handleJoinRoom(@ConnectedSocket() client, @MessageBody() data: any) {
 		const token = client.handshake.query.token as string;
-		const user = await this.Auth.me(token);
+		// const user = await this.Auth.me(token);
+		const user = await this.jwt.decode(token);
 		if (user === undefined) return;
 
 		const room = await this.prisma.room.findUnique({

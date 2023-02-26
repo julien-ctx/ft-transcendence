@@ -19,8 +19,8 @@ model User {
   connected Boolean @default(false)
   notif_friend NotifFriend[]
   friend_id Int[]
-  req_friend Int[]
-  
+  req_received_friend Int[]
+  req_send_friend Int[]
   RoomToUser RoomToUser[]
 }
 
@@ -49,4 +49,5 @@ model NotifFriend {
   id_user_send Int
   is_read Boolean @default(false)
   login_send String
+  img_link String
 }

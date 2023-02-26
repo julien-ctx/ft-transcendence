@@ -47,19 +47,23 @@ export class UserService {
 
 	async addNotifFriend(userSend : any, userReceive : any) {
 		try {
-			const currentUser = await this.getOne(userReceive.id);
 			await this.prisma.notifFriend.create({
 				data : {
 					user : {
 						connect : {
-							id_user: currentUser.id_user
+							id_user: userReceive.id_user
 						}
 					},
 					id_user_send : userSend.id,
-					login_send : userSend.login
+					login_send : userSend.login,
+					img_link: userSend.img_link
 				}
 			});
-			return this.getOne(currentUser.id);
+			return await this.updateUser({
+				req_received_friend : {
+					push: userSend.id
+				}
+			}, userReceive.id);
 		} catch (error) {
 			console.log(error);
 		}

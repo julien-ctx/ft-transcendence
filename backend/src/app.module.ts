@@ -15,7 +15,7 @@ import { GameModule } from './game/game.module';
     UserModule,
     PrismaModule,
     ChatModule,
-    GameModule,
-  ]
+    GameModule
+  ],
 })
 export class AppModule {}

@@ -3,11 +3,10 @@ import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import { PrismaService } from "src/prisma/prisma.service";
 import { AuthDto } from "./dto";
-import { JwtStrategy } from "./strategy/jwt.strategy";
 
 @Injectable()
 export class AuthService{
-	constructor(private prisma : PrismaService, private jwt : JwtService, private config : ConfigService, private jwtStrategy : JwtStrategy) {}
+	constructor(private prisma : PrismaService, private jwt : JwtService, private config : ConfigService) {}
 
 	async signup(auth: AuthDto) {
 		await this.prisma.user.create({
@@ -31,7 +30,6 @@ export class AuthService{
 		})
 	}
 
-	//Get a User
 	async signin(dto: AuthDto) {
 		return this.signToken(dto);
 	}
@@ -42,10 +40,5 @@ export class AuthService{
 			secret: this.config.get("JWT_SECRET")
 		});
 		return { access_token : token };
-	}
-
-	async me(token) {
-		const user = this.jwt.decode(token);
-		console.log(user);
 	}
 }

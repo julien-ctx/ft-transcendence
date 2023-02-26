@@ -3,16 +3,22 @@ import { AuthGuard } from "@nestjs/passport";
 import { PrismaService } from "src/prisma/prisma.service";
 import { AuthService } from "./auth.service";
 import { AuthDto } from "./dto";
-import { JwtStrategy } from "./strategy/jwt.strategy";
 
 @Controller("auth")
 export class AuthController{
 	constructor(private authService: AuthService, private prisma : PrismaService) {}
 
 	@Post("signin")
-	signin(@Body() dto: AuthDto) {
+	async signin(@Body() dto: AuthDto) {
 		try {
-			const user = this.prisma.user.findUnique( { where : {id_user : dto.id} });
+			const user = await this.prisma.user.findUnique(
+				{ where : {
+					id_user : dto.id
+				},
+				include : {
+					notif_friend: true
+				}
+			});
 			if (user) {
 				return this.authService.signin(dto);
 			} else {

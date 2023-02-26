@@ -9,11 +9,17 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ChatModule = void 0;
 const common_1 = require("@nestjs/common");
 const chat_gateway_1 = require("./chat.gateway");
+const chat_service_1 = require("./chat.service");
+const jwt_1 = require("@nestjs/jwt");
+const auth_module_1 = require("../auth/auth.module");
+const auth_service_1 = require("../auth/auth.service");
+const strategy_1 = require("../auth/strategy");
 let ChatModule = class ChatModule {
 };
 ChatModule = __decorate([
     (0, common_1.Module)({
-        providers: [chat_gateway_1.ChatGateway],
+        imports: [jwt_1.JwtModule.register({}), auth_module_1.AuthModule],
+        providers: [chat_gateway_1.ChatGateway, chat_service_1.ChatService, auth_service_1.AuthService, strategy_1.JwtStrategy],
     })
 ], ChatModule);
 exports.ChatModule = ChatModule;

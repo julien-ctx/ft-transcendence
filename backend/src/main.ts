@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
+import { SocketAdapter } from './socketAdapter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -9,6 +10,7 @@ async function bootstrap() {
     whitelist: true
   }));
   app.enableCors();
+  app.useWebSocketAdapter(new SocketAdapter(app))
   await app.listen(new ConfigService().get("PORT"));
 }
 bootstrap();

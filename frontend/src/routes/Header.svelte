@@ -1,34 +1,55 @@
-<script>
+<script lang="ts">
 	import { page } from '$app/stores';
-    import { getJwt } from '$lib/jwtUtils';
 	import { onMount } from 'svelte';
+    import { AuthGuard } from '../lib/AuthGuard';
+    import { myProfileDataStore } from '../store';
+    import { UpdateProfileConnected, UpdateProfileToStore } from '$lib/profileUtils';
+    import AvatarProfile from '../modules/avatarProfile.svelte';
+    import SearchUsers from '../modules/searchUsers.svelte';
+    import Notifications from '../modules/notifications.svelte';
 
-	let isLogged = false;
+	let user : any;
+
+	myProfileDataStore.subscribe(val => {
+		user = val;
+	});
 
 	onMount(() => {
-		if (getJwt()) isLogged = true;
+		AuthGuard()
+		.then((res) => {
+			UpdateProfileToStore(res.data);
+			// if (!user.connected) {
+			// 	UpdateProfileConnected(true)
+			// 	.then((res) => {
+			// 		UpdateProfileToStore(res.data);
+			// 	})
+			// }
+		});
 	})
 
 </script>
 
-<header>
-	<nav>
-		<ul>
-			<li aria-current={$page.url.pathname === '/' ? 'page' : undefined}>
-				<a href="/">Home</a>
-			</li>
-			<li aria-current={$page.url.pathname === '/logout' ? 'page' : undefined}>
-				<a href="/logout">Logout</a>
-			</li>
-			<li aria-current={$page.url.pathname === '/logout' ? 'page' : undefined}>
-				<a href="/profile">Profile</a>
-			</li>
-			<li aria-current={$page.url.pathname === '/game' ? 'page' : undefined}>
-				<a href="/game">Game</a>
-			</li>
-		</ul>
-	</nav>
-</header>
+{#if user.login}
+	<header class="flex items-center space-x-4 justify-center">
+		<nav>
+			<ul>
+				<li aria-current={$page.url.pathname === '/' ? 'page' : undefined}>
+					<a href="/">Home</a>
+				</li>
+				<li aria-current={$page.url.pathname === '/game' ? 'page' : undefined}>
+					<a href="/game">Game</a>
+				</li>
+        <li aria-current={$page.url.pathname === '/chat' ? 'page' : undefined}>
+				  <a href="/chat">Chat</a>
+			  </li>
+			</ul>
+		</nav>
+		<SearchUsers />
+		<Notifications />
+		<AvatarProfile />
+	</header>
+{/if}
+
 <style>
 	header {
 		display: flex;

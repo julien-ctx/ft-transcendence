@@ -4,7 +4,9 @@ import { UserDto } from "./dto/user.dto";
 export declare class UserController {
     private userService;
     constructor(userService: UserService);
-    getMe(user: UserDto): UserDto;
+    getMe(userReq: UserDto): Promise<import(".prisma/client").User & {
+        notif_friend: import(".prisma/client").NotifFriend[];
+    }>;
     getAll(user: UserDto): Promise<(import(".prisma/client").User & {
         notif_friend: import(".prisma/client").NotifFriend[];
     })[]>;

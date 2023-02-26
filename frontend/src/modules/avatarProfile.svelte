@@ -9,7 +9,7 @@
 	});
 </script>
 
-<Avatar id="user-drop" src={user.img_link} />
+<Avatar id="user-drop" src={user.img_link} class="object-cover"/>
 <Dropdown triggeredBy="#user-drop">
 <DropdownHeader>
 	<span class="block text-sm">{user.login}</span>

@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { NotifFriend, User } from "@prisma/client";
+import { NotifFriend, User, Prisma } from "@prisma/client";
 import { PrismaService } from "src/prisma/prisma.service";
 import { UserDto } from "./dto/user.dto";
 
@@ -7,13 +7,13 @@ import { UserDto } from "./dto/user.dto";
 export class UserService {
 	constructor(private prisma : PrismaService) {}
 
-	async updateMe(params : any , id : number) {
-		return this.prisma.user.update({
+	async updateUser(params : any , id : number) {
+		return await this.prisma.user.update({
 			where: {
 				id
 			},
 			data : {
-				...params
+				...params,
 			},
 			include : {
 				notif_friend: true
@@ -63,40 +63,5 @@ export class UserService {
 		} catch (error) {
 			console.log(error);
 		}
-	}
-
-	async acceptNotifFriend(user : any, notif : any) {
-		try {
-			let currentUser = await this.prisma.user.findUnique({
-				where: {
-					id_user: user.id
-				},
-				include : {
-					notif_friend: true
-				}
-			});
-			
-			return await this.prisma.user.update({
-				where : {
-					id: currentUser.id
-				},
-				data: {
-					notif_friend : {
-						delete : {
-							id : notif.id
-						}
-					},
-					friend_id : {
-						set : [...currentUser.friend_id, notif.id_user_send]
-					}
-				},
-				include : {
-					notif_friend: true
-				}
-			})
-		} catch (error) {
-			console.log(error);
-		}
-
 	}
 }

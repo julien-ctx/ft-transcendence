@@ -14,4 +14,6 @@ export declare class UserGateway implements OnGatewayInit, OnGatewayConnection, 
     handleMessage(client: any, body: any): void;
     addFriend(client: any, body: any): void;
     acceptFriend(client: any, body: any): void;
+    refuseFriend(client: any, body: any): void;
+    deleteFriend(client: any, body: any): void;
 }

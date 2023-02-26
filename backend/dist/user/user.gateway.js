@@ -51,25 +51,136 @@ let UserGateway = class UserGateway {
         if (user == undefined)
             return;
         this.userService.addNotifFriend(body.user_send, body.user_receive)
-            .then((user) => {
+            .then((res) => {
             this.usersArr.forEach(elem => {
-                if (elem.user.id == user.id_user) {
-                    elem.client.emit("notification_friend", user);
+                if (elem.user.id == res.id_user) {
+                    elem.client.emit("notification_friend", res);
+                }
+            });
+        });
+        this.userService.updateUser({
+            req_friend: {
+                push: body.user_receive.id
+            }
+        }, body.user_send.id)
+            .then((res) => {
+            this.usersArr.forEach(elem => {
+                if (elem.user.id == res.id_user) {
+                    elem.client.emit("notification_friend", res);
                 }
             });
         });
     }
     acceptFriend(client, body) {
         const token = client.handshake.query.token;
-        const user = this.jwt.decode(token);
-        if (user == undefined)
+        const userCheck = this.jwt.decode(token);
+        if (userCheck == undefined)
             return;
-        this.userService.acceptNotifFriend(user, body.notif)
-            .then((user) => {
-            this.usersArr.forEach(elem => {
-                if (elem.user.id == user.id_user) {
-                    elem.client.emit("notification_friend", user);
+        this.userService.updateUser({
+            notif_friend: {
+                delete: {
+                    id: body.notif.id
                 }
+            },
+            friend_id: {
+                push: body.notif.id_user_send
+            }
+        }, body.user.id)
+            .then((res) => {
+            this.usersArr.forEach(elem => {
+                if (elem.user.id == res.id_user) {
+                    elem.client.emit("notification_friend", res);
+                }
+            });
+        });
+        this.userService.getOne(body.notif.id_user_send)
+            .then((res) => {
+            this.userService.updateUser({
+                friend_id: {
+                    push: body.notif.id_user_receive
+                },
+                req_friend: {
+                    set: res.req_friend.filter((elem) => elem !== body.user.id)
+                }
+            }, res.id)
+                .then((res) => {
+                this.usersArr.forEach(elem => {
+                    if (elem.user.id == res.id_user) {
+                        elem.client.emit("notification_friend", res);
+                    }
+                });
+            });
+        });
+    }
+    refuseFriend(client, body) {
+        const token = client.handshake.query.token;
+        const userCheck = this.jwt.decode(token);
+        if (userCheck == undefined)
+            return;
+        console.log(body);
+        this.userService.updateUser({
+            notif_friend: {
+                delete: {
+                    id: body.notif.id
+                }
+            }
+        }, body.user.id)
+            .then((res) => {
+            this.usersArr.forEach(elem => {
+                if (elem.user.id == res.id_user) {
+                    elem.client.emit("notification_friend", res);
+                }
+            });
+        });
+        this.userService.getOne(body.notif.id_user_send)
+            .then((res) => {
+            this.userService.updateUser({
+                req_friend: {
+                    set: res.req_friend.filter((elem) => elem !== body.user.id)
+                }
+            }, body.notif.id_user_send)
+                .then((res) => {
+                this.usersArr.forEach(elem => {
+                    if (elem.user.id == res.id_user) {
+                        elem.client.emit("notification_friend", res);
+                    }
+                });
+            });
+        });
+    }
+    deleteFriend(client, body) {
+        const token = client.handshake.query.token;
+        const userCheck = this.jwt.decode(token);
+        if (userCheck == undefined)
+            return;
+        this.userService.getOne(body.user_send.id)
+            .then((res) => {
+            this.userService.updateUser({
+                friend_id: {
+                    set: res.req_friend.filter((elem) => elem !== body.user_receive.id)
+                }
+            }, res.id)
+                .then((res) => {
+                this.usersArr.forEach(elem => {
+                    if (elem.user.id == res.id_user) {
+                        elem.client.emit("notification_friend", res);
+                    }
+                });
+            });
+        });
+        this.userService.getOne(body.user_receive.id)
+            .then((res) => {
+            this.userService.updateUser({
+                friend_id: {
+                    set: res.req_friend.filter((elem) => elem !== body.user_send.id)
+                }
+            }, res.id)
+                .then((res) => {
+                this.usersArr.forEach(elem => {
+                    if (elem.user.id == res.id_user) {
+                        elem.client.emit("notification_friend", res);
+                    }
+                });
             });
         });
     }
@@ -114,6 +225,22 @@ __decorate([
     __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", void 0)
 ], UserGateway.prototype, "acceptFriend", null);
+__decorate([
+    (0, websockets_1.SubscribeMessage)("refuse_friend"),
+    __param(0, (0, websockets_1.ConnectedSocket)()),
+    __param(1, (0, websockets_1.MessageBody)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", void 0)
+], UserGateway.prototype, "refuseFriend", null);
+__decorate([
+    (0, websockets_1.SubscribeMessage)("delete_friend"),
+    __param(0, (0, websockets_1.ConnectedSocket)()),
+    __param(1, (0, websockets_1.MessageBody)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", void 0)
+], UserGateway.prototype, "deleteFriend", null);
 UserGateway = __decorate([
     (0, websockets_1.WebSocketGateway)({
         path: "/notifFriend",

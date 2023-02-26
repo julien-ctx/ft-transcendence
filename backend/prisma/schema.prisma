@@ -19,6 +19,7 @@ model User {
   connected Boolean @default(false)
   notif_friend NotifFriend[]
   friend_id Int[]
+  req_friend Int[]
 }
 
 model NotifFriend {

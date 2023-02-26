@@ -1,18 +1,21 @@
 <script lang="ts">
-    import { Button, Dropdown, DropdownDivider } from "flowbite-svelte";
+    import { Button, Dropdown, DropdownDivider, Toast } from "flowbite-svelte";
 	import io from 'socket.io-client';
 	import { onMount } from 'svelte';
-    import { myProfileDataStore } from '../store';
+    import { myNotifLength, myProfileDataStore } from '../store';
     import { getJwt } from '$lib/jwtUtils';
+    import { UpdateProfileToStore } from "$lib/profileUtils";
 
 	let socket : any;
 	let myProfile : any;
-	let countNotif : any = 0;
+	let countNotif : any;
 
 	myProfileDataStore.subscribe(val => {
 		myProfile = val;
-		if (myProfile.notif_friend)
-			countNotif = myProfile.notif_friend.length;
+	})
+
+	myNotifLength.subscribe(val => {
+		countNotif = val;
 	})
 
 	onMount(() => {
@@ -22,20 +25,19 @@
 		});
 
 		socket.on('notification_friend', (data : any) => {
-			myProfileDataStore.set(data);
-			if (myProfile.notif_friend)
-				countNotif = myProfile.notif_friend.length;
-			console.log(myProfile);
+			UpdateProfileToStore(data);			
+		});
+		socket.on("event_friend", (data : any) => {		
+			UpdateProfileToStore(data);
 		});
 	});
 
 	function acceptReq(notif : any) {
-		console.log("accept", notif);
 		socket.emit("accept_friend", { user : myProfile, notif});
 	}
 
 	function refuseReq(notif : any) {
-		console.log("refuse", notif);
+		socket.emit("refuse_friend", {user : myProfile, notif});
 	}
 </script>
 

@@ -3,7 +3,7 @@ import { PrismaService } from "src/prisma/prisma.service";
 export declare class UserService {
     private prisma;
     constructor(prisma: PrismaService);
-    updateMe(params: any, id: number): Promise<User & {
+    updateUser(params: any, id: number): Promise<User & {
         notif_friend: NotifFriend[];
     }>;
     getOne(id: number): Promise<User & {
@@ -13,9 +13,6 @@ export declare class UserService {
         notif_friend: NotifFriend[];
     })[]>;
     addNotifFriend(userSend: any, userReceive: any): Promise<User & {
-        notif_friend: NotifFriend[];
-    }>;
-    acceptNotifFriend(user: any, notif: any): Promise<User & {
         notif_friend: NotifFriend[];
     }>;
 }

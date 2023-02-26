@@ -11,3 +11,5 @@ export const searchInputStore = writable("");
 export const usersComponentStore = writable([]);
 
 export const myNotificationsDataStore = writable([]);
+
+export const myNotifLength = writable();

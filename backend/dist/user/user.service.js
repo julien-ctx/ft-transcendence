@@ -16,8 +16,8 @@ let UserService = class UserService {
     constructor(prisma) {
         this.prisma = prisma;
     }
-    async updateMe(params, id) {
-        return this.prisma.user.update({
+    async updateUser(params, id) {
+        return await this.prisma.user.update({
             where: {
                 id
             },
@@ -64,39 +64,6 @@ let UserService = class UserService {
                 }
             });
             return this.getOne(currentUser.id);
-        }
-        catch (error) {
-            console.log(error);
-        }
-    }
-    async acceptNotifFriend(user, notif) {
-        try {
-            let currentUser = await this.prisma.user.findUnique({
-                where: {
-                    id_user: user.id
-                },
-                include: {
-                    notif_friend: true
-                }
-            });
-            return await this.prisma.user.update({
-                where: {
-                    id: currentUser.id
-                },
-                data: {
-                    notif_friend: {
-                        delete: {
-                            id: notif.id
-                        }
-                    },
-                    friend_id: {
-                        set: [...currentUser.friend_id, notif.id_user_send]
-                    }
-                },
-                include: {
-                    notif_friend: true
-                }
-            });
         }
         catch (error) {
             console.log(error);

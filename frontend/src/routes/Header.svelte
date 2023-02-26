@@ -18,12 +18,12 @@
 		AuthGuard()
 		.then((res) => {
 			UpdateProfileToStore(res.data);
-			if (!user.connected) {
-				UpdateProfileConnected(true)
-				.then((res) => {
-					UpdateProfileToStore(res.data);
-				})
-			}
+			// if (!user.connected) {
+			// 	UpdateProfileConnected(true)
+			// 	.then((res) => {
+			// 		UpdateProfileToStore(res.data);
+			// 	})
+			// }
 		});
 	})
 

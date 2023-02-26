@@ -1,52 +1,67 @@
 <script lang="ts">
-    import { onMount } from "svelte";
-    import { AuthGuard } from "../../modules/AuthGuard";
-	let user : any;
-	let isEdit : boolean = false;
+    import { UpdateProfileImg, UpdateProfileLogin, UpdateProfileToStore } from "$lib/profileUtils";
+	import { Avatar, Card, Dropdown, DropdownItem, MenuButton } from "flowbite-svelte";
+    import { myProfileDataStore } from "../../store";
 
-	onMount(() => {
-		AuthGuard()
-		.then((res) => {
-			console.log(res.data);
-			user = res.data;
-			
-		})
-		.catch((err) => console.log(err));
+	let fileInput : any;
+	let isEditLogin : boolean = false;
+	let user : any;
+
+	myProfileDataStore.subscribe(val => {
+		user = val;
 	})
-	function editProfile() {
-		console.log(user);
-		isEdit = false;
+
+	async function submitFormImg() {
+		const formData = new FormData();
+		formData.append('file', fileInput.files[0]);
+		UpdateProfileImg(formData)
+		.then((res) => {
+			UpdateProfileToStore(res.data);
+		});
+	}
+
+	async function submitFormLogin() {
+		UpdateProfileLogin(user.login)
+		.then((res) => {
+			UpdateProfileToStore(res.data);
+			isEditLogin = false;
+		});
 	}
 </script>
 
-<div>
-	{#if user}
-		{#if !isEdit}
-			<img src={user.img_link} alt="" width="300">
-			<div>Login : {user.login}</div>
-			<div>Prenom : {user.first_name}</div>
-			<div>Nom : {user.last_name}</div>
-			<div>Email : {user.email}</div>
-			<button on:click={() => isEdit = true}>Modifier</button>
-		{:else}
-			<form action="" method="post">
-				<img src={user.img_link} alt="" width="300">
-				<div>
-					<input type="text" bind:value={user.login}>
+{#if user.first_name}
+	<div class="container mx-auto flex items-center flex-col">
+		<Card padding="sm" size="md">
+			<div class="flex items-center space-x-4">
+				<div class="flex">
+					<Avatar size="xl" src={user.img_link}/>
+					<MenuButton/>
+					<Dropdown>
+						<DropdownItem defaultClass="flex">
+							<label for="file" class="w-full cursor-pointer p-1">
+								Edit
+								<input type="file" bind:this={fileInput} on:change={submitFormImg} class="hidden" name="file" id="file">
+							</label>
+						</DropdownItem>
+					</Dropdown>
 				</div>
-				<div>
-					<input type="text" bind:value={user.first_name}>
+				<div class="space-y-1 font-medium dark:text-white">
+					<div class="flex">
+						{#if !isEditLogin}
+							<div>{user.login}</div>
+							<button on:click={() => isEditLogin = true}><img src="/stylo-modifier.png" alt=""></button>
+						{:else}
+							<input type="text" bind:value={user.login}>
+							<button on:click={() => isEditLogin = false}><img src="/signe-de-la-croix.png" alt="" width="24"></button>
+							<button on:click={submitFormLogin}><img src="/check.png" alt="" width="24"></button>
+						{/if}
+					</div>
+					<div>Firstname: {user.first_name}</div>
+					<div>Lastname: {user.last_name}</div>
+					<div>Email: {user.email}</div>
 				</div>
-				<div>
-					<input type="text" bind:value={user.last_name}>
-				</div>
-				<div>
-					<input type="text" bind:value={user.email}>
-				</div>
-				<button on:click={editProfile}>Terminer</button>
-			</form>
-			<button on:click={() => isEdit = false}>Cancel</button>
-		{/if}
+			</div>
+		</Card>
+	</div>
 
-	{/if}
-</div>
+{/if}

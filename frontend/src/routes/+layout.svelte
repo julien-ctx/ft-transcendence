@@ -6,11 +6,9 @@
 </script> 
 
 <div>
-	<!-- {#if &#x24;page.url.pathname != &quot;/login&quot;} -->
-		<!-- <header></header>	 -->
-	<!-- {/if} -->
-
-	<Header />
+	{#if $page.url.pathname != "/login"}
+		<Header/>
+	{/if}
 	<main>
 		<slot></slot>
 	</main>

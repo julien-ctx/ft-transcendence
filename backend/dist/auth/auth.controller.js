@@ -25,7 +25,13 @@ let AuthController = class AuthController {
     }
     async signin(dto) {
         try {
-            const user = await this.prisma.user.findUnique({ where: { id_user: dto.id } });
+            const user = await this.prisma.user.findUnique({ where: {
+                    id_user: dto.id
+                },
+                include: {
+                    notif_friend: true
+                }
+            });
             if (user) {
                 return this.authService.signin(dto);
             }

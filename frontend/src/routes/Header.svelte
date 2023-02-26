@@ -1,15 +1,16 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
-    import { AuthGuard } from '../modules/AuthGuard';
-    import { profileDataStore } from '../store';
+    import { AuthGuard } from '../lib/AuthGuard';
+    import { myProfileDataStore } from '../store';
     import { UpdateProfileConnected, UpdateProfileToStore } from '$lib/profileUtils';
     import AvatarProfile from '../modules/avatarProfile.svelte';
     import SearchUsers from '../modules/searchUsers.svelte';
+    import Notifications from '../modules/notifications.svelte';
 
 	let user : any;
 
-	profileDataStore.subscribe(val => {
+	myProfileDataStore.subscribe(val => {
 		user = val;
 	});
 
@@ -17,12 +18,12 @@
 		AuthGuard()
 		.then((res) => {
 			UpdateProfileToStore(res.data);
-			if (!user.connected) {
-				UpdateProfileConnected(true)
-				.then((res) => {
-					UpdateProfileToStore(res.data);
-				})
-			}
+			// if (!user.connected) {
+			// 	UpdateProfileConnected(true)
+			// 	.then((res) => {
+			// 		UpdateProfileToStore(res.data);
+			// 	})
+			// }
 		});
 	})
 
@@ -41,6 +42,7 @@
 			</ul>
 		</nav>
 		<SearchUsers />
+		<Notifications />
 		<AvatarProfile />
 	</header>
 {/if}

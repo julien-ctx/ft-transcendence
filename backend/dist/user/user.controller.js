@@ -20,22 +20,14 @@ const user_service_1 = require("./user.service");
 const multer_1 = require("multer");
 const path_1 = require("path");
 const config_1 = require("@nestjs/config");
-const fs_1 = require("fs");
 const user_dto_1 = require("./dto/user.dto");
 const user_decorator_1 = require("./user.decorator");
 let UserController = class UserController {
     constructor(userService) {
         this.userService = userService;
     }
-    getMe(user) {
-        try {
-            (0, fs_1.accessSync)(user.img_link);
-            return user;
-        }
-        catch (err) {
-            const tmp = Object.assign(Object.assign({}, user), { img_link: "/avatar.png" });
-            return tmp;
-        }
+    getMe(userReq) {
+        return this.userService.getOne(userReq.id);
     }
     getAll(user) {
         return this.userService.getAll(user.id);
@@ -45,13 +37,13 @@ let UserController = class UserController {
         return this.userService.getOne(idNumber);
     }
     updateImg(file, user) {
-        return this.userService.updateMe({ img_link: file.path }, user.id);
+        return this.userService.updateUser({ img_link: file.path }, user.id);
     }
     updateLogin(login, user) {
-        return this.userService.updateMe({ login }, user.id);
+        return this.userService.updateUser({ login }, user.id);
     }
     updateConnected(connected, user) {
-        return this.userService.updateMe({ connected }, user.id);
+        return this.userService.updateUser({ connected }, user.id);
     }
 };
 __decorate([

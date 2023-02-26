@@ -1,5 +1,5 @@
 import { getJwt } from "$lib/jwtUtils";
-import { profileDataStore } from "../store";
+import { myNotifLength, myProfileDataStore } from "../store";
 import axios from "axios"
 
 export async function UpdateProfileImg(formData : any) {
@@ -11,13 +11,9 @@ export async function UpdateProfileLogin(login : any) {
 }
 
 export function UpdateProfileToStore(params : any) {
-	let tmp : any;
-	tmp = params
-	if (tmp.img_link.includes("/Users")) {
-		const path = tmp.img_link.split("/");
-		tmp.img_link = `/${path[path.length - 1]}`
-	}
-	profileDataStore.set(tmp);
+	myProfileDataStore.set(params);
+	if (params.notif_friend)
+		myNotifLength.set(params.notif_friend.length as number)
 }
 
 export function UpdateProfileConnected(connected : boolean) {

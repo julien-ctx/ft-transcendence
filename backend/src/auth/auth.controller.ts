@@ -11,14 +11,17 @@ export class AuthController{
 	@Post("signin")
 	async signin(@Body() dto: AuthDto) {
 		try {
-			const user = await this.prisma.user.findUnique( { where : {id_user : dto.id} });
+			const user = await this.prisma.user.findUnique(
+				{ where : {
+					id_user : dto.id
+				},
+				include : {
+					notif_friend: true
+				}
+			});
 			if (user) {
-				console.log(user);
-				
 				return this.authService.signin(dto);
 			} else {
-				console.log(user);
-
 				return this.authService.signup(dto);
 			}
 		} catch (err) {

@@ -36,4 +36,8 @@ export class UserDto {
 
 	@IsBoolean()
 	connected : boolean
+
+	friend_id : number[]
+
+	notif_friend : []
 }

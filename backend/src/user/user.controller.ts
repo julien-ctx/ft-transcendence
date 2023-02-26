@@ -5,7 +5,6 @@ import { UserService } from "./user.service";
 import { diskStorage } from "multer";
 import { extname } from "path";
 import { ConfigService } from "@nestjs/config";
-import { access, accessSync, createReadStream } from "fs";
 import { UserDto } from "./dto/user.dto";
 import { User } from "./user.decorator";
 
@@ -15,14 +14,8 @@ export class UserController{
 	constructor(private userService : UserService) {}
 	
 	@Get("me")
-	getMe(@User() user : UserDto) {
-		try {
-			accessSync(user.img_link);
-			return user;
-		} catch (err) {
-			const tmp = {...user, img_link: "/avatar.png"};
-			return tmp;
-		}
+	getMe(@User() userReq : UserDto) {
+		return this.userService.getOne(userReq.id);
 	}
 
 	@Get("getAll")
@@ -47,16 +40,16 @@ export class UserController{
 		}),
 	}))
 	updateImg(@UploadedFile() file: Express.Multer.File, @User() user : UserDto) {		
-		return this.userService.updateMe({ img_link: file.path }, user.id);
+		return this.userService.updateUser({ img_link: file.path }, user.id);
 	}
 
 	@Post("updateLogin")
 	updateLogin(@Body("login") login : any, @User() user : UserDto) {
-		return this.userService.updateMe({ login }, user.id);
+		return this.userService.updateUser({ login }, user.id);
 	}
 
 	@Post("updateConnected")
 	updateConnected(@Body("connected") connected : any, @User() user : UserDto) {
-		return this.userService.updateMe({ connected }, user.id);
+		return this.userService.updateUser({ connected }, user.id);
 	}
 }

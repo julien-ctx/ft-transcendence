@@ -20,15 +20,12 @@
 
 	onMount(() => {
 		socket = io('http://localhost:4000', {
-			path: "/notifFriend",
+			path: "/notif_friend",
 			query : { token : getJwt()}
 		});
 
-		socket.on('notification_friend', (data : any) => {
+		socket.on('event_friend', (data : any) => {
 			UpdateProfileToStore(data);			
-		});
-		socket.on("event_friend", (data : any) => {		
-			UpdateProfileToStore(data);
 		});
 	});
 

@@ -1,10 +1,11 @@
 <script lang="ts">
     import { GetOneUser } from '$lib/userUtils';
-	import { Avatar, Card } from "flowbite-svelte";
+	import { Avatar, Card, Button } from "flowbite-svelte";
     import { onMount } from 'svelte';
     import { myProfileDataStore, userProfileDataStore } from '$lib/store/user';
 	import io from 'socket.io-client';
     import { getJwt } from '$lib/jwtUtils';
+    import { UpdateProfileToStore } from '$lib/profileUtils';
 
 	let isMount : boolean = false;
 	let hasId : boolean = false;
@@ -32,18 +33,23 @@
 			});
 		}
 		socket = io('http://localhost:4000', {
-			path: "/notifFriend",
+			path: "/notif_friend",
 			query : { token : getJwt()}
+		});
+		socket.on("event_friend", (data : any) => {
+			UpdateProfileToStore(data);					
 		});
 	})
 
-	function handleClickRequestFriend() {
-		socket.emit('add_friend', { user_send : myProfile, user_receive : userProfile});
+	function handleClickAcceptFriend() {
+		let notif : any;
+		myProfile.notif_friend.forEach((elem : any) => {
+			if (elem.id_user_send == userProfile.id)
+				notif = elem;
+		});
+		socket.emit("accept_friend", { user : myProfile, notif});
 	}
 
-	function handleClickDeleteFriend() {
-		socket.emit("delete_friend", {user_send : myProfile, user_receive : userProfile});
-	}
 </script>
 
 {#if isMount}
@@ -58,14 +64,15 @@
 					<div>Email: {userProfile.email}</div>
 				</div>
 			</div>
-			{#if myProfile.req_friend.includes(userProfile.id)}
-				<div>Demande en attente</div>
-			{:else if myProfile.friend_id.includes(userProfile.id)}
-				<button on:click={handleClickDeleteFriend}>Delete friend</button>
+			{#if myProfile.req_send_friend && myProfile.req_send_friend.includes(userProfile.id)}
+				Pending request friend
+			{:else if myProfile.req_received_friend && myProfile.req_received_friend.includes(userProfile.id)}
+				<Button on:click={handleClickAcceptFriend}>Accept request friend</Button>
+			{:else if myProfile.friend_id && myProfile.friend_id.includes(userProfile.id)}
+				<Button on:click={() => socket.emit('delete_friend', { user_send : myProfile, user_receive : userProfile})}>Delete friend</Button>
 			{:else}
-				<button on:click={handleClickRequestFriend}>Add friend</button>
+				<Button on:click={() => socket.emit('add_friend', { user_send : myProfile, user_receive : userProfile})}>Add friend</Button>
 			{/if}
-
 		</Card>
 	</div>
 {/if}

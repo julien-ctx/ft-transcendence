@@ -3,7 +3,7 @@
 	import { onMount } from 'svelte';
     import { AuthGuard } from '../lib/AuthGuard';
     import { myProfileDataStore } from '$lib/store/user';
-    import { UpdateProfileConnected, UpdateProfileToStore } from '$lib/profileUtils';
+    import { UpdateProfileToStore } from '$lib/profileUtils';
     import AvatarProfile from '../modules/headerComponent/avatarProfile.svelte';
     import SearchUsers from '../modules/headerComponent/searchComponent/searchUsers.svelte';
     import Notifications from '../modules/headerComponent/notifications.svelte';

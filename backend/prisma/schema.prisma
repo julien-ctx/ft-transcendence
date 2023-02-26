@@ -20,6 +20,26 @@ model User {
   notif_friend NotifFriend[]
   friend_id Int[]
   req_friend Int[]
+  
+  RoomToUser RoomToUser[]
+}
+
+model Room {
+  id          Int    @id @default(autoincrement())
+  name        String @unique
+  description String @default("")
+  status      String
+  password    String @default("")
+
+  RoomToUser RoomToUser[]
+}
+
+model RoomToUser {
+  id      Int  @id @default(autoincrement())
+  room    Room @relation(fields: [id_room], references: [id])
+  id_room Int
+  user    User @relation(fields: [id_user], references: [id_user])
+  id_user Int
 }
 
 model NotifFriend {

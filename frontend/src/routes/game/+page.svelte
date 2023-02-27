@@ -1,13 +1,12 @@
 <script lang="ts">
-    import { onMount } from "svelte";
+	import { onMount } from "svelte";
 	import { AuthGuard } from "../../lib/AuthGuard";
     import { goto } from "$app/navigation";
     import { removeJwt } from "$lib/jwtUtils";
 	import { Button } from 'flowbite-svelte';
 	import io from 'socket.io-client';
 	import { Paddle, Ball } from '../../../../backend/src/game/objects/objects';
-    import { draw } from "svelte/transition";
-
+	
 	let isLogged = false;
 	onMount(async () => {
 		AuthGuard()
@@ -22,13 +21,13 @@
 
 	function initData(canvas: HTMLCanvasElement) {
 		const rightPaddle = new Paddle (
-			canvas.width - canvas.width * 0.01,
+			canvas.width - canvas.width * 0.015,
 			canvas.height - canvas.height * 0.5,
 			canvas.width * 0.005,
 			canvas.height * 0.15,
 		);
 		const leftPaddle = new Paddle (
-			canvas.width * 0.01,
+			canvas.width * 0.015,
 			canvas.height * 0.5,
 			canvas.width * 0.005,
 			canvas.height * 0.15,
@@ -71,14 +70,32 @@
 		if (ctx) {
 			ctx.fillStyle = 'black';
 			ctx.fillRect(0, 0, canvas.width, canvas.height);
+			canvas.style.border = '5px solid #999';
 			socket.on('objectSizeSet', (objects: { rightPaddle: Paddle, leftPaddle: Paddle, ball: Ball }) => {
 				drawObjects(objects, ctx, canvas)
-			})
-			canvas.style.border = '5px solid #999';
+				canvas.addEventListener('mousemove', (event) => {
+					let obj = objects;
+					let mouseY = event.clientY - canvas.offsetTop;
+					if (mouseY <= obj.leftPaddle.height / 2)
+						mouseY = obj.leftPaddle.height / 2;
+					else if (mouseY >= canvas.height - (obj.leftPaddle.height / 2))
+						mouseY = canvas.height - (obj.leftPaddle.height / 2)
+					obj.leftPaddle.y = mouseY;
+					ctx.fillStyle = 'black';
+					ctx.fillRect(0, 0, canvas.width, canvas.height);
+					socket.emit('setObjectSize', {obj});	
+					drawObjects(obj, ctx, canvas);
+				});
+			});
 		}
 	});
-
 </script>
+
+<style>
+	canvas:hover {
+  		cursor: none;
+	}
+</style>
 
 <canvas id="main-game-canvas" class="game-canvas">
 	<p>Game started</p>

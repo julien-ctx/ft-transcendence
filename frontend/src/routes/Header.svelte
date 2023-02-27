@@ -8,7 +8,7 @@
     import SearchUsers from '../modules/headerComponent/searchComponent/searchUsers.svelte';
     import Notifications from '../modules/headerComponent/notifications.svelte';
     import { goto } from '$app/navigation';
-    import { removeJwt } from '$lib/jwtUtils';
+    import { getJwt, removeJwt } from '$lib/jwtUtils';
 
 	let user : any;
 
@@ -16,8 +16,8 @@
 		user = val;
 	});
 
-	onMount(() => {
-		AuthGuard()
+	onMount(async () => {
+		await AuthGuard()
 		.then((res) => {
 			UpdateProfileToStore(res.data);
 			// if (!user.connected) {

@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { Button, Dropdown, DropdownDivider, Toast } from "flowbite-svelte";
+    import { Avatar, Button, Dropdown, DropdownDivider, Card } from "flowbite-svelte";
 	import io from 'socket.io-client';
 	import { onMount } from 'svelte';
     import { myNotifLength, myProfileDataStore } from '$lib/store/user';
@@ -15,7 +15,7 @@
 	})
 
 	myNotifLength.subscribe(val => {
-		countNotif = val;
+		countNotif = val;		
 	})
 
 	onMount(() => {
@@ -39,15 +39,22 @@
 </script>
 
 <div class="relative">
-	<p class="absolute bg-red-300 rounded-full" style="top: -10px; right: -10px; padding: 5px 10px;">{countNotif}</p>
+	{#if countNotif > 0}
+		<p class="absolute bg-red-300 rounded-full" style="top: -10px; right: -10px; padding: 5px 10px;">{countNotif}</p>	
+	{/if}
 	<Button>
 		Notifications
 	</Button>
 	<Dropdown>
-		{#each myProfile.notif_friend as  notif}
-			<div>Demande d'ami de {notif.login_send}</div>
-			<button on:click={() => acceptReq(notif)}>Accepter</button>
-			<button on:click={() => refuseReq(notif)}>Refuser</button>
+		{#each myProfile.notification as notif}
+			<Card horizontal size="xl">
+				<Avatar src={notif.img_link} class="object-cover"/>
+				{#if notif.type == 0}
+					<div>Demande d'ami de {notif.login_send}</div>
+					<Button on:click={() => acceptReq(notif)}>Accepter</Button>
+					<Button on:click={() => refuseReq(notif)}>Refuser</Button>
+				{/if}
+			</Card>
 			<DropdownDivider/>
 		{/each}
 	</Dropdown>

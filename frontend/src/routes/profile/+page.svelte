@@ -100,29 +100,35 @@
 			{/each}
 			<hr>
 			Pending request
-			{#each myProfile.notif_friend as notif}
-				<div class="flex direction-row m-4 gap-4 justify-between">
-					<Avatar src={notif.img_link} class="object-cover"/>
-					<div class="self-end">{notif.login_send}</div>
-					<Button href={`/users?id=${notif.id_user_send}`}>View profile</Button>
-					<Button on:click={() => socket.emit("accept_friend", { user : myProfile, notif})}>Accept friend</Button>
-					<Button on:click={() => socket.emit("refuse_friend", {user : myProfile, notif})}>Refuse friend</Button>
-				</div>
-			{/each}
-			<hr>
-			Request send
-			{#each myProfile.req_send_friend as req}
-				{#each allUsers as user}
-					{#if user.id == req}
+			{#if myProfile.notification}
+				{#each myProfile.notification as notif}
+					{#if notif.type == 0}
 						<div class="flex direction-row m-4 gap-4 justify-between">
-							<Avatar src={user.img_link} class="object-cover"/>
-							<div class="self-end">{user.login}</div>
-							<Button href={`/users?id=${user.id}`}>View profile</Button>
-							<Button on:click={() => socket.emit("cancel_friend", {id_user_send : myProfile.id, id_user_receive : user.id})}>Cancel request</Button>
+							<Avatar src={notif.img_link} class="object-cover"/>
+							<div class="self-end">{notif.login_send}</div>
+							<Button href={`/users?id=${notif.id_user_send}`}>View profile</Button>
+							<Button on:click={() => socket.emit("accept_friend", { user : myProfile, notif})}>Accept friend</Button>
+							<Button on:click={() => socket.emit("refuse_friend", {user : myProfile, notif})}>Refuse friend</Button>
 						</div>
 					{/if}
 				{/each}
-			{/each}
+			{/if}
+			<hr>
+			Request send
+			{#if myProfile.req_send_friend}
+				{#each myProfile.req_send_friend as req}
+					{#each allUsers as user}
+						{#if user.id == req}
+							<div class="flex direction-row m-4 gap-4 justify-between">
+								<Avatar src={user.img_link} class="object-cover"/>
+								<div class="self-end">{user.login}</div>
+								<Button href={`/users?id=${user.id}`}>View profile</Button>
+								<Button on:click={() => socket.emit("cancel_friend", {id_user_send : myProfile.id, id_user_receive : user.id})}>Cancel request</Button>
+							</div>
+						{/if}
+					{/each}
+				{/each}
+			{/if}
 		</Card>
 	</div>
 {/if}

@@ -1,5 +1,4 @@
 import { Body, Controller, Get, Param, Post, Req, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
-import { AuthGuard } from "@nestjs/passport";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { UserService } from "./user.service";
 import { diskStorage } from "multer";
@@ -7,12 +6,13 @@ import { extname } from "path";
 import { ConfigService } from "@nestjs/config";
 import { UserDto } from "./dto/user.dto";
 import { User } from "./user.decorator";
+import { JwtAuthGuard } from "src/auth/guard/jwt-auth.guard";
 
-@UseGuards(AuthGuard("jwt"))
+@UseGuards(JwtAuthGuard)
 @Controller("users")
 export class UserController{
 	constructor(private userService : UserService) {}
-	
+
 	@Get("me")
 	getMe(@User() userReq : UserDto) {
 		return this.userService.getOne(userReq.id);

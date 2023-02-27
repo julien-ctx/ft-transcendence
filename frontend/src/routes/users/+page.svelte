@@ -43,8 +43,8 @@
 
 	function handleClickAcceptFriend() {
 		let notif : any;
-		myProfile.notif_friend.forEach((elem : any) => {
-			if (elem.id_user_send == userProfile.id)
+		myProfile.notification.forEach((elem : any) => {
+			if (elem.type == 0 && elem.id_user_send == userProfile.id)
 				notif = elem;
 		});
 		socket.emit("accept_friend", { user : myProfile, notif});

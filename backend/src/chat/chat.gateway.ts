@@ -208,12 +208,18 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 			this.Rooms = [...this.Rooms, roomInstance];
 		}
 		else {
-			roomInstance.addUser(User, client);
+			if (!roomInstance.isHere(User))
+				roomInstance.addUser(User, client);
 		}
 		console.log(this.Rooms);
 
+		// console.log(Room.Message);
+
 		Room.Message.forEach((message) => {
-			client.emit('getMessages', message.content);
+			client.emit('getMessages', {
+				message : message.content,
+				user : message.id_user,
+			});
 		});
 	}
 
@@ -231,13 +237,28 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 
 		const roomInstance = this.findRoom(Room.name);
 		roomInstance.ClientUser.forEach((elem) => {
-			elem.Client.emit('getMessages', message.content);
+			elem.Client.emit('getMessages', {
+				message : message.content,
+				user : elem.User.id_user,
+			}); 
+			// elem.Client.emit('getMessages', message.content); 
 		});
 		// client.emit('getMessages', message.content);
 	}
 
 	handleDisconnect(client: any) {
-		// this.client.splice(this.client.indexOf(client), 1);
+		const token = client.handshake.query.token as string;
+		const user = this.jwt.decode(token);
+		if (user === undefined) return;
+
+		const User = this.prisma.user.findUnique({
+			where: {
+				id_user: user['id'],
+			}
+		});
+		this.Rooms.forEach((room) => {
+			room.removeUser(User);
+		});
 	}
 
 	findRoom(name: string) {

@@ -70,6 +70,10 @@ export class UserService {
 		});
 	}
 
+	async getAllHimSelf() {
+		return await this.prisma.user.findMany();
+	}
+
 	async addNotifFriend(userSend : any, userReceive : any) {
 		try {
 			await this.prisma.notification.create({

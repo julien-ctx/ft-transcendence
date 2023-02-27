@@ -19,4 +19,10 @@ export class RoomClass {
 	addUser(User : any, Client : any) {
 		this.ClientUser.push({User, Client});
 	}
+
+	removeUser(User : any) {
+		if (this.isHere(User)) {
+			this.deleteUser(User);
+		}
+	}
 }

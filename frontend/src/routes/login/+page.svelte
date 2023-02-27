@@ -2,7 +2,7 @@
     import { onMount } from "svelte";
 	import axios from "axios";
     import { goto } from "$app/navigation";
-    import { setJwt } from "$lib/jwtUtils";
+    import { getJwt, setJwt } from "$lib/jwtUtils";
 
 	onMount(async () => {
 		const urlParams = new URLSearchParams(window.location.search);
@@ -16,15 +16,14 @@
 				code : code,
 				redirect_uri : "http://localhost:5173/login",
 			})
-			.then((res) => {
-				axios.get("https://api.intra.42.fr/v2/me", { 
-					headers : 
-					{
+			.then(async (res) => {
+				await axios.get("https://api.intra.42.fr/v2/me", { 
+					headers :  {
 						Authorization: `Bearer ${res.data.access_token}`
 					}
 				})
-				.then((res) => {
-					axios.post("http://localhost:4000/auth/signin", {
+				.then(async (res) => {
+					await axios.post("http://localhost:4000/auth/signin", {
 						id: res.data.id,
 						email: res.data.email,
 						login: res.data.login,

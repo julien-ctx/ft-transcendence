@@ -1,4 +1,4 @@
-import { Req, UseGuards } from "@nestjs/common";
+import { UseGuards } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { WebSocketGateway, WebSocketServer, OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, MessageBody, ConnectedSocket } from "@nestjs/websockets";
 import { Server } from "socket.io";
@@ -21,7 +21,6 @@ export class UserFriendGateway implements OnGatewayInit, OnGatewayConnection, On
 		console.log("Socket server initialized");
 	}
 
-
 	handleConnection(@ConnectedSocket() client: any) {
 		const token = client.handshake.query.token as string;
 		const user = this.jwt.decode(token);
@@ -39,7 +38,7 @@ export class UserFriendGateway implements OnGatewayInit, OnGatewayConnection, On
 	@UseGuards(UserGuardGateway)
 	@SubscribeMessage("add_friend")
 	async addFriend(@MessageBody() body : any) {	
-		//Update user receive, create notif friend and connect this with array notif_friend
+		//Update user receive, create notif friend and connect this with array notifications
 		await this.userService.addNotifFriend(body.user_send, body.user_receive)
 		.then((res) => {
 			this.emitToClient(res);
@@ -61,12 +60,12 @@ export class UserFriendGateway implements OnGatewayInit, OnGatewayConnection, On
 	async cancelFriend(@MessageBody() body : any) {
 		//Get user receive and delete current notification friend and delete a current req friend
 		await this.userService.getOne(body.id_user_receive)
-		.then((res) => {
-			const idNotif = this.getIdNotifFriend(res.notif_friend, body.id_user_send);
+		.then(async (res) => {
+			const idNotif = this.getIdNotifFriend(res.notification, body.id_user_send);
 			const arr = this.filterId(res.req_received_friend, body.id_user_send);
 			if (idNotif != undefined) {
-				this.userService.updateUser({
-					notif_friend : {
+				await this.userService.updateUser({
+					notification : {
 						delete : {
 							id : idNotif
 						}
@@ -83,9 +82,9 @@ export class UserFriendGateway implements OnGatewayInit, OnGatewayConnection, On
 
 		//Get user send and delete current req friend
 		await this.userService.getOne(body.id_user_send)
-		.then((res) => {
+		.then(async (res) => {
 			const arr = this.filterId(res.req_send_friend, body.id_user_receive);
-			this.userService.updateUser({
+			await this.userService.updateUser({
 				req_send_friend : {
 					set : arr
 				}
@@ -102,10 +101,10 @@ export class UserFriendGateway implements OnGatewayInit, OnGatewayConnection, On
 	async acceptFriend(@MessageBody() body : any) {
 		//Update user receive req friend, delete notif and push in friend_id is_user_receive
 		await this.userService.getOne(body.user.id)
-		.then((res) => {
+		.then(async (res) => {
 			const arr = this.filterId(res.req_received_friend as [number], body.notif.id_user_send);
-			this.userService.updateUser({
-				notif_friend : {
+			await this.userService.updateUser({
+				notification : {
 					delete : {
 						id : body.notif.id
 					}
@@ -124,9 +123,9 @@ export class UserFriendGateway implements OnGatewayInit, OnGatewayConnection, On
 
 		//Update user send a req friend, push into friend_id a id_user_receive and delete req_send_friend for this id_user_receive
 		await this.userService.getOne(body.notif.id_user_send)
-		.then((res) => {
+		.then(async (res) => {
 			const arr = this.filterId(res.req_send_friend as [number], body.user.id);
-			this.userService.updateUser({
+			await this.userService.updateUser({
 				friend_id : {
 					push: body.notif.id_user_receive
 				},
@@ -145,10 +144,10 @@ export class UserFriendGateway implements OnGatewayInit, OnGatewayConnection, On
 	async refuseFriend(@MessageBody() body : any) {	
 		//Update user receive a friend request and delete current notif friend
 		await this.userService.getOne(body.user.id)
-		.then((res) => {
+		.then(async (res) => {
 			const arr = this.filterId(res.req_received_friend as [number], body.notif.id_user_send);
-			this.userService.updateUser({
-				notif_friend : {
+			await this.userService.updateUser({
+				notification : {
 					delete : {
 						id : body.notif.id
 					}
@@ -181,9 +180,9 @@ export class UserFriendGateway implements OnGatewayInit, OnGatewayConnection, On
 	@SubscribeMessage("delete_friend")
 	async deleteFriend(@MessageBody() body : any) {
 		await this.userService.getOne(body.user_send.id)
-		.then((res) => {
+		.then(async (res) => {
 			const arr = this.filterId(res.friend_id as [number], body.user_receive.id);
-			this.userService.updateUser({
+			await this.userService.updateUser({
 				friend_id : {
 					set : arr
 				}
@@ -217,7 +216,7 @@ export class UserFriendGateway implements OnGatewayInit, OnGatewayConnection, On
 
 	getIdNotifFriend(arr : any , id : number) {
 		for (let i = 0; i < arr.length; i++) {
-			if (arr[i].id_user_send === id)
+			if (arr[i].id_user_send === id && arr[i].type == 0)
 				return arr[i].id
 		}
 		return undefined;

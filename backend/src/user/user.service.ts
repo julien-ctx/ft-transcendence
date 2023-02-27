@@ -1,7 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { NotifFriend, User, Prisma } from "@prisma/client";
 import { PrismaService } from "src/prisma/prisma.service";
-import { UserDto } from "./dto/user.dto";
 
 @Injectable()
 export class UserService {
@@ -16,7 +14,7 @@ export class UserService {
 				...params,
 			},
 			include : {
-				notif_friend: true
+				notification: true
 			}
 		});
 	}
@@ -27,7 +25,7 @@ export class UserService {
 				id
 			},
 			include : {
-				notif_friend: true
+				notification: true
 			}
 		});
 	}
@@ -40,14 +38,14 @@ export class UserService {
 				}
 			},
 			include : {
-				notif_friend: true
+				notification: true
 			}
 		});
 	}
 
 	async addNotifFriend(userSend : any, userReceive : any) {
 		try {
-			await this.prisma.notifFriend.create({
+			await this.prisma.notification.create({
 				data : {
 					user : {
 						connect : {
@@ -56,7 +54,8 @@ export class UserService {
 					},
 					id_user_send : userSend.id,
 					login_send : userSend.login,
-					img_link: userSend.img_link
+					img_link: userSend.img_link,
+					type : 0
 				}
 			});
 			return await this.updateUser({

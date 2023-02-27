@@ -13,9 +13,11 @@ exports.ChatService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
 const argon2 = require("argon2");
+const user_service_1 = require("../user/user.service");
 let ChatService = class ChatService {
-    constructor(prisma) {
+    constructor(prisma, UserService) {
         this.prisma = prisma;
+        this.UserService = UserService;
     }
     async alreadyExist(name) {
         const room = await this.prisma.room.findUnique({
@@ -33,10 +35,24 @@ let ChatService = class ChatService {
         const verify = await argon2.verify(hash, password);
         return verify;
     }
+    async getRooms(id) {
+        const relation = await this.prisma.roomToUser.findMany({
+            where: {
+                id_user: id,
+            },
+            include: {
+                room: true,
+            }
+        });
+        const rooms = relation.map((roomToUser) => roomToUser.room.name);
+        console.log(rooms);
+        return rooms;
+    }
 };
 ChatService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        user_service_1.UserService])
 ], ChatService);
 exports.ChatService = ChatService;
 //# sourceMappingURL=chat.service.js.map

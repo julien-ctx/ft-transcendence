@@ -23,7 +23,8 @@ let UserService = class UserService {
             },
             data: Object.assign({}, params),
             include: {
-                notif_friend: true
+                notif_friend: true,
+                RoomToUser: true,
             }
         });
     }
@@ -33,7 +34,19 @@ let UserService = class UserService {
                 id
             },
             include: {
-                notif_friend: true
+                notif_friend: true,
+                RoomToUser: true,
+            }
+        });
+    }
+    async getOneById(id) {
+        return await this.prisma.user.findUnique({
+            where: {
+                id_user: id
+            },
+            include: {
+                notif_friend: true,
+                RoomToUser: true,
             }
         });
     }
@@ -45,7 +58,8 @@ let UserService = class UserService {
                 }
             },
             include: {
-                notif_friend: true
+                notif_friend: true,
+                RoomToUser: true,
             }
         });
     }

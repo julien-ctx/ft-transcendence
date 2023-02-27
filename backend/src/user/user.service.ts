@@ -16,7 +16,8 @@ export class UserService {
 				...params,
 			},
 			include : {
-				notif_friend: true
+				notif_friend: true,
+				RoomToUser: true,
 			}
 		});
 	}
@@ -27,7 +28,20 @@ export class UserService {
 				id
 			},
 			include : {
-				notif_friend: true
+				notif_friend: true,
+				RoomToUser: true,
+			}
+		});
+	}
+
+	async getOneById(id : number) {
+		return await this.prisma.user.findUnique({
+			where: {
+				id_user: id
+			},
+			include : {
+				notif_friend: true,
+				RoomToUser: true,
 			}
 		});
 	}
@@ -40,7 +54,8 @@ export class UserService {
 				}
 			},
 			include : {
-				notif_friend: true
+				notif_friend: true,
+				RoomToUser: true,
 			}
 		});
 	}

@@ -21,26 +21,27 @@ const auth_service_1 = require("../auth/auth.service");
 const errors_handle_1 = require("./errors.handle");
 const chat_service_1 = require("./chat.service");
 const prisma_service_1 = require("../prisma/prisma.service");
+const user_service_1 = require("../user/user.service");
 let ChatGateway = class ChatGateway {
-    constructor(jwt, config, Auth, chatService, prisma) {
+    constructor(jwt, config, Auth, chatService, prisma, Service) {
         this.jwt = jwt;
         this.config = config;
         this.Auth = Auth;
         this.chatService = chatService;
         this.prisma = prisma;
-        this.client = [];
+        this.Service = Service;
+        this.Client = [];
     }
     async handleConnection(client, ...args) {
         const token = client.handshake.query.token;
-        const user = await this.Auth.me(token);
+        const user = this.jwt.decode(token);
         if (user === undefined)
             return;
-        console.log('Conncted user :', { user });
-        this.client.push(user);
+        this.Client.push({ user, client });
     }
     async handleCreateRoom(client, data) {
         const token = client.handshake.query.token;
-        const user = await this.Auth.me(token);
+        const user = await this.jwt.decode(token);
         if (user === undefined)
             return;
         let err = new errors_handle_1.errors(data.roomStatus, data.roomName, data.roomDesc, data.roomPass, data.roomPassConfirm);
@@ -87,12 +88,17 @@ let ChatGateway = class ChatGateway {
             }
         });
         client.emit('successCreate');
+        client.emit('rooms', room.name);
     }
     async handleJoinRoom(client, data) {
         const token = client.handshake.query.token;
-        const user = await this.Auth.me(token);
+        const user = this.jwt.decode(token);
         if (user === undefined)
             return;
+        else if (data.roomName === '') {
+            client.emit('errors', { name: 'Room name is required' });
+            return;
+        }
         const room = await this.prisma.room.findUnique({
             where: {
                 name: data.roomName,
@@ -104,8 +110,18 @@ let ChatGateway = class ChatGateway {
                 id_user: idUser,
             }
         });
+        let alreadyJoin = await this.prisma.roomToUser.findMany({
+            where: {
+                id_user: User.id_user,
+                id_room: room.id,
+            }
+        });
         if (room === null) {
             client.emit('errors', { already: 'Room does not exist' });
+            return;
+        }
+        else if (alreadyJoin.length > 0) {
+            client.emit('errors', { already: 'You already join this room' });
             return;
         }
         if (room.status === 'Protected' && data.roomPass === '') {
@@ -118,26 +134,8 @@ let ChatGateway = class ChatGateway {
                 client.emit('errors', { pass: 'Wrong password' });
                 return;
             }
-            else {
-                const relation = await this.prisma.roomToUser.create({
-                    data: {
-                        room: {
-                            connect: {
-                                id: room.id,
-                            }
-                        },
-                        user: {
-                            connect: {
-                                id: User.id,
-                            }
-                        },
-                    }
-                });
-                client.emit('successJoin');
-                return;
-            }
         }
-        const relation = await this.prisma.roomToUser.create({
+        await this.prisma.roomToUser.create({
             data: {
                 room: {
                     connect: {
@@ -152,11 +150,22 @@ let ChatGateway = class ChatGateway {
             }
         });
         client.emit('successJoin');
+        client.emit('rooms', room.name);
         return;
     }
+    handleMessage(client, data) {
+        const token = client.handshake.query.token;
+        const user = this.jwt.decode(token);
+        if (user === undefined)
+            return;
+        const idUser = user['id'];
+        const User = this.prisma.user.findUnique({
+            where: {
+                id_user: idUser,
+            }
+        });
+    }
     handleDisconnect(client) {
-        console.log('Client disconnected');
-        this.client.splice(this.client.indexOf(client), 1);
     }
 };
 __decorate([
@@ -179,6 +188,14 @@ __decorate([
     __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", Promise)
 ], ChatGateway.prototype, "handleJoinRoom", null);
+__decorate([
+    (0, websockets_1.SubscribeMessage)('Message'),
+    __param(0, (0, websockets_1.ConnectedSocket)()),
+    __param(1, (0, websockets_1.MessageBody)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", void 0)
+], ChatGateway.prototype, "handleMessage", null);
 ChatGateway = __decorate([
     (0, websockets_1.WebSocketGateway)({
         path: '/chat',
@@ -190,7 +207,8 @@ ChatGateway = __decorate([
         config_1.ConfigService,
         auth_service_1.AuthService,
         chat_service_1.ChatService,
-        prisma_service_1.PrismaService])
+        prisma_service_1.PrismaService,
+        user_service_1.UserService])
 ], ChatGateway);
 exports.ChatGateway = ChatGateway;
 //# sourceMappingURL=chat.gateway.js.map

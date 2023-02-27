@@ -14,12 +14,15 @@ const jwt_1 = require("@nestjs/jwt");
 const auth_module_1 = require("../auth/auth.module");
 const auth_service_1 = require("../auth/auth.service");
 const strategy_1 = require("../auth/strategy");
+const user_service_1 = require("../user/user.service");
+const chat_controller_1 = require("./chat.controller");
 let ChatModule = class ChatModule {
 };
 ChatModule = __decorate([
     (0, common_1.Module)({
         imports: [jwt_1.JwtModule.register({}), auth_module_1.AuthModule],
-        providers: [chat_gateway_1.ChatGateway, chat_service_1.ChatService, auth_service_1.AuthService, strategy_1.JwtStrategy],
+        providers: [chat_gateway_1.ChatGateway, chat_service_1.ChatService, auth_service_1.AuthService, strategy_1.JwtStrategy, user_service_1.UserService],
+        controllers: [chat_controller_1.ChatController],
     })
 ], ChatModule);
 exports.ChatModule = ChatModule;

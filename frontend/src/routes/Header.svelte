@@ -7,6 +7,7 @@
     import AvatarProfile from '../modules/avatarProfile.svelte';
     import SearchUsers from '../modules/searchUsers.svelte';
     import Notifications from '../modules/notifications.svelte';
+	import { DarkMode } from 'flowbite-svelte';
 
 	let user : any;
 
@@ -44,6 +45,7 @@
 			  </li>
 			</ul>
 		</nav>
+		<DarkMode />
 		<SearchUsers />
 		<Notifications />
 		<AvatarProfile />

@@ -51,7 +51,6 @@ let AuthService = class AuthService {
         });
         return { access_token: token };
     }
-
 };
 AuthService = __decorate([
     (0, common_1.Injectable)(),

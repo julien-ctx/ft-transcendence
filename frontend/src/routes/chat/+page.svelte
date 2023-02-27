@@ -2,11 +2,12 @@
 
 	import { onMount } from 'svelte';
 	import { io } from 'socket.io-client';
-	import { AuthGuard } from "../../modules/AuthGuard";
+	import { AuthGuard } from "$lib/AuthGuard";
     import { goto } from "$app/navigation";
     import { getJwt, removeJwt } from "$lib/jwtUtils";
-	import { ButtonGroup, Button, Select, Input, FloatingLabelInput } from 'flowbite-svelte';
+	import { ButtonGroup, Button, Select, FloatingLabelInput, Drawer, Heading, Hr } from 'flowbite-svelte';
 	import { Modal } from 'flowbite-svelte'
+	import axios from 'axios';
 
 	let isLogged = false;
 	let socket : any;
@@ -20,8 +21,8 @@
 		{value:"Public", name: "Public"},
 		]
 	let color : string = '';
-	let create = false;
 	let err : any = {name : "", desc : "", status : "", pass : "", cpass : "", already : ""};
+	let rooms : any = [];
 	onMount(async () => {
 		AuthGuard()
 		.then((res) => {
@@ -37,6 +38,23 @@
 				query: {
 					token: token,
 				}
+		});
+		try {
+			await axios.get('http://localhost:4000/Chat/getRooms', {
+				headers: {
+					Authorization: `Bearer ${token}`
+				}
+			}).then((res : any) => {
+				rooms = res.data;
+			});
+		} catch (error) {
+			console.log(error);
+		}
+		
+
+		socket.on('rooms', (receivedRoom : string) => {
+			rooms.push(receivedRoom);
+			console.log(rooms);
 		});
 
 		socket.on('errors', (receivedErr : any) => {
@@ -58,7 +76,6 @@
 	});
 
 	function createRoom() {
-		// Do socket
 		socket.emit('createRoom', {
 			roomName: roomName,
 			roomDesc: roomDesc,
@@ -87,7 +104,7 @@
 		roomPass = '';
 		roomCPass = '';
 		status = '';
-		err.already = '';
+		err = {name : "", desc : "", status : "", pass : "", cpass : "", already : ""};
 	}
 
 	let JoinName = '';
@@ -97,13 +114,31 @@
 	let roomDesc = '';
 	let roomPass = '';
 	let roomCPass = '';
+
+	let chatList = true;
+	let activateClickOutside = false;
 </script>	
 
 <div>
+
 	<ButtonGroup>
 		<Button shadow="green" color="green" on:click={() => {color="green"; modalCreate = true}} >Create Room</Button>
 		<Button shadow="green" color="green" on:click={() => {color="green"; modalJoin = true}} >Join Room</Button>
 	</ButtonGroup>
+
+
+	<Button outline color="dark" on:click={() => chatList = false}>Channels list</Button>
+
+	<Drawer bind:hidden={chatList} transitionType="fly">
+		<div class="flex justify-center">
+			<Heading tag="h2" customSize="text-4xl font-extrabold ">Channels</Heading>
+		</div>
+		<Hr class="my-8" height="h-px" />
+		{#each rooms as room}
+			<!-- <Button color="light">{room}</Button> -->
+			<div>{room}</div>
+		{/each}
+	</Drawer>
 
 	<Modal bind:open={modalCreate} title="Create a room" {color}>
 		<FloatingLabelInput style="filled" id="floating_filled" name="Room Name" type="text" label="Room Name" bind:value={roomName}/>
@@ -135,6 +170,10 @@
 		<FloatingLabelInput style="filled" id="floating_filled" name="Room Name" type="text" label="Room Name" bind:value={JoinName}/>
 		{#if err.already !== ''}
 			<p class="text-red-500 text-xs">{err.already}</p>
+		{:else if err.name !== ''}
+			<!-- {#if err.name !== ''} -->
+				<p class="text-red-500 text-xs">{err.name}</p>
+			<!-- {/if} -->
 		{/if}
 		{#if needPass === "yes"}
 			<FloatingLabelInput style="filled" id="floating_filled" name="Room Name" type="password" label="Password" bind:value={JoinPass}/>

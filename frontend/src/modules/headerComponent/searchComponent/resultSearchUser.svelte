@@ -1,6 +1,6 @@
 <script lang="ts">
     import { GetOneUser } from '$lib/userUtils';
-	import {Avatar, Card} from 'flowbite-svelte'
+	import { Avatar, Card } from 'flowbite-svelte'
     import { searchInputStore, userProfileDataStore, usersComponentStore } from '$lib/store/user';
 
 
@@ -18,7 +18,7 @@
 
 <a href={`/users?id=${user.id}`} on:click={handleClick}>
 	<Card horizontal>
-		<Avatar img={user.img_link} class="object-cover"/>
+		<Avatar src={user.img_link} class="object-cover"/>
 		<h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">{user.login}</h5>
 	</Card>
 </a>

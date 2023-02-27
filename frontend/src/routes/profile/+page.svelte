@@ -91,6 +91,11 @@
 					<div class="flex direction-row m-4 gap-4 justify-between">
 						<Avatar src={user.img_link} class="object-cover"/>
 						<div class="self-end">{user.login}</div>
+						{#if user.connected}
+							<div>Connected</div>
+						{:else}
+							<div>Disconnected</div>
+						{/if}
 						<Button href={`/users?id=${user.id}`}>View profile</Button>
 						<Button>Invitation play</Button>
 						<Button>Private message</Button>

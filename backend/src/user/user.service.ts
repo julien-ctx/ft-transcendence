@@ -14,7 +14,8 @@ export class UserService {
 				...params,
 			},
 			include : {
-				notification: true
+				notification: true,
+				RoomToUser : true
 			}
 		});
 	}
@@ -25,9 +26,22 @@ export class UserService {
 				id
 			},
 			include : {
-				notification: true
+				notification: true,
+				RoomToUser : true
 			}
 		});
+	}
+
+	async getOneByIdUser(id_user : number) {
+		return await this.prisma.user.findUnique({
+			where : {
+				id_user
+			},
+			include : {
+				notification : true,
+				RoomToUser : true
+			}
+		})
 	}
 
 	async getAll(id : number) {
@@ -38,7 +52,8 @@ export class UserService {
 				}
 			},
 			include : {
-				notification: true
+				notification: true,
+				RoomToUser : true
 			}
 		});
 	}

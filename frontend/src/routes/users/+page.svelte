@@ -11,6 +11,7 @@
 	let hasId : boolean = false;
 	let userProfile : any;
 	let socket : any;
+	let socketUser : any;
 	let myProfile : any;
 
 	myProfileDataStore.subscribe(val => {
@@ -39,6 +40,15 @@
 		socket.on("event_friend", (data : any) => {
 			UpdateProfileToStore(data);					
 		});
+
+		socketUser = io("http://localhost:4000", {
+			path: "/event_user",
+			query : { token : getJwt()}
+		})
+		socketUser.on("event_user", (data : any) => {
+			if (data.id == userProfile.id)
+				userProfileDataStore.set(data);
+		})
 	})
 
 	function handleClickAcceptFriend() {
@@ -58,6 +68,11 @@
 			<div class="flex items-center space-x-4">
 				<Avatar size="xl" src={userProfile.img_link} class="object-cover"/>
 				<div class="space-y-1 font-medium dark:text-white">
+					{#if !userProfile.connected}
+						<div>Disconnected</div>
+					{:else}
+						<div>Connected</div>
+					{/if}
 					<div>Login: {userProfile.login}</div>
 					<div>Firstname: {userProfile.first_name}</div>
 					<div>Lastname: {userProfile.last_name}</div>

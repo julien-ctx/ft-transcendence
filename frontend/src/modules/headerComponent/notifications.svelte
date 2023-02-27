@@ -45,17 +45,19 @@
 	<Button>
 		Notifications
 	</Button>
-	<Dropdown>
-		{#each myProfile.notification as notif}
-			<Card horizontal size="xl">
-				<Avatar src={notif.img_link} class="object-cover"/>
-				{#if notif.type == 0}
-					<div>Demande d'ami de {notif.login_send}</div>
-					<Button on:click={() => acceptReq(notif)}>Accepter</Button>
-					<Button on:click={() => refuseReq(notif)}>Refuser</Button>
-				{/if}
-			</Card>
-			<DropdownDivider/>
-		{/each}
-	</Dropdown>
+	{#if myProfile.notification}
+		<Dropdown>
+			{#each myProfile.notification as notif}
+				<Card horizontal size="xl">
+					<Avatar src={notif.img_link} class="object-cover"/>
+					{#if notif.type == 0}
+						<div>Demande d'ami de {notif.login_send}</div>
+						<Button on:click={() => acceptReq(notif)}>Accepter</Button>
+						<Button on:click={() => refuseReq(notif)}>Refuser</Button>
+					{/if}
+				</Card>
+				<DropdownDivider/>
+			{/each}
+		</Dropdown>
+	{/if}
 </div>

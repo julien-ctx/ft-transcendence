@@ -14,7 +14,7 @@ export class UserService {
 				...params,
 			},
 			include : {
-				notif_friend: true,
+				notification: true,
 				RoomToUser: true,
 			}
 		});
@@ -26,7 +26,7 @@ export class UserService {
 				id
 			},
 			include : {
-				notif_friend: true,
+				notification: true,
 				RoomToUser: true,
 			}
 		});
@@ -38,7 +38,7 @@ export class UserService {
 				id_user: id
 			},
 			include : {
-				notif_friend: true,
+				notification: true,
 				RoomToUser: true,
 			}
 		});
@@ -64,7 +64,7 @@ export class UserService {
 				}
 			},
 			include : {
-				notif_friend: true,
+				notification: true,
 				RoomToUser: true,
 			}
 		});

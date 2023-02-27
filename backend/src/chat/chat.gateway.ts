@@ -15,7 +15,6 @@ import { errors } from './errors.handle';
 import { ChatService } from './chat.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from 'src/user/user.service';
-import { UsersSocketInterface } from 'src/user/interface/userSocket.interface';
 import { RoomClass } from './room.interface';
 
 @WebSocketGateway({

@@ -3,22 +3,28 @@
 	import { onMount } from 'svelte';
     import { AuthGuard } from '../lib/AuthGuard';
 	import { DarkMode } from 'flowbite-svelte';
-    import { myProfileDataStore, usersDataStore } from '$lib/store/user';
+    import { myProfileDataStore, userProfileDataStore, usersDataStore } from '$lib/store/user';
     import { UpdateProfileToStore } from '$lib/profileUtils';
     import AvatarProfile from '../modules/headerComponent/avatarProfile.svelte';
-    import SearchUsers from '../modules/headerComponent/searchComponent/searchUsers.svelte';
+    import SearchUsers from '../modules/headerComponent/searchUsers.svelte';
     import Notifications from '../modules/headerComponent/notifications.svelte';
     import { goto } from '$app/navigation';
     import { getJwt, removeJwt } from '$lib/jwtUtils';
 	import io from 'socket.io-client';
     import { GetAllUsers } from '$lib/userUtils';
+    import { socketFriendStore, socketUserStore } from '$lib/store/socket';
 
 	let myProfile : any;
+	let userProfile : any;
 	let allUsers : any;
-	let socket : any;
+	let socketUser : any;
+	let socketFriend : any;
 
 	myProfileDataStore.subscribe(val => myProfile = val);
 	usersDataStore.subscribe(val => allUsers = val);
+	userProfileDataStore.subscribe(val => userProfile = val);
+	socketUserStore.subscribe(val => socketUser = val);
+	socketFriendStore.subscribe(val => socketFriend = val);
 
 	onMount(async () => {
 		await AuthGuard()
@@ -36,13 +42,17 @@
 		.then((res) => {
 			usersDataStore.set(res.data);
 		})
-		
-		socket = io('http://localhost:4000', {
+
+		socketUser = io('http://localhost:4000', {
 			path: "/event_user",
 			query : { token : getJwt()}
 		});
-
-		socket.on("event_user", (data : any) => {
+		socketUser.on("event_user", (data : any) => {
+			if (data.id == myProfile.id) {
+				UpdateProfileToStore(data)				
+			}
+			if (data.id && data.id == userProfile.id)
+				userProfileDataStore.set(data);
 			if (allUsers.length != 0) {
 				for (let i = 0; i < allUsers.length; i++) {
 					if (allUsers[i].id == data.id) {
@@ -52,6 +62,16 @@
 				}
 			}
 		})
+		socketUserStore.set(socketUser);
+
+		socketFriend = io('http://localhost:4000', {
+			path: "/notif_friend",
+			query : { token : getJwt()}
+		});
+		socketFriend.on('event_friend', (data : any) => {
+			UpdateProfileToStore(data);			
+		});
+		socketFriendStore.set(socketFriend);
 	})
 
 </script>
@@ -74,7 +94,7 @@
 		<DarkMode />
 		<SearchUsers />
 		<Notifications />
-		<AvatarProfile socket={socket}/>
+		<AvatarProfile />
 	</header>
 {/if}
 

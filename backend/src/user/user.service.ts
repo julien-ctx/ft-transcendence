@@ -100,4 +100,28 @@ export class UserService {
 			data : users
 		});
 	}
+
+	filterId(arr : number [], id : number) {
+		for (let i = 0; i < arr.length; i++) {
+			if (arr[i] === id)
+				arr.splice(i, 1);
+		}
+		return arr;
+	}
+
+	getIdNotifFriend(arr : any , id : number) {
+		for (let i = 0; i < arr.length; i++) {
+			if (arr[i].id_user_send === id && arr[i].type == 0)
+				return arr[i].id
+		}
+		return undefined;
+	}
+
+	getIdNotif(arr : any , id : number) {
+		for (let i = 0; i < arr.length; i++) {
+			if (arr[i].id_user_send === id)
+				return arr[i].id
+		}
+		return undefined;
+	}
 }

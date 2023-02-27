@@ -1,7 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { NotifFriend, User, Prisma } from "@prisma/client";
 import { PrismaService } from "src/prisma/prisma.service";
-import { UserDto } from "./dto/user.dto";
 
 @Injectable()
 export class UserService {
@@ -46,6 +44,18 @@ export class UserService {
 		});
 	}
 
+	async getOneByIdUser(id_user : number) {
+		return await this.prisma.user.findUnique({
+			where : {
+				id_user
+			},
+			include : {
+				notification : true,
+				RoomToUser : true
+			}
+		})
+	}
+
 	async getAll(id : number) {
 		return await this.prisma.user.findMany({
 			where: {
@@ -62,21 +72,32 @@ export class UserService {
 
 	async addNotifFriend(userSend : any, userReceive : any) {
 		try {
-			const currentUser = await this.getOne(userReceive.id);
-			await this.prisma.notifFriend.create({
+			await this.prisma.notification.create({
 				data : {
 					user : {
 						connect : {
-							id_user: currentUser.id_user
+							id_user: userReceive.id_user
 						}
 					},
 					id_user_send : userSend.id,
-					login_send : userSend.login
+					login_send : userSend.login,
+					img_link: userSend.img_link,
+					type : 0
 				}
 			});
-			return this.getOne(currentUser.id);
+			return await this.updateUser({
+				req_received_friend : {
+					push: userSend.id
+				}
+			}, userReceive.id);
 		} catch (error) {
 			console.log(error);
 		}
+	}
+
+	async createManyUser(users : any) {
+		return await this.prisma.user.createMany({
+			data : users
+		});
 	}
 }

@@ -1,9 +1,18 @@
 import { Injectable } from "@nestjs/common";
 
 export class Ball {
-
+	constructor(
+		public x: number,
+		public y: number,
+		public size: number,
+	) {}
 }
 
 export class Paddle {
-	constructor(private x: number = 0, private y: number = 0) {}
+	constructor(
+		public x: number,
+		public y: number,
+		public width: number,
+		public height: number
+	) {}
 }

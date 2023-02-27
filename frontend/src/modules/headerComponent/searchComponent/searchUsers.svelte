@@ -1,7 +1,7 @@
 <script lang="ts">
 	import {Button, Search} from 'flowbite-svelte'
 	import { onMount } from 'svelte';
-    import { searchInputStore, usersComponentStore, usersDataStore } from '../store';
+    import { searchInputStore, usersComponentStore, usersDataStore } from '$lib/store/user';
 	import { GetAllUsers } from '$lib/userUtils';
     import ResultSearchUser from './resultSearchUser.svelte';
 
@@ -21,18 +21,12 @@
 		searchInput = val;
 	})
 
-	onMount(() => {
-		GetAllUsers()
-		.then((res) => {
-			usersDataStore.set(res.data);
-		})
-	})
-
 	function handleChange() {
 		searchInputStore.set(searchInput);
 		if (searchInput !== "") {
 			users.forEach((elem : any) => {
-				if (elem.login.includes(searchInput)) {
+				const toComp = elem.login.substr(0, searchInput.length);
+				if (toComp == searchInput) {
 					if (!usersComponent.includes(elem)) {
 						usersComponent.push(elem);
 					}

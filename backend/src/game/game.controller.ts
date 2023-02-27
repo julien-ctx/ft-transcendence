@@ -6,8 +6,8 @@ import { GameService } from './game.service';
 export class GameController {
 	constructor(private gameService: GameService, private prisma: PrismaService) {}
 
-	@Get('game')
-	game() {
-		return this.gameService.game();
-	}
+	// @Get('game')
+	// game() {
+	// 	return this.gameService.game();
+	// }
 }

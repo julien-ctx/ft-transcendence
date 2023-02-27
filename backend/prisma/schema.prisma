@@ -17,10 +17,10 @@ model User {
 	last_name String
 	img_link String
   connected Boolean @default(false)
-  notif_friend NotifFriend[]
+  notification Notification[]
   friend_id Int[]
-  req_friend Int[]
-  
+  req_received_friend Int[]
+  req_send_friend Int[]
   RoomToUser RoomToUser[]
   Message Message[]
 }
@@ -44,6 +44,7 @@ model RoomToUser {
   id_user Int
 }
 
+
 model Message {
 	id Int @id @default(autoincrement())
 	content String
@@ -54,11 +55,13 @@ model Message {
 	id_user Int
 }
 
-model NotifFriend {
+model Notification {
   id Int @id @default(autoincrement())
   user  User @relation(fields: [id_user_receive], references: [id])
   id_user_receive Int
   id_user_send Int
   is_read Boolean @default(false)
   login_send String
+  img_link String
+  type Int
 }

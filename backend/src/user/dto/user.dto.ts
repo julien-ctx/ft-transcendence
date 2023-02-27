@@ -39,5 +39,5 @@ export class UserDto {
 
 	friend_id : number[]
 
-	notif_friend : []
+	notifcation : []
 }

@@ -11,10 +11,9 @@ export class GameService {
 		private prisma: PrismaService,
 	) {}
 	
-	game(): void {
-		let ball = new Ball();
-		let rightPaddle = new Paddle();
-		let leftPaddle = new Paddle();	
+	game(rightPaddle: Paddle, leftPaddle: Paddle, ball: Ball): void {
+		this.rightPaddle = rightPaddle;
+		this.leftPaddle = leftPaddle;
+		this.ball = ball;
 	}
-
 }

@@ -68,10 +68,12 @@
 			<div class="flex items-center space-x-4">
 				<Avatar size="xl" src={userProfile.img_link} class="object-cover"/>
 				<div class="space-y-1 font-medium dark:text-white">
-					{#if !userProfile.connected}
+					{#if userProfile.status == 0}
 						<div>Disconnected</div>
-					{:else}
+					{:else if userProfile.status == 1}
 						<div>Connected</div>
+					{:else if userProfile.status == 2}
+						<div>In game</div>
 					{/if}
 					<div>Login: {userProfile.login}</div>
 					<div>Firstname: {userProfile.first_name}</div>

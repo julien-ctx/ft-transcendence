@@ -16,7 +16,7 @@ model User {
 	first_name String
 	last_name String
 	img_link String
-  connected Boolean @default(false)
+  status Int @default(0)
   notification Notification[]
   friend_id Int[]
   req_received_friend Int[]

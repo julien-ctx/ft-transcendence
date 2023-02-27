@@ -29,7 +29,7 @@ export class UserEventGateway implements OnGatewayInit, OnGatewayConnection, OnG
 		await this.userService.getOneByIdUser(user['id'])
 		.then(async (res) => {
 			await this.userService.updateUser({
-				connected : true
+				status : 1
 			}, res.id)
 			.then((res) => {
 				this.server.emit("event_user", res)
@@ -43,7 +43,7 @@ export class UserEventGateway implements OnGatewayInit, OnGatewayConnection, OnG
 				await this.userService.getOneByIdUser(elem.user['id'])
 				.then(async (res) => {
 					await this.userService.updateUser({
-						connected : false
+						status : 0
 					}, res.id)
 					.then((res) => {
 						this.server.emit("event_user", res)
@@ -58,7 +58,7 @@ export class UserEventGateway implements OnGatewayInit, OnGatewayConnection, OnG
 	@SubscribeMessage("disconnect_user")
 	async disconnectUser(@MessageBody() body : any) {
 		await this.userService.updateUser({
-			connected : false
+			status : 0
 		}, body.id)
 		.then((res) => {
 			this.server.emit("event_user", res);

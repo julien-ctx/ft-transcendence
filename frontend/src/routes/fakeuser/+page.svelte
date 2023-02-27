@@ -11,7 +11,7 @@
 			first_name: "jhon",
 			last_name: "doe",
 			img_link: "",
-			connected: false
+			status: 0
 		},
 		{
 			id_user : 2,
@@ -20,7 +20,7 @@
 			first_name: "scott",
 			last_name: "doe",
 			img_link: "",
-			connected: false
+			status: 0
 		},
 		{
 			id_user : 3,
@@ -29,7 +29,7 @@
 			first_name: "zoe",
 			last_name: "doe",
 			img_link: "",
-			connected: false
+			status: 0
 		},
 		{
 			id_user : 4,
@@ -38,7 +38,7 @@
 			first_name: "camille",
 			last_name: "doe",
 			img_link: "",
-			connected: false
+			status: 0
 		},
 		{
 			id_user : 5,
@@ -47,7 +47,7 @@
 			first_name: "barbara",
 			last_name: "doe",
 			img_link: "",
-			connected: false
+			status: 0
 		},
 		{
 			id_user : 6,
@@ -56,7 +56,7 @@
 			first_name: "huge",
 			last_name: "doe",
 			img_link: "",
-			connected: false
+			status: 0
 		},
 		{
 			id_user : 7,
@@ -65,7 +65,7 @@
 			first_name: "jean",
 			last_name: "doe",
 			img_link: "",
-			connected: false
+			status: 0
 		},
 		{
 			id_user : 8,
@@ -74,7 +74,7 @@
 			first_name: "alfonse",
 			last_name: "doe",
 			img_link: "",
-			connected: false
+			status: 0
 		},
 		{
 			id_user : 9,
@@ -83,7 +83,7 @@
 			first_name: "bernard",
 			last_name: "doe",
 			img_link: "",
-			connected: false
+			status: 0
 		},
 		{
 			id_user : 10,
@@ -92,7 +92,7 @@
 			first_name: "elvis",
 			last_name: "doe",
 			img_link: "",
-			connected: false
+			status: 0
 		}
 	]
 	async function handleClick() {

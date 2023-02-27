@@ -22,6 +22,6 @@ export function UpdateProfileToStore(params : any) {
 	myNotifLength.set(count)
 }
 
-export async function UpdateProfileConnected(connected : boolean) {
-	return await axios.post("http://localhost:4000/users/updateConnected", {connected}, {headers : { Authorization : `Bearer ${getJwt()}` }});
+export async function UpdateProfileConnected(status : number) {
+	return await axios.post("http://localhost:4000/users/updateConnected", {status}, {headers : { Authorization : `Bearer ${getJwt()}` }});
 }

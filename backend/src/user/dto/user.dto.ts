@@ -34,8 +34,8 @@ export class UserDto {
 	@IsString()
 	login : string
 
-	@IsBoolean()
-	connected : boolean
+	@IsNumber()
+	status : number
 
 	friend_id : number[]
 

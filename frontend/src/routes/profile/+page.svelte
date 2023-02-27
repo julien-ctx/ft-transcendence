@@ -91,10 +91,12 @@
 					<div class="flex direction-row m-4 gap-4 justify-between">
 						<Avatar src={user.img_link} class="object-cover"/>
 						<div class="self-end">{user.login}</div>
-						{#if user.connected}
-							<div>Connected</div>
-						{:else}
+						{#if user.status == 0}
 							<div>Disconnected</div>
+						{:else if user.status == 1}
+							<div>Connected</div>
+						{:else if user.status == 2}
+							<div>In game</div>
 						{/if}
 						<Button href={`/users?id=${user.id}`}>View profile</Button>
 						<Button>Invitation play</Button>

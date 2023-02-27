@@ -5,7 +5,7 @@
 	import { UpdateProfileConnected, UpdateProfileToStore } from '$lib/profileUtils';
 
 	onMount(() => {
-		UpdateProfileConnected(false)
+		UpdateProfileConnected(0)
 		.then((res) => {
 			UpdateProfileToStore(res.data);
 		});

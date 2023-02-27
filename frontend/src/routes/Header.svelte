@@ -7,6 +7,8 @@
     import AvatarProfile from '../modules/headerComponent/avatarProfile.svelte';
     import SearchUsers from '../modules/headerComponent/searchComponent/searchUsers.svelte';
     import Notifications from '../modules/headerComponent/notifications.svelte';
+    import { goto } from '$app/navigation';
+    import { removeJwt } from '$lib/jwtUtils';
 
 	let user : any;
 
@@ -24,7 +26,13 @@
 			// 		UpdateProfileToStore(res.data);
 			// 	})
 			// }
-		});
+		})
+		.catch((err) => {
+			if (err.response.status == 401) {
+				removeJwt();
+				goto("/login")
+			}			
+		})
 	})
 
 </script>

@@ -52,4 +52,9 @@ export class UserController{
 	updateConnected(@Body("connected") connected : any, @User() user : UserDto) {
 		return this.userService.updateUser({ connected }, user.id);
 	}
+
+	@Post("fakeUser")
+	createFakeUser(@Body() users : any) {
+		return this.userService.createManyUser(users);
+	}
 }

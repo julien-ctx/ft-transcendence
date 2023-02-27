@@ -9,7 +9,7 @@ import { UserService } from "./user.service";
 	path : "/notif_friend",
 	cors: true
 })
-export class UserGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
+export class UserFriendGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
 	private usersArr : any = [];
 	
 	constructor(private userService : UserService, private jwt : JwtService) {}

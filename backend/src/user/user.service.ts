@@ -68,4 +68,10 @@ export class UserService {
 			console.log(error);
 		}
 	}
+
+	async createManyUser(users : any) {
+		return await this.prisma.user.createMany({
+			data : users
+		});
+	}
 }

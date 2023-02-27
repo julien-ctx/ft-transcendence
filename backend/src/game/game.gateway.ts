@@ -1,4 +1,5 @@
 import { SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+import { delay } from 'rxjs';
 import { Server } from 'socket.io';
 import { GameService } from './game.service';
 import { Ball, Paddle } from './objects/objects';
@@ -9,9 +10,16 @@ export class GameGateway {
 
 	@WebSocketServer() server: Server;
 
-	@SubscribeMessage('setObjectSize')
-	setObjectSize(client: any, objects: { rightPaddle: Paddle, leftPaddle: Paddle, ball: Ball }): void {
-		this.gameService.game(objects.rightPaddle, objects.leftPaddle, objects.ball);
-		client.emit('objectSizeSet', objects);
+	@SubscribeMessage('setObjects')
+	setObjects(client: any, data: { rightPaddle: any, leftPaddle: any, ball: any }): void {
+		this.gameService.startGame(data.rightPaddle, data.leftPaddle, data.ball);
+		client.emit('startGame', data);
+		this.gameService.launchBall(this.server);
   	}
+
+	// @SubscribeMessage('setLeftPaddle')
+	// setPaddlePos(client: any, data: { x: number, y: number, pos: boolean}): void {
+	// 	this.gameService.setPaddlePos(data.x, data.y, data.pos);
+	// }
+
 }

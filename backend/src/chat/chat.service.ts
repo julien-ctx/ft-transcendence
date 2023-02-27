@@ -42,4 +42,35 @@ export class ChatService {
 		console.log(rooms);
 		return rooms;
 	}
+
+	async getRoomByName(name : string) {
+		const room = await this.prisma.room.findUnique({
+			where: {
+				name: name,
+			},
+			include: {
+				Message : true,
+			}
+		});
+		return room;
+	}
+
+	async createMessage(id_user : number, id_room : number, content : string) {
+		const message = await this.prisma.message.create({
+			data: {
+				content: content,
+				room: {
+					connect: {
+						id: id_room,
+					}
+				},
+				user: {
+					connect: {
+						id: id_user,
+					}
+				}
+			}
+		});
+		return message;
+	}
 }

@@ -8,4 +8,8 @@ export declare class ChatService {
     hashedPass(password: string): Promise<string>;
     verifyPass(password: string, hash: string): Promise<boolean>;
     getRooms(id: number): Promise<string[]>;
+    getRoomByName(name: string): Promise<import(".prisma/client").Room & {
+        Message: import(".prisma/client").Message[];
+    }>;
+    createMessage(id_user: number, id_room: number, content: string): Promise<import(".prisma/client").Message>;
 }

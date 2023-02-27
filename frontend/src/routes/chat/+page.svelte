@@ -5,9 +5,10 @@
 	import { AuthGuard } from "$lib/AuthGuard";
     import { goto } from "$app/navigation";
     import { getJwt, removeJwt } from "$lib/jwtUtils";
-	import { ButtonGroup, Button, Select, FloatingLabelInput, Drawer, Heading, Hr } from 'flowbite-svelte';
+	import { ButtonGroup, Button, Select, FloatingLabelInput, Drawer, Heading, Hr, Listgroup, ListgroupItem } from 'flowbite-svelte';
 	import { Modal } from 'flowbite-svelte'
 	import axios from 'axios';
+	import Chat from '../../modules/chat.svelte';
 
 	let isLogged = false;
 	let socket : any;
@@ -107,6 +108,12 @@
 		err = {name : "", desc : "", status : "", pass : "", cpass : "", already : ""};
 	}
 
+	function openChat(room : string) {
+		toOpen = room;
+		chatList = true;
+		modalChat = true;
+	}
+
 	let JoinName = '';
 	let JoinPass = '';
 
@@ -117,6 +124,8 @@
 
 	let chatList = true;
 	let activateClickOutside = false;
+	let toOpen : string = '';
+	let modalChat = false;
 </script>	
 
 <div>
@@ -124,21 +133,28 @@
 	<ButtonGroup>
 		<Button shadow="green" color="green" on:click={() => {color="green"; modalCreate = true}} >Create Room</Button>
 		<Button shadow="green" color="green" on:click={() => {color="green"; modalJoin = true}} >Join Room</Button>
+		<Button outline color="dark" on:click={() => chatList = false}>Channels list</Button>
 	</ButtonGroup>
-
-
-	<Button outline color="dark" on:click={() => chatList = false}>Channels list</Button>
 
 	<Drawer bind:hidden={chatList} transitionType="fly">
 		<div class="flex justify-center">
 			<Heading tag="h2" customSize="text-4xl font-extrabold ">Channels</Heading>
 		</div>
 		<Hr class="my-8" height="h-px" />
-		{#each rooms as room}
-			<!-- <Button color="light">{room}</Button> -->
-			<div>{room}</div>
-		{/each}
+		{#if rooms.length === 0}
+			<p class="text-center">You are not member of any Channels</p>
+		{:else}
+			<Listgroup active >
+			{#each rooms as room} 
+				<ListgroupItem on:click={() => openChat(room)}>{room}</ListgroupItem>
+			{/each}
+			</Listgroup>
+		{/if}
 	</Drawer>
+
+	{#if modalChat === true}
+		<Chat bind:socket={socket} bind:channel={toOpen} bind:modalChat={modalChat}/>
+	{/if}
 
 	<Modal bind:open={modalCreate} title="Create a room" {color}>
 		<FloatingLabelInput style="filled" id="floating_filled" name="Room Name" type="text" label="Room Name" bind:value={roomName}/>

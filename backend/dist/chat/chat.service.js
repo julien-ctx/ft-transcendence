@@ -48,6 +48,35 @@ let ChatService = class ChatService {
         console.log(rooms);
         return rooms;
     }
+    async getRoomByName(name) {
+        const room = await this.prisma.room.findUnique({
+            where: {
+                name: name,
+            },
+            include: {
+                Message: true,
+            }
+        });
+        return room;
+    }
+    async createMessage(id_user, id_room, content) {
+        const message = await this.prisma.message.create({
+            data: {
+                content: content,
+                room: {
+                    connect: {
+                        id: id_room,
+                    }
+                },
+                user: {
+                    connect: {
+                        id: id_user,
+                    }
+                }
+            }
+        });
+        return message;
+    }
 };
 ChatService = __decorate([
     (0, common_1.Injectable)(),

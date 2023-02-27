@@ -16,6 +16,7 @@ import { ChatService } from './chat.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from 'src/user/user.service';
 import { UsersSocketInterface } from 'src/user/interface/userSocket.interface';
+import { RoomClass } from './room.interface';
 
 @WebSocketGateway({
 	path : '/chat',
@@ -37,6 +38,8 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 	server: Server;
 
 	private Client : any = [];
+	private Rooms : RoomClass [] = [];
+
 
 	async handleConnection(client: any, ...args: any[]) {
 		const token = client.handshake.query.token as string;
@@ -123,14 +126,16 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 				id_user: idUser,
 			}
 		});
-		if (room !== null) {
+		if (room === null) {
+			client.emit('errors', {already : 'Room does not exist'});
+			return ;
+		}
 		let alreadyJoin = await this.prisma.roomToUser.findMany({
 			where: {
 				id_user: User.id_user,
 				id_room: room.id,
 			}
 		});
-	}
 
 		if (room === null) {
 			client.emit('errors', {already : 'Room does not exist'});
@@ -185,8 +190,58 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 
 	}
 
+	@SubscribeMessage('askMessages')
+	async handleAskMessage(@ConnectedSocket() client, @MessageBody() data: any) {
+		const token = client.handshake.query.token as string;
+		const user = this.jwt.decode(token);
+		if (user === undefined) return;
+
+		const idUser : number = user['id'];
+		const User = await this.Service.getOneById(idUser);
+		const Room = await this.chatService.getRoomByName(data.roomName);
+		
+		console.log(this.findRoom(Room.name));
+		let roomInstance = this.findRoom(Room.name);
+		if (roomInstance === undefined) {
+			roomInstance = new RoomClass(User, client, Room.name);
+			this.Rooms = [...this.Rooms, roomInstance];
+		}
+		else {
+			roomInstance.addUser(User, client);
+		}
+		console.log(this.Rooms);
+
+		Room.Message.forEach((message) => {
+			client.emit('getMessages', message.content);
+		});
+	}
+
+	@SubscribeMessage('sendMessage')
+	async handleSendMessage(@ConnectedSocket() client, @MessageBody() data: any) {
+		const token = client.handshake.query.token as string;
+		const user = this.jwt.decode(token);
+		if (user === undefined) return;
+		
+		// console.log({data});	
+		const idUser : number = user['id'];
+		const User = await this.Service.getOneById(idUser);
+		const Room = await this.chatService.getRoomByName(data.roomName);
+		const message = await this.chatService.createMessage(User.id, Room.id, data.message);
+
+		const roomInstance = this.findRoom(Room.name);
+		roomInstance.ClientUser.forEach((elem) => {
+			elem.Client.emit('getMessages', message.content);
+		});
+		// client.emit('getMessages', message.content);
+	}
+
 	handleDisconnect(client: any) {
 		// this.client.splice(this.client.indexOf(client), 1);
+	}
+
+	findRoom(name: string) {
+		console.log('The room', this.Rooms);
+		return this.Rooms.find((room) => room.roomName === name);
 	}
 }
 

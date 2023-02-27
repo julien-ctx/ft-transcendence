@@ -22,6 +22,7 @@ const errors_handle_1 = require("./errors.handle");
 const chat_service_1 = require("./chat.service");
 const prisma_service_1 = require("../prisma/prisma.service");
 const user_service_1 = require("../user/user.service");
+const room_interface_1 = require("./room.interface");
 let ChatGateway = class ChatGateway {
     constructor(jwt, config, Auth, chatService, prisma, Service) {
         this.jwt = jwt;
@@ -31,6 +32,7 @@ let ChatGateway = class ChatGateway {
         this.prisma = prisma;
         this.Service = Service;
         this.Client = [];
+        this.Rooms = [];
     }
     async handleConnection(client, ...args) {
         const token = client.handshake.query.token;
@@ -110,6 +112,10 @@ let ChatGateway = class ChatGateway {
                 id_user: idUser,
             }
         });
+        if (room === null) {
+            client.emit('errors', { already: 'Room does not exist' });
+            return;
+        }
         let alreadyJoin = await this.prisma.roomToUser.findMany({
             where: {
                 id_user: User.id_user,
@@ -165,7 +171,47 @@ let ChatGateway = class ChatGateway {
             }
         });
     }
+    async handleAskMessage(client, data) {
+        const token = client.handshake.query.token;
+        const user = this.jwt.decode(token);
+        if (user === undefined)
+            return;
+        const idUser = user['id'];
+        const User = await this.Service.getOneById(idUser);
+        const Room = await this.chatService.getRoomByName(data.roomName);
+        console.log(this.findRoom(Room.name));
+        let roomInstance = this.findRoom(Room.name);
+        if (roomInstance === undefined) {
+            roomInstance = new room_interface_1.RoomClass(User, client, Room.name);
+            this.Rooms = [...this.Rooms, roomInstance];
+        }
+        else {
+            roomInstance.addUser(User, client);
+        }
+        console.log(this.Rooms);
+        Room.Message.forEach((message) => {
+            client.emit('getMessages', message.content);
+        });
+    }
+    async handleSendMessage(client, data) {
+        const token = client.handshake.query.token;
+        const user = this.jwt.decode(token);
+        if (user === undefined)
+            return;
+        const idUser = user['id'];
+        const User = await this.Service.getOneById(idUser);
+        const Room = await this.chatService.getRoomByName(data.roomName);
+        const message = await this.chatService.createMessage(User.id, Room.id, data.message);
+        const roomInstance = this.findRoom(Room.name);
+        roomInstance.ClientUser.forEach((elem) => {
+            elem.Client.emit('getMessages', message.content);
+        });
+    }
     handleDisconnect(client) {
+    }
+    findRoom(name) {
+        console.log('The room', this.Rooms);
+        return this.Rooms.find((room) => room.roomName === name);
     }
 };
 __decorate([
@@ -196,6 +242,22 @@ __decorate([
     __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", void 0)
 ], ChatGateway.prototype, "handleMessage", null);
+__decorate([
+    (0, websockets_1.SubscribeMessage)('askMessages'),
+    __param(0, (0, websockets_1.ConnectedSocket)()),
+    __param(1, (0, websockets_1.MessageBody)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", Promise)
+], ChatGateway.prototype, "handleAskMessage", null);
+__decorate([
+    (0, websockets_1.SubscribeMessage)('sendMessage'),
+    __param(0, (0, websockets_1.ConnectedSocket)()),
+    __param(1, (0, websockets_1.MessageBody)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", Promise)
+], ChatGateway.prototype, "handleSendMessage", null);
 ChatGateway = __decorate([
     (0, websockets_1.WebSocketGateway)({
         path: '/chat',

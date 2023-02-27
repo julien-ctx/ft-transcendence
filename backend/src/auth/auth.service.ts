@@ -46,7 +46,6 @@ export class AuthService{
 					id_user
 				}
 			})
-			console.log(user);
 			return user;
 		} catch (error) {
 			return null;

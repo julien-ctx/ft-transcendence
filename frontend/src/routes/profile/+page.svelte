@@ -9,11 +9,13 @@
 	let fileInput : any;
 	let isEditLogin : boolean = false;
 	let myProfile : any;
+	let loginTmp : any;
 	let allUsers : any;
 	let socket : any;
 
 	myProfileDataStore.subscribe(val => {
 		myProfile = val;
+		loginTmp = myProfile.login;
 	})
 
 	usersDataStore.subscribe(val => {
@@ -40,6 +42,7 @@
 	}
 
 	async function submitFormLogin() {
+		myProfile.login = loginTmp;
 		UpdateProfileLogin(myProfile.login)
 		.then((res) => {
 			UpdateProfileToStore(res.data);
@@ -50,7 +53,7 @@
 
 {#if myProfile.first_name}
 	<div class="container mx-auto flex items-center flex-col gap-10 mt-10">
-		<Card padding="sm" size="md">
+		<Card padding="sm" size="xl">
 			<div class="flex items-center space-x-4">
 				<div class="flex">
 					<Avatar size="xl" src={myProfile.img_link} class="object-cover"/>
@@ -68,11 +71,11 @@
 					<div class="flex">
 						{#if !isEditLogin}
 							<div>{myProfile.login}</div>
-							<button on:click={() => isEditLogin = true}><img src="/stylo-modifier.png" alt=""></button>
+							<Button on:click={() => isEditLogin = true}>Edit</Button>
 						{:else}
-							<input type="text" bind:value={myProfile.login}>
-							<button on:click={() => isEditLogin = false}><img src="/signe-de-la-croix.png" alt="" width="24"></button>
-							<button on:click={submitFormLogin}><img src="/check.png" alt="" width="24"></button>
+							<input type="text" bind:value={loginTmp}>
+							<Button on:click={() => {isEditLogin = false; loginTmp = myProfile.login}}>Cancel</Button>
+							<Button on:click={submitFormLogin}>Confirm</Button>
 						{/if}
 					</div>
 					<div>Firstname: {myProfile.first_name}</div>
@@ -105,6 +108,20 @@
 					<Button on:click={() => socket.emit("accept_friend", { user : myProfile, notif})}>Accept friend</Button>
 					<Button on:click={() => socket.emit("refuse_friend", {user : myProfile, notif})}>Refuse friend</Button>
 				</div>
+			{/each}
+			<hr>
+			Request send
+			{#each myProfile.req_send_friend as req}
+				{#each allUsers as user}
+					{#if user.id == req}
+						<div class="flex direction-row m-4 gap-4 justify-between">
+							<Avatar src={user.img_link} class="object-cover"/>
+							<div class="self-end">{user.login}</div>
+							<Button href={`/users?id=${user.id}`}>View profile</Button>
+							<Button on:click={() => socket.emit("cancel_friend", {id_user_send : myProfile.id, id_user_receive : user.id})}>Cancel request</Button>
+						</div>
+					{/if}
+				{/each}
 			{/each}
 		</Card>
 	</div>

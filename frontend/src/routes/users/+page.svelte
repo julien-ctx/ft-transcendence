@@ -65,7 +65,8 @@
 				</div>
 			</div>
 			{#if myProfile.req_send_friend && myProfile.req_send_friend.includes(userProfile.id)}
-				Pending request friend
+				<div>Pending request friend</div>
+				<Button on:click={() => socket.emit("cancel_friend", {id_user_send : myProfile.id, id_user_receive : userProfile.id})}>Cancel request</Button>
 			{:else if myProfile.req_received_friend && myProfile.req_received_friend.includes(userProfile.id)}
 				<Button on:click={handleClickAcceptFriend}>Accept request friend</Button>
 			{:else if myProfile.friend_id && myProfile.friend_id.includes(userProfile.id)}

@@ -21,13 +21,6 @@
 		searchInput = val;
 	})
 
-	onMount(() => {
-		GetAllUsers()
-		.then((res) => {
-			usersDataStore.set(res.data);
-		})
-	})
-
 	function handleChange() {
 		searchInputStore.set(searchInput);
 		if (searchInput !== "") {

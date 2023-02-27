@@ -2,6 +2,7 @@
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
     import { AuthGuard } from '../lib/AuthGuard';
+	import { DarkMode } from 'flowbite-svelte';
     import { myProfileDataStore, usersDataStore } from '$lib/store/user';
     import { UpdateProfileToStore } from '$lib/profileUtils';
     import AvatarProfile from '../modules/headerComponent/avatarProfile.svelte';
@@ -70,6 +71,7 @@
 			  	</li>
 			</ul>
 		</nav>
+		<DarkMode />
 		<SearchUsers />
 		<Notifications />
 		<AvatarProfile socket={socket}/>

@@ -32,5 +32,4 @@ export class GameService {
 		this.ball.y = ball.y;
 		this.ball.size = ball.size;
 	}
-
 }

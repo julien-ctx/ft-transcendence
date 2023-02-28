@@ -50,7 +50,7 @@
 			usersDataStore.set(res.data);
 		})
 		
-		socket = io('http://localhost:4000', {
+		let socket = io('http://localhost:4000', {
 			path: "/event_user",
 			query : { token : getJwt()}
 		});

@@ -3,7 +3,7 @@
 	import { onMount } from 'svelte';
     import { AuthGuard } from '../lib/AuthGuard';
 	import { DarkMode } from 'flowbite-svelte';
-    import { myProfileDataStore, usersDataStore } from '$lib/store/user';
+    import { myProfileDataStore, usersDataStore, usersHimSelfDataStore } from '$lib/store/user';
     import { UpdateProfileToStore } from '$lib/profileUtils';
     import AvatarProfile from '../modules/headerComponent/avatarProfile.svelte';
     import SearchUsers from '../modules/headerComponent/searchComponent/searchUsers.svelte';
@@ -12,6 +12,7 @@
     import { getJwt, removeJwt } from '$lib/jwtUtils';
 	import io from 'socket.io-client';
     import { GetAllUsers } from '$lib/userUtils';
+    import axios from 'axios';
 
 	let myProfile : any;
 	let allUsers : any;
@@ -31,6 +32,15 @@
 				goto("/login")
 			}
 		})
+
+		await axios.get("http://localhost:4000/users/getAllHimSelf", {
+			headers : {
+				Authorization : `Bearer ${getJwt()}`
+			}
+		})
+		.then((res) => {
+			usersHimSelfDataStore.set(res.data);
+		});
 
 		await GetAllUsers()
 		.then((res) => {

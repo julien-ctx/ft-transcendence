@@ -5,7 +5,7 @@
     import { removeJwt } from "$lib/jwtUtils";
 	import { Button } from 'flowbite-svelte';
 	import io, { Socket } from 'socket.io-client';
-    import { right } from "@popperjs/core";
+    import { left, right } from "@popperjs/core";
     import { redirect } from "@sveltejs/kit";
 	
 	let isLogged = false;
@@ -28,6 +28,7 @@
 
 	let rightPaddle: any;
 	let leftPaddle: any;
+	let paddleDirection: number = 0;
 
 	let ball: any;
 	let speed_x: number = -7.5;
@@ -61,48 +62,98 @@
 			ball.x + ball.size > paddle.x &&
 			ball.y < paddle.y + paddle.height &&
 			ball.y + ball.size > paddle.y;
-	}
-
-	function gameLoop() {
-		if (!ctx) return;
-		ctx.clearRect(0, 0, canvas.width, canvas.height);
-		drawPaddles('blue');
-		ball.x += speed_x;
-		ball.y += speed_y;
-		
-		if (ball.y < 0) {
-			ball.y = ball.size;
-			speed_y = -speed_y;
-		}
-		else if (ball.y > canvas.height - ball.size) {
-			ball.y = canvas.height - ball.size;
-			speed_y = -speed_y;
 		}
 		
-		if (collision(leftPaddle)) {
-			speed_x = -speed_x;
-			ball.x = leftPaddle.x + leftPaddle.width;
-		}
+		function gameLoop() {
+			if (!ctx) return;
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+			drawPaddles('blue');
+			ball.x += speed_x;
+			ball.y += speed_y;
+			
+			if (ball.y < 0) {
+				ball.y = ball.size;
+				speed_y = -speed_y;
+			}
+			else if (ball.y > canvas.height - ball.size) {
+				ball.y = canvas.height - ball.size;
+				speed_y = -speed_y;
+			}
+			
+			if (collision(leftPaddle)) {
+				speed_x = -speed_x;
+				ball.x = leftPaddle.x + leftPaddle.width;
+			}
 		else if (collision(rightPaddle)) {
 			speed_x = -speed_x;
 			ball.x = rightPaddle.x - ball.size;
 		}
-
+		
 		drawSep('blue');
 		drawBall('red');
-
+		
 		if (mouse) {
 			canvas.addEventListener('mousemove', (event) => {
 				let mouseY = event.clientY - canvas.offsetTop;
-				if (mouseY <= 0)
-					mouseY = 0;
-				else if (mouseY >= canvas.height - (leftPaddle.height))
-					mouseY = canvas.height - (leftPaddle.height);
+				if (mouseY < 0)
+				mouseY = 0;
+				else if (mouseY > canvas.height - (leftPaddle.height))
+				mouseY = canvas.height - (leftPaddle.height);
 				leftPaddle.y = mouseY;
 				drawPaddles('blue');
 			});
 		}
+		
+		// if (keyboard) {
+		// 	document.onkeydown = function(e) {
+		// 		if (e.key == 'ArrowUp') {
+		// 			if (leftPaddle.y - 15 < 0) {
+		// 				leftPaddle.y = 0;
+		// 			} else {
+		// 				leftPaddle.y -= 15;
+		// 			}
+		// 		}
+		// 		else if (e.key == 'ArrowDown') {
+		// 			if (leftPaddle.y + 15 > canvas.height - (leftPaddle.height)) {
+		// 				leftPaddle.y = canvas.height - leftPaddle.height;	
+		// 			} else {
+		// 				leftPaddle.y += 15;
+		// 			}
+		// 		}
+		// 	};
+		// }
 
+		document.addEventListener('keydown', function(e) {
+			if (e.key == 'ArrowUp') {
+				paddleDirection = -1;
+			}
+			else if (e.key == 'ArrowDown') {
+				paddleDirection = 1;
+			}
+		});
+
+		document.addEventListener('keyup', function(e) {
+			if (e.key == 'ArrowUp' || e.key == 'ArrowDown') {
+				paddleDirection = 0;
+			}
+		});
+
+		if (paddleDirection == -1) {
+			if (leftPaddle.y - 10 >= 0) {
+				leftPaddle.y -= 10;
+			} else {
+				leftPaddle.y = 0;
+			}
+		}
+		else if (paddleDirection == 1) {
+			if (leftPaddle.y + 10 <= canvas.height - leftPaddle.height) {
+				leftPaddle.y += 10;
+			} else {
+				leftPaddle.y = canvas.height - leftPaddle.height;
+			}
+		}
+
+		
 		requestAnimationFrame(gameLoop);
 	}
 
@@ -157,7 +208,7 @@
 	}
 
 	function enableKeyboard() {
-		mouse = false;``
+		mouse = false;
 		keyboard = true;
 		startGame();
 	}

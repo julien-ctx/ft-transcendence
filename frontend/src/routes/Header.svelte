@@ -3,24 +3,27 @@
 	import { onMount } from 'svelte';
     import { AuthGuard } from '../lib/AuthGuard';
 	import { DarkMode } from 'flowbite-svelte';
-    import { myProfileDataStore, usersDataStore, usersHimSelfDataStore } from '$lib/store/user';
+    import { myProfileDataStore, userProfileDataStore, usersDataStore, usersHimSelfDataStore } from '$lib/store/user';
     import { UpdateProfileToStore } from '$lib/profileUtils';
     import AvatarProfile from '../modules/headerComponent/avatarProfile.svelte';
-    import SearchUsers from '../modules/headerComponent/searchComponent/searchUsers.svelte';
+    import SearchUsers from '../modules/headerComponent/searchUsers.svelte';
     import Notifications from '../modules/headerComponent/notifications.svelte';
     import { goto } from '$app/navigation';
     import { getJwt, removeJwt } from '$lib/jwtUtils';
 	import io from 'socket.io-client';
     import { GetAllUsers } from '$lib/userUtils';
     import axios from 'axios';
+    import { socketFriendStore, socketUserStore } from '$lib/store/socket';
 
 	let myProfile : any;
+	let userProfile : any;
 	let allUsers : any;
-	let socket : any;
+	let socketUser : any;
+	let socketFriend : any;
 
 	myProfileDataStore.subscribe(val => myProfile = val);
 	usersDataStore.subscribe(val => allUsers = val);
-
+  
 	onMount(async () => {
 		await AuthGuard()
 		.then((res) => {
@@ -63,6 +66,9 @@
 			}
 		})
 	})
+	userProfileDataStore.subscribe(val => userProfile = val);
+	socketUserStore.subscribe(val => socketUser = val);
+	socketFriendStore.subscribe(val => socketFriend = val);
 
 </script>
 
@@ -84,7 +90,7 @@
 		<DarkMode />
 		<SearchUsers />
 		<Notifications />
-		<AvatarProfile socket={socket}/>
+		<AvatarProfile />
 	</header>
 {/if}
 

@@ -9,7 +9,7 @@
 		.then((res) => {
 			UpdateProfileToStore(res.data);
 		});
-		// removeJwt();
+		removeJwt();
 		goto("/login");
 	})
 </script>

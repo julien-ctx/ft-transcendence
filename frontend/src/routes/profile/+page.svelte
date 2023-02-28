@@ -1,54 +1,55 @@
 <script lang="ts">
     import { UpdateProfileImg, UpdateProfileLogin, UpdateProfileToStore } from "$lib/profileUtils";
 	import { Avatar, Button, Card, Dropdown, DropdownItem, MenuButton } from "flowbite-svelte";
-    import { myProfileDataStore, usersDataStore } from "$lib/store/user";
+    import { myProfileDataStore, userProfileDataStore, usersDataStore } from "$lib/store/user";
+    import { socketFriendStore, socketUserStore } from "$lib/store/socket";
     import { onMount } from "svelte";
-    import { getJwt } from "$lib/jwtUtils";
-	import io from 'socket.io-client';
 
 	let fileInput : any;
 	let isEditLogin : boolean = false;
 	let myProfile : any;
 	let loginTmp : any;
 	let allUsers : any;
-	let socket : any;
+	let socketFriend : any;
+	let socketUser : any;
 
 	myProfileDataStore.subscribe(val => {
 		myProfile = val;
 		loginTmp = myProfile.login;
 	})
-
-	usersDataStore.subscribe(val => {
-		allUsers = val;
-	})
+	usersDataStore.subscribe(val => allUsers = val);
+	socketFriendStore.subscribe(val => socketFriend = val);
+	socketUserStore.subscribe(val => socketUser = val);
 
 	onMount(() => {
-		socket = io('http://localhost:4000', {
-			path: "/notif_friend",
-			query : { token : getJwt()}
-		});
-		socket.on("event_friend", (data : any) => {
-			UpdateProfileToStore(data);			
-		});
+		userProfileDataStore.set("");
 	})
 
 	async function submitFormImg() {
 		const formData = new FormData();
 		formData.append('file', fileInput.files[0]);
-		UpdateProfileImg(formData)
+		await UpdateProfileImg(formData)
 		.then((res) => {
 			UpdateProfileToStore(res.data);
+			socketUser.emit("update_user", res.data);
 		});
 	}
 
 	async function submitFormLogin() {
 		myProfile.login = loginTmp;
-		UpdateProfileLogin(myProfile.login)
+		await UpdateProfileLogin(myProfile.login)
 		.then((res) => {
 			UpdateProfileToStore(res.data);
+			socketUser.emit("update_user", res.data);
 			isEditLogin = false;
 		});
 	}
+
+	function handleKeyPress(e : any) {
+		if (e.key === 'Enter')
+			submitFormLogin();
+	}
+
 </script>
 
 {#if myProfile.first_name}
@@ -73,9 +74,9 @@
 							<div>{myProfile.login}</div>
 							<Button on:click={() => isEditLogin = true}>Edit</Button>
 						{:else}
-							<input type="text" bind:value={loginTmp}>
+							<input type="text" bind:value={loginTmp} on:keypress={handleKeyPress}>
 							<Button on:click={() => {isEditLogin = false; loginTmp = myProfile.login}}>Cancel</Button>
-							<Button on:click={submitFormLogin}>Confirm</Button>
+							<Button on:click={submitFormLogin} >Confirm</Button>
 						{/if}
 					</div>
 					<div>Firstname: {myProfile.first_name}</div>
@@ -101,7 +102,7 @@
 						<Button href={`/users?id=${user.id}`}>View profile</Button>
 						<Button>Invitation play</Button>
 						<Button>Private message</Button>
-						<Button on:click={() => socket.emit('delete_friend', { user_send : myProfile, user_receive : user})}>Delete friend</Button>
+						<Button on:click={() => socketFriend.emit('delete_friend', { id_user_send : myProfile.id, id_user_receive : user.id})}>Delete friend</Button>
 					</div>
 				{/if}
 			{/each}
@@ -114,8 +115,8 @@
 							<Avatar src={notif.img_link} class="object-cover"/>
 							<div class="self-end">{notif.login_send}</div>
 							<Button href={`/users?id=${notif.id_user_send}`}>View profile</Button>
-							<Button on:click={() => socket.emit("accept_friend", { user : myProfile, notif})}>Accept friend</Button>
-							<Button on:click={() => socket.emit("refuse_friend", {user : myProfile, notif})}>Refuse friend</Button>
+							<Button on:click={() => socketFriend.emit("accept_friend", { user : myProfile, notif})}>Accept friend</Button>
+							<Button on:click={() => socketFriend.emit("refuse_friend", {user : myProfile, notif})}>Refuse friend</Button>
 						</div>
 					{/if}
 				{/each}
@@ -130,7 +131,7 @@
 								<Avatar src={user.img_link} class="object-cover"/>
 								<div class="self-end">{user.login}</div>
 								<Button href={`/users?id=${user.id}`}>View profile</Button>
-								<Button on:click={() => socket.emit("cancel_friend", {id_user_send : myProfile.id, id_user_receive : user.id})}>Cancel request</Button>
+								<Button on:click={() => socketFriend.emit("cancel_friend", {id_user_send : myProfile.id, id_user_receive : user.id})}>Cancel request</Button>
 							</div>
 						{/if}
 					{/each}

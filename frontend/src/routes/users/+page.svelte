@@ -6,49 +6,31 @@
 	import io from 'socket.io-client';
     import { getJwt } from '$lib/jwtUtils';
     import { UpdateProfileToStore } from '$lib/profileUtils';
+    import { socketFriendStore, socketUserStore } from '$lib/store/socket';
 
 	let isMount : boolean = false;
 	let hasId : boolean = false;
 	let userProfile : any;
-	let socket : any;
+	let socketFriend : any;
 	let socketUser : any;
 	let myProfile : any;
 
-	myProfileDataStore.subscribe(val => {
-		myProfile = val;
-	})
+	myProfileDataStore.subscribe(val => myProfile = val)
+	userProfileDataStore.subscribe(val => userProfile = val);
+	socketFriendStore.subscribe(val => socketFriend = val);
+	socketUserStore.subscribe(val => socketUser = val);
 
-	userProfileDataStore.subscribe(val => {
-		userProfile = val;
-	})
-
-	onMount(() => {
+	onMount(async () => {
 		const urlParams = new URLSearchParams(window.location.search);
 		hasId = urlParams.has("id");
 		if (hasId) {
 			let id : any = urlParams.get("id");
-			GetOneUser(id)
+			await GetOneUser(id)
 			.then((res) => {
 				userProfileDataStore.set(res.data);
 				isMount = true;
 			});
 		}
-		socket = io('http://localhost:4000', {
-			path: "/notif_friend",
-			query : { token : getJwt()}
-		});
-		socket.on("event_friend", (data : any) => {
-			UpdateProfileToStore(data);					
-		});
-
-		socketUser = io("http://localhost:4000", {
-			path: "/event_user",
-			query : { token : getJwt()}
-		})
-		socketUser.on("event_user", (data : any) => {
-			if (data.id == userProfile.id)
-				userProfileDataStore.set(data);
-		})
 	})
 
 	function handleClickAcceptFriend() {
@@ -57,9 +39,8 @@
 			if (elem.type == 0 && elem.id_user_send == userProfile.id)
 				notif = elem;
 		});
-		socket.emit("accept_friend", { user : myProfile, notif});
+		socketFriend.emit("accept_friend", { user : myProfile, notif});
 	}
-
 </script>
 
 {#if isMount}
@@ -81,15 +62,24 @@
 					<div>Email: {userProfile.email}</div>
 				</div>
 			</div>
-			{#if myProfile.req_send_friend && myProfile.req_send_friend.includes(userProfile.id)}
-				<div>Pending request friend</div>
-				<Button on:click={() => socket.emit("cancel_friend", {id_user_send : myProfile.id, id_user_receive : userProfile.id})}>Cancel request</Button>
-			{:else if myProfile.req_received_friend && myProfile.req_received_friend.includes(userProfile.id)}
-				<Button on:click={handleClickAcceptFriend}>Accept request friend</Button>
-			{:else if myProfile.friend_id && myProfile.friend_id.includes(userProfile.id)}
-				<Button on:click={() => socket.emit('delete_friend', { user_send : myProfile, user_receive : userProfile})}>Delete friend</Button>
+			{#if myProfile.block_id && myProfile.block_id.includes(userProfile.id)}
+				<Button on:click={() => socketUser.emit("unblock_user", { id_user_send : myProfile.id, id_user_receive : userProfile.id})}>Unblock this user</Button>
 			{:else}
-				<Button on:click={() => socket.emit('add_friend', { user_send : myProfile, user_receive : userProfile})}>Add friend</Button>
+				<Button on:click={() => socketUser.emit("block_user", { id_user_receive : userProfile.id, id_user_send : myProfile.id})}>Block this user</Button>
+			{/if}
+			{#if userProfile.block_id && userProfile.block_id.includes(myProfile.id)}
+				<div>This user blocked you</div>
+			{:else}
+				{#if myProfile.req_send_friend && myProfile.req_send_friend.includes(userProfile.id)}
+					<div>Pending request friend</div>
+					<Button on:click={() => socketFriend.emit("cancel_friend", {id_user_send : myProfile.id, id_user_receive : userProfile.id})}>Cancel request</Button>
+				{:else if myProfile.req_received_friend && myProfile.req_received_friend.includes(userProfile.id)}
+					<Button on:click={handleClickAcceptFriend}>Accept request friend</Button>
+				{:else if myProfile.friend_id && myProfile.friend_id.includes(userProfile.id)}
+					<Button on:click={() => socketFriend.emit('delete_friend', { id_user_send : myProfile.id, id_user_receive : userProfile.id})}>Delete friend</Button>
+				{:else}
+					<Button on:click={() => socketFriend.emit('add_friend', { user_send : myProfile, user_receive : userProfile})}>Add friend</Button>
+				{/if}
 			{/if}
 		</Card>
 	</div>

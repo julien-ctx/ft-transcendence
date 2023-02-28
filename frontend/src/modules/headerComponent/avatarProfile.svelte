@@ -1,13 +1,14 @@
 <script lang="ts">
 	import { Avatar, Dropdown, DropdownHeader, DropdownItem, DropdownDivider } from 'flowbite-svelte'
     import { myProfileDataStore } from '$lib/store/user';
+    import { socketUserStore } from '$lib/store/socket';
 	
 	let user : any;
-	export let socket : any;
+	let socketUser : any;
 
-	myProfileDataStore.subscribe(val => {
-		user = val;
-	});
+	myProfileDataStore.subscribe(val => user = val);
+	socketUserStore.subscribe(val => socketUser = val);
+
 </script>
 
 <Avatar id="user-drop" src={user.img_link} class="object-cover"/>
@@ -17,5 +18,5 @@
 </DropdownHeader>
 <DropdownItem href="/profile">Profile</DropdownItem>
 <DropdownDivider />
-<DropdownItem href="/logout" on:click={() => socket.emit("disconnect_user", user)}>Logout</DropdownItem>
+<DropdownItem href="/logout" on:click={() => socketUser.emit("disconnect_user", user)}>Logout</DropdownItem>
 </Dropdown>

@@ -13,13 +13,6 @@ export class GameGateway {
 	@SubscribeMessage('setObjects')
 	setObjects(client: any, data: { rightPaddle: any, leftPaddle: any, ball: any }): void {
 		this.gameService.startGame(data.rightPaddle, data.leftPaddle, data.ball);
-		client.emit('startGame', data);
-		this.gameService.launchBall(this.server);
+		client.emit('data', data);
   	}
-
-	// @SubscribeMessage('setLeftPaddle')
-	// setPaddlePos(client: any, data: { x: number, y: number, pos: boolean}): void {
-	// 	this.gameService.setPaddlePos(data.x, data.y, data.pos);
-	// }
-
 }

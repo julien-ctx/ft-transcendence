@@ -1,4 +1,5 @@
 import { Injectable } from "@nestjs/common";
+import { User } from "@prisma/client";
 import { PrismaService } from "src/prisma/prisma.service";
 
 @Injectable()
@@ -70,7 +71,7 @@ export class UserService {
 		});
 	}
 
-	async addNotifFriend(userSend : any, userReceive : any) {
+	async addNotifFriend(userSend : User, userReceive : User) {
 		try {
 			await this.prisma.notification.create({
 				data : {
@@ -99,5 +100,29 @@ export class UserService {
 		return await this.prisma.user.createMany({
 			data : users
 		});
+	}
+
+	filterId(arr : number [], id : number) {
+		for (let i = 0; i < arr.length; i++) {
+			if (arr[i] === id)
+				arr.splice(i, 1);
+		}
+		return arr;
+	}
+
+	getIdNotifFriend(arr : any , id : number) {
+		for (let i = 0; i < arr.length; i++) {
+			if (arr[i].id_user_send === id && arr[i].type == 0)
+				return arr[i].id
+		}
+		return undefined;
+	}
+
+	getIdNotif(arr : any , id : number) {
+		for (let i = 0; i < arr.length; i++) {
+			if (arr[i].id_user_send === id)
+				return arr[i].id
+		}
+		return undefined;
 	}
 }

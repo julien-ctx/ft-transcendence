@@ -11,7 +11,6 @@ export async function UpdateProfileLogin(login : any) {
 }
 
 export function UpdateProfileToStore(params : any) {
-	myProfileDataStore.set(params);
 	let count : number = 0;
 	if (params.notification) {
 		params.notification.forEach((elem : any) => {
@@ -19,7 +18,8 @@ export function UpdateProfileToStore(params : any) {
 				count++;
 		});
 	}
-	myNotifLength.set(count)
+	myProfileDataStore.set(params);
+	myNotifLength.set(count);
 }
 
 export async function UpdateProfileConnected(status : number) {

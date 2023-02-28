@@ -18,6 +18,7 @@ model User {
 	img_link String
   status Int @default(0)
   notification Notification[]
+  block_id Int[]
   friend_id Int[]
   req_received_friend Int[]
   req_send_friend Int[]

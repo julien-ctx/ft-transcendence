@@ -3,7 +3,6 @@
 	import axios from "axios";
     import { goto } from "$app/navigation";
     import { getJwt, setJwt } from "$lib/jwtUtils";
-    import { socketUserStore } from "$lib/store/socket";
     import { io } from "socket.io-client";
 
 	onMount(async () => {

@@ -55,12 +55,17 @@
 
 		socket.on('rooms', (receivedRoom : string) => {
 			rooms.push(receivedRoom);
-			console.log(rooms);
+			// console.log(rooms);
+		});
+
+		socket.on('deletedRoom', (receivedRoom : string) => {
+			rooms = rooms.filter((room : string) => room !== receivedRoom);
+			// console.log(rooms);
 		});
 
 		socket.on('errors', (receivedErr : any) => {
 			err = {...err, ...receivedErr};
-			console.log(err);
+			// console.log(err);
 		});
 
 		socket.on("successCreate", () => {
@@ -114,6 +119,12 @@
 		modalChat = true;
 	}
 
+	function leaveRoom(room : string) {
+		socket.emit('leaveRoom', {
+			roomName : room,
+		});
+	}
+
 	let JoinName = '';
 	let JoinPass = '';
 
@@ -146,7 +157,12 @@
 		{:else}
 			<Listgroup active >
 			{#each rooms as room} 
-				<ListgroupItem on:click={() => openChat(room)}>{room}</ListgroupItem>
+				<div class="flex">
+					<ListgroupItem on:click={() => openChat(room)}>{room}</ListgroupItem>
+					<Button outline color="red" on:click={leaveRoom(room)}>
+						<img src="/delete.svg" class="w-6 h-6" alt="delete"/>
+					</Button>
+				</div>
 			{/each}
 			</Listgroup>
 		{/if}

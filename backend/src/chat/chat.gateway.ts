@@ -98,7 +98,9 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 					connect: {
 						id: User.id,
 					}
-			},
+				},
+				owner : true,
+				admin : true,
 		}
 		});
 		client.emit('successCreate');
@@ -176,6 +178,33 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 		return ;
 	}
 
+	@SubscribeMessage('leaveRoom')
+	async handleLeaveRoom(@ConnectedSocket() client, @MessageBody() data: any) {
+		const token = client.handshake.query.token as string;
+		const user = this.jwt.decode(token);
+		if (user === undefined) return;
+
+		const idUser : number = user['id'];
+		const User = await this.prisma.user.findUnique({
+			where: {
+				id_user: idUser,
+			}
+		});
+		const room = await this.chatService.getRoomByName(data.roomName);
+		const relation = await this.prisma.roomToUser.findMany({
+			where: {
+				id_user: User.id_user,
+				id_room: room.id,
+			}
+		});
+		await this.prisma.roomToUser.delete({
+			where: {
+				id: relation[0].id,
+			}
+		});
+		client.emit('deletedRoom', data.roomName);
+	}
+
 	@SubscribeMessage('Message')
 	handleMessage(@ConnectedSocket() client, @MessageBody() data: any) {
 		const token = client.handshake.query.token as string;
@@ -208,12 +237,18 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 			this.Rooms = [...this.Rooms, roomInstance];
 		}
 		else {
-			roomInstance.addUser(User, client);
+			console.log('Is in the room : ', roomInstance.isHere(User));
+			if (roomInstance.isHere(User) === false)
+				roomInstance.addUser(User, client);
+			else 
+				roomInstance.changeClient(User, client);
 		}
-		console.log(this.Rooms);
 
 		Room.Message.forEach((message) => {
-			client.emit('getMessages', message.content);
+			client.emit('getMessages', {
+				message : message.content,
+				user : message.id_user,
+			});
 		});
 	}
 
@@ -223,21 +258,34 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 		const user = this.jwt.decode(token);
 		if (user === undefined) return;
 		
-		// console.log({data});	
-		const idUser : number = user['id'];
-		const User = await this.Service.getOneById(idUser);
+		const User = await this.Service.getOneById(user['id']);
 		const Room = await this.chatService.getRoomByName(data.roomName);
 		const message = await this.chatService.createMessage(User.id, Room.id, data.message);
 
 		const roomInstance = this.findRoom(Room.name);
 		roomInstance.ClientUser.forEach((elem) => {
-			elem.Client.emit('getMessages', message.content);
+			elem.Client.emit('getMessages', {
+				message : message.content,
+				user : elem.User.id_user,
+			}); 
 		});
-		// client.emit('getMessages', message.content);
 	}
 
 	handleDisconnect(client: any) {
-		// this.client.splice(this.client.indexOf(client), 1);
+		const token = client.handshake.query.token as string;
+		const user = this.jwt.decode(token);
+		if (user === undefined) return;
+
+		// console.log('Deco');
+
+		const User = this.prisma.user.findUnique({
+			where: {
+				id_user: user['id'],
+			}
+		});
+		this.Rooms.forEach((room) => {
+			room.removeUser(User);
+		});
 	}
 
 	findRoom(name: string) {

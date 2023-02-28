@@ -23,6 +23,11 @@ export class UserController{
 		return this.userService.getAll(user.id);
 	}
 
+	@Get("getAllHimSelf")
+	getAllHimSelf(@User() user : UserDto) {
+		return this.userService.getAllHimSelf();
+	}
+
 	@Get(":id")
 	getOne(@Param("id") id : string) {
 		let idNumber : number = +id;

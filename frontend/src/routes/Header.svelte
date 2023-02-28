@@ -3,7 +3,7 @@
 	import { onMount } from 'svelte';
     import { AuthGuard } from '../lib/AuthGuard';
 	import { DarkMode } from 'flowbite-svelte';
-    import { myProfileDataStore, userProfileDataStore, usersDataStore } from '$lib/store/user';
+    import { myProfileDataStore, userProfileDataStore, usersDataStore, usersHimSelfDataStore } from '$lib/store/user';
     import { UpdateProfileToStore } from '$lib/profileUtils';
     import AvatarProfile from '../modules/headerComponent/avatarProfile.svelte';
     import SearchUsers from '../modules/headerComponent/searchUsers.svelte';
@@ -12,6 +12,7 @@
     import { getJwt, removeJwt } from '$lib/jwtUtils';
 	import io from 'socket.io-client';
     import { GetAllUsers } from '$lib/userUtils';
+    import axios from 'axios';
     import { socketFriendStore, socketUserStore } from '$lib/store/socket';
 
 	let myProfile : any;
@@ -22,6 +23,49 @@
 
 	myProfileDataStore.subscribe(val => myProfile = val);
 	usersDataStore.subscribe(val => allUsers = val);
+  
+	onMount(async () => {
+		await AuthGuard()
+		.then((res) => {
+			UpdateProfileToStore(res.data);
+		})
+		.catch((err) => {
+			if (err.response.status == 401) {
+				removeJwt();
+				goto("/login")
+			}
+		})
+
+		await axios.get("http://localhost:4000/users/getAllHimSelf", {
+			headers : {
+				Authorization : `Bearer ${getJwt()}`
+			}
+		})
+		.then((res) => {
+			usersHimSelfDataStore.set(res.data);
+		});
+
+		await GetAllUsers()
+		.then((res) => {
+			usersDataStore.set(res.data);
+		})
+		
+		socket = io('http://localhost:4000', {
+			path: "/event_user",
+			query : { token : getJwt()}
+		});
+
+		socket.on("event_user", (data : any) => {
+			if (allUsers.length != 0) {
+				for (let i = 0; i < allUsers.length; i++) {
+					if (allUsers[i].id == data.id) {
+						allUsers[i] = data;
+						usersDataStore.set(allUsers)
+					}
+				}
+			}
+		})
+	})
 	userProfileDataStore.subscribe(val => userProfile = val);
 	socketUserStore.subscribe(val => socketUser = val);
 	socketFriendStore.subscribe(val => socketFriend = val);

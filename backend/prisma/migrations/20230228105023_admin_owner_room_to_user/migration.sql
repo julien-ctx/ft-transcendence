@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "RoomToUser" ADD COLUMN     "admin" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN     "owner" BOOLEAN NOT NULL DEFAULT false;

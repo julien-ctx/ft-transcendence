@@ -71,6 +71,10 @@ export class UserService {
 		});
 	}
 
+	async getAllHimSelf() {
+		return await this.prisma.user.findMany();
+	}
+
 	async addNotifFriend(userSend : User, userReceive : User) {
 		try {
 			await this.prisma.notification.create({

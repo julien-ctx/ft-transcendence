@@ -1,4 +1,5 @@
 import { Injectable } from "@nestjs/common";
+import { User } from "@prisma/client";
 import { PrismaService } from "src/prisma/prisma.service";
 
 @Injectable()
@@ -70,7 +71,7 @@ export class UserService {
 		});
 	}
 
-	async addNotifFriend(userSend : any, userReceive : any) {
+	async addNotifFriend(userSend : User, userReceive : User) {
 		try {
 			await this.prisma.notification.create({
 				data : {

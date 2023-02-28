@@ -41,10 +41,6 @@
 		});
 		socketFriend.emit("accept_friend", { user : myProfile, notif});
 	}
-
-	function blockUser () {
-		socketUser.emit("block_user", { id_user_send : myProfile.id, id_user_receive : userProfile.id });
-	}
 </script>
 
 {#if isMount}
@@ -66,16 +62,24 @@
 					<div>Email: {userProfile.email}</div>
 				</div>
 			</div>
-			<Button on:click={blockUser}>Block this user</Button>
-			{#if myProfile.req_send_friend && myProfile.req_send_friend.includes(userProfile.id)}
-				<div>Pending request friend</div>
-				<Button on:click={() => socketFriend.emit("cancel_friend", {id_user_send : myProfile.id, id_user_receive : userProfile.id})}>Cancel request</Button>
-			{:else if myProfile.req_received_friend && myProfile.req_received_friend.includes(userProfile.id)}
-				<Button on:click={handleClickAcceptFriend}>Accept request friend</Button>
-			{:else if myProfile.friend_id && myProfile.friend_id.includes(userProfile.id)}
-				<Button on:click={() => socketFriend.emit('delete_friend', { user_send : myProfile, user_receive : userProfile})}>Delete friend</Button>
+			{#if myProfile.block_id && myProfile.block_id.includes(userProfile.id)}
+				<Button on:click={() => socketUser.emit("unblock_user", { id_user_send : myProfile.id, id_user_receive : userProfile.id})}>Unblock this user</Button>
 			{:else}
-				<Button on:click={() => socketFriend.emit('add_friend', { user_send : myProfile, user_receive : userProfile})}>Add friend</Button>
+				<Button on:click={() => socketUser.emit("block_user", { id_user_receive : userProfile.id, id_user_send : myProfile.id})}>Block this user</Button>
+			{/if}
+			{#if userProfile.block_id && userProfile.block_id.includes(myProfile.id)}
+				<div>This user blocked you</div>
+			{:else}
+				{#if myProfile.req_send_friend && myProfile.req_send_friend.includes(userProfile.id)}
+					<div>Pending request friend</div>
+					<Button on:click={() => socketFriend.emit("cancel_friend", {id_user_send : myProfile.id, id_user_receive : userProfile.id})}>Cancel request</Button>
+				{:else if myProfile.req_received_friend && myProfile.req_received_friend.includes(userProfile.id)}
+					<Button on:click={handleClickAcceptFriend}>Accept request friend</Button>
+				{:else if myProfile.friend_id && myProfile.friend_id.includes(userProfile.id)}
+					<Button on:click={() => socketFriend.emit('delete_friend', { id_user_send : myProfile.id, id_user_receive : userProfile.id})}>Delete friend</Button>
+				{:else}
+					<Button on:click={() => socketFriend.emit('add_friend', { user_send : myProfile, user_receive : userProfile})}>Add friend</Button>
+				{/if}
 			{/if}
 		</Card>
 	</div>

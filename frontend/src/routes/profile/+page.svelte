@@ -1,8 +1,9 @@
 <script lang="ts">
     import { UpdateProfileImg, UpdateProfileLogin, UpdateProfileToStore } from "$lib/profileUtils";
 	import { Avatar, Button, Card, Dropdown, DropdownItem, MenuButton } from "flowbite-svelte";
-    import { myProfileDataStore, usersDataStore } from "$lib/store/user";
+    import { myProfileDataStore, userProfileDataStore, usersDataStore } from "$lib/store/user";
     import { socketFriendStore, socketUserStore } from "$lib/store/socket";
+    import { onMount } from "svelte";
 
 	let fileInput : any;
 	let isEditLogin : boolean = false;
@@ -19,6 +20,10 @@
 	usersDataStore.subscribe(val => allUsers = val);
 	socketFriendStore.subscribe(val => socketFriend = val);
 	socketUserStore.subscribe(val => socketUser = val);
+
+	onMount(() => {
+		userProfileDataStore.set("");
+	})
 
 	async function submitFormImg() {
 		const formData = new FormData();
@@ -97,7 +102,7 @@
 						<Button href={`/users?id=${user.id}`}>View profile</Button>
 						<Button>Invitation play</Button>
 						<Button>Private message</Button>
-						<Button on:click={() => socketFriend.emit('delete_friend', { user_send : myProfile, user_receive : user})}>Delete friend</Button>
+						<Button on:click={() => socketFriend.emit('delete_friend', { id_user_send : myProfile.id, id_user_receive : user.id})}>Delete friend</Button>
 					</div>
 				{/if}
 			{/each}

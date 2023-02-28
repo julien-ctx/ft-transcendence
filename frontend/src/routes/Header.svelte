@@ -26,54 +26,6 @@
 	socketUserStore.subscribe(val => socketUser = val);
 	socketFriendStore.subscribe(val => socketFriend = val);
 
-	onMount(async () => {
-		await AuthGuard()
-		.then((res) => {
-			UpdateProfileToStore(res.data);
-		})
-		.catch((err) => {
-			if (err.response.status == 401) {
-				removeJwt();
-				goto("/login")
-			}
-		})
-
-		await GetAllUsers()
-		.then((res) => {
-			usersDataStore.set(res.data);
-		})
-
-		socketUser = io('http://localhost:4000', {
-			path: "/event_user",
-			query : { token : getJwt()}
-		});
-		socketUser.on("event_user", (data : any) => {
-			if (data.id == myProfile.id) {
-				UpdateProfileToStore(data)				
-			}
-			if (data.id && data.id == userProfile.id)
-				userProfileDataStore.set(data);
-			if (allUsers.length != 0) {
-				for (let i = 0; i < allUsers.length; i++) {
-					if (allUsers[i].id == data.id) {
-						allUsers[i] = data;
-						usersDataStore.set(allUsers)
-					}
-				}
-			}
-		})
-		socketUserStore.set(socketUser);
-
-		socketFriend = io('http://localhost:4000', {
-			path: "/notif_friend",
-			query : { token : getJwt()}
-		});
-		socketFriend.on('event_friend', (data : any) => {
-			UpdateProfileToStore(data);			
-		});
-		socketFriendStore.set(socketFriend);
-	})
-
 </script>
 
 {#if myProfile.login}

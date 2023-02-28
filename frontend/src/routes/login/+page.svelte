@@ -1,8 +1,10 @@
-<script>
+<script lang="ts">
     import { onMount } from "svelte";
 	import axios from "axios";
     import { goto } from "$app/navigation";
     import { getJwt, setJwt } from "$lib/jwtUtils";
+    import { socketUserStore } from "$lib/store/socket";
+    import { io } from "socket.io-client";
 
 	onMount(async () => {
 		const urlParams = new URLSearchParams(window.location.search);
@@ -33,6 +35,10 @@
 					})
 					.then((res) => {
 						setJwt(res.data.access_token);
+						let socketUser = io('http://localhost:4000', {
+							path: "/event_user",
+							query : { token : getJwt()}
+						});
 						goto("/");
 					})
 					.catch((err) => console.log(err))

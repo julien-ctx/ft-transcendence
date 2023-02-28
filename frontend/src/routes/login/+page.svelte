@@ -4,6 +4,8 @@
     import { goto } from "$app/navigation";
     import { getJwt, setJwt } from "$lib/jwtUtils";
     import { io } from "socket.io-client";
+    import { GetOneUser } from "$lib/userUtils";
+    import { AuthGuard } from "$lib/AuthGuard";
 
 	onMount(async () => {
 		const urlParams = new URLSearchParams(window.location.search);
@@ -32,13 +34,21 @@
 						last_name: res.data.last_name,
 						img_link: res.data.image.link,
 					})
-					.then((res) => {
+					.then(async (res) => {
 						setJwt(res.data.access_token);
-						let socketUser = io('http://localhost:4000', {
-							path: "/event_user",
-							query : { token : getJwt()}
-						});
-						goto("/");
+						await AuthGuard()
+						.then((res) => {
+							const user = res.data;
+							if (user.twoFaEnabled) {
+								goto("/login2fa")
+							} else {
+								io('http://localhost:4000', {
+									path: "/event_user",
+									query : { token : getJwt()}
+								});
+								goto("/");
+							}
+						})
 					})
 					.catch((err) => console.log(err))
 				})

@@ -79,7 +79,7 @@
 </script> 
 
 <div>
-	{#if $page.url.pathname != "/login"}
+	{#if $page.url.pathname != "/login" && $page.url.pathname != "/login2fa"}
 		<Header/>
 	{/if}
 	<main>

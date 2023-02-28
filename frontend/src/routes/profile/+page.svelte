@@ -4,6 +4,8 @@
     import { myProfileDataStore, userProfileDataStore, usersDataStore } from "$lib/store/user";
     import { socketFriendStore, socketUserStore } from "$lib/store/socket";
     import { onMount } from "svelte";
+    import axios from "axios";
+    import { getJwt } from "$lib/jwtUtils";
 
 	let fileInput : any;
 	let isEditLogin : boolean = false;
@@ -12,6 +14,7 @@
 	let allUsers : any;
 	let socketFriend : any;
 	let socketUser : any;
+	let imgSrc : any;
 
 	myProfileDataStore.subscribe(val => {
 		myProfile = val;
@@ -50,8 +53,21 @@
 			submitFormLogin();
 	}
 
-</script>
+	async function turnOnTwoFA() {
+		await axios.post("http://localhost:4000/auth/2fa/setup", "" ,{
+			headers : {
+				Authorization : `Bearer ${getJwt()}`
+			}
+		})
+		.then((res) => {
+			console.log(res.data);
+		})
+	}
 
+
+
+
+</script>
 {#if myProfile.first_name}
 	<div class="container mx-auto flex items-center flex-col gap-10 mt-10">
 		<Card padding="sm" size="xl">
@@ -82,6 +98,11 @@
 					<div>Firstname: {myProfile.first_name}</div>
 					<div>Lastname: {myProfile.last_name}</div>
 					<div>Email: {myProfile.email}</div>
+					{#if myProfile.twoFaEnabled}
+						<div>2FA is turn on</div>
+					{:else}
+						<Button on:click={turnOnTwoFA}>Turn on 2FA</Button>
+					{/if}
 				</div>
 			</div>
 		</Card>

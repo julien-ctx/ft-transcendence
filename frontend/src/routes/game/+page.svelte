@@ -91,15 +91,17 @@
 		drawSep('blue');
 		drawBall('red');
 
-		canvas.addEventListener('mousemove', (event) => {
-			let mouseY = event.clientY - canvas.offsetTop;
-			if (mouseY <= 0)
-				mouseY = 0;
-			else if (mouseY >= canvas.height - (leftPaddle.height))
-				mouseY = canvas.height - (leftPaddle.height);
-			leftPaddle.y = mouseY;
-			drawPaddles('blue');
-		});
+		if (mouse) {
+			canvas.addEventListener('mousemove', (event) => {
+				let mouseY = event.clientY - canvas.offsetTop;
+				if (mouseY <= 0)
+					mouseY = 0;
+				else if (mouseY >= canvas.height - (leftPaddle.height))
+					mouseY = canvas.height - (leftPaddle.height);
+				leftPaddle.y = mouseY;
+				drawPaddles('blue');
+			});
+		}
 
 		requestAnimationFrame(gameLoop);
 	}
@@ -146,15 +148,18 @@
 
 	onMount(() => {
 		initData();
-		startGame()
 	});
 
 	function enableMouse() {
+		keyboard = false;
 		mouse = true;
+		startGame();
 	}
 
 	function enableKeyboard() {
+		mouse = false;``
 		keyboard = true;
+		startGame();
 	}
 
 </script>

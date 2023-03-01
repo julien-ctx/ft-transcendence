@@ -21,6 +21,7 @@
 	
 	let mouse: boolean = false;
 	let keyboard: boolean = false;
+	let maxScore: number = 2;
 
 	let canvas: HTMLCanvasElement;
 	let ctx: any;
@@ -30,8 +31,8 @@
 	let paddleDirection: number = 0;
 
 	let ball: any;
-	let speed_x: number = -7.5;
-	let speed_y: number = -7;
+	let speedX: number = -7.5;
+	let speedY: number = -7;
 
 	function drawPaddles(color: string) {
 		ctx.fillStyle = color;
@@ -116,6 +117,11 @@
 		})
 	}
 
+	function displayScore() {
+  		ctx.fillText(leftPaddle.score, canvas.width * 0.4, canvas.height * 0.1);
+  		ctx.fillText(rightPaddle.score, canvas.width * 0.6 - ctx.measureText(rightPaddle.score).width, canvas.height * 0.1);
+	}
+
 	function checkBallPosition() {
 		if (ball.x < 0) {
 			ball = {
@@ -123,8 +129,20 @@
 				y: canvas.height * 0.5,
 				size: canvas.width * 0.01,
 			};
-			speed_x = -7.5;
-			speed_y = -7;
+			speedX = -7.5;
+			speedY = -7;
+			if (++rightPaddle.score === maxScore) {
+				ctx.font = 'bold ' + canvas.width * 0.03 + 'px Courier';
+				ctx.fillText(
+					'Right Paddle won!',
+					canvas.width / 2 - ctx.measureText('Right Paddle won!').width / 2,
+					canvas.height / 2
+				)
+				if (mouse)
+					mouse = false;
+				else
+					keyboard = false;
+			}
 		}
 		else if (ball.x > canvas.width - ball.size) {
 			ball = {
@@ -132,47 +150,61 @@
 				y: canvas.height * 0.5,
 				size: canvas.width * 0.01,
 			};
-			speed_x = -7.5;
-			speed_y = -7;
+			speedX = 7.5;
+			speedY = -7;
+			if (++leftPaddle.score === maxScore) {
+				ctx.font = 'bold ' + canvas.width * 0.03 + 'px Courier';
+				ctx.fillText(
+					'Left Paddle won!',
+					canvas.width / 2 - ctx.measureText('Left Paddle won!').width / 2,
+					canvas.height / 2 
+				)
+				if (mouse)
+					mouse = false;
+				else
+					keyboard = false;
+			}
 		}
+		ctx.font = 'bold ' + canvas.width * 0.03 + 'px Courier';
+		displayScore();
 	}
 		
 	function gameLoop() {
 		if (!ctx) return;
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
 		drawPaddles('blue');
-		ball.x += speed_x;
-		ball.y += speed_y;
+		ball.x += speedX;
+		ball.y += speedY;
 		
 		if (ball.y < 0) {
-			ball.y = ball.size;
-			speed_y = -speed_y;
+			ball.y = 0;
+			speedY = -speedY;
 		}
 		else if (ball.y > canvas.height - ball.size) {
 			ball.y = canvas.height - ball.size;
-			speed_y = -speed_y;
+			speedY = -speedY;
 		}
 		
 		if (collision(leftPaddle)) {
-			speed_x = -speed_x;
+			speedX = -speedX;
 			ball.x = leftPaddle.x + leftPaddle.width;
 		}
 		else if (collision(rightPaddle)) {
-			speed_x = -speed_x;
+			speedX = -speedX;
 			ball.x = rightPaddle.x - ball.size;
 		}
 		
-		drawSep('blue');
 		checkBallPosition();
-		drawBall('red');
-		
-		if (mouse) {
-			mouseMoves(canvas);
-		} else if (keyboard) {
-			keyboardMoves(canvas);
+		if (mouse || keyboard) {
+			drawSep('blue');
+			drawBall('red');
+			if (mouse) {
+				mouseMoves(canvas);
+			} else if (keyboard) {
+				keyboardMoves(canvas);
+			}
+			requestAnimationFrame(gameLoop);
 		}
-
-		requestAnimationFrame(gameLoop);
 	}
 
 	function startGame() {
@@ -183,7 +215,7 @@
 		// const radius = ball.size;
 		// ctx.beginPath();
 		ctx.fillStyle = color;
-		// ctx.arc(ball.x + leftPaddle.width, ball.y, radius, 0, 2 * Math.PI, false);
+		// ctx.arc(ball.x, ball.y, radius, 0, 2 * Math.PI, false);
 		// ctx.fill();
 		// ctx.stroke();
 		ctx.fillRect(ball.x, ball.y, ball.size, ball.size);
@@ -191,14 +223,16 @@
 
 	function initData() {
 		canvas = document.getElementById('main-game-canvas') as HTMLCanvasElement;
-		canvas.width = window.innerWidth - 10;
-		canvas.height = window.innerHeight * 0.90 - 10;
+		canvas.width = window.innerWidth * 0.7;
+		canvas.height = window.innerHeight * 0.8;
 		ctx = canvas.getContext('2d');
+		ctx.font = 'bold ' + canvas.width * 0.03 + 'px Courier';
 		rightPaddle = {
 			x: canvas.width - canvas.width * 0.015,
 			y: canvas.height * 0.5 - (canvas.height * 0.15 / 2),
 			width: canvas.width * 0.005,
 			height: canvas.height * 0.15,
+			score: 0,
 		};
 
 		leftPaddle = {
@@ -206,6 +240,7 @@
 			y: canvas.height * 0.5 - (canvas.height * 0.15 / 2),
 			width: canvas.width * 0.005,
 			height: canvas.height * 0.15,
+			score: 0,
 		};
 
 		ball = {
@@ -242,6 +277,11 @@
 
 	canvas {
 		background-color: black;
+		padding-left: 0;
+		padding-right: 0;
+		margin-left: auto;
+		margin-right: auto;
+		display: block;
 	}
 </style>
 <Button on:click={enableMouse}>Mouse</Button>

@@ -200,13 +200,12 @@
 	}
 
 	function drawBall(color: string) {
-		// const radius = ball.size;
-		// ctx.beginPath();
 		ctx.fillStyle = color;
-		// ctx.arc(ball.x, ball.y, radius, 0, 2 * Math.PI, false);
-		// ctx.fill();
-		// ctx.stroke();
-		ctx.fillRect(ball.x, ball.y, ball.size, ball.size);
+		const radius = ball.size / 2;
+		ctx.beginPath();
+		ctx.arc(ball.x + ball.size / 2, ball.y + ball.size / 2, radius, 0, 2 * Math.PI);
+		ctx.fill();
+		ctx.stroke();
 	}
 
 	function initData() {
@@ -229,7 +228,7 @@
 		ball = {
 			x: canvas.width * 0.5,
 			y: canvas.height * 0.5,
-			size: canvas.width * 0.01,
+			size: canvas.width * 0.02,
 			speedX: speed.x,
 			speedY: speed.y,
 		};

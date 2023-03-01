@@ -2,7 +2,6 @@
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
     import { AuthGuard } from '../lib/AuthGuard';
-	import { DarkMode } from 'flowbite-svelte';
     import { myProfileDataStore, userProfileDataStore, usersDataStore, usersHimSelfDataStore } from '$lib/store/user';
     import { UpdateProfileToStore } from '$lib/profileUtils';
     import AvatarProfile from '../modules/headerComponent/avatarProfile.svelte';
@@ -14,7 +13,8 @@
     import { GetAllUsers } from '$lib/userUtils';
     import axios from 'axios';
     import { socketFriendStore, socketUserStore } from '$lib/store/socket';
-
+	import { Navbar, NavBrand, NavLi, NavUl, NavHamburger, Avatar, Dropdown, DropdownItem, DropdownHeader, DropdownDivider } from 'flowbite-svelte'
+	
 	let myProfile : any;
 	let userProfile : any;
 	let allUsers : any;
@@ -23,7 +23,7 @@
 
 	myProfileDataStore.subscribe(val => myProfile = val);
 	usersDataStore.subscribe(val => allUsers = val);
-  
+	let primary = { "50": "#fff1f2", "100": "#ffe4e6", "200": "#fecdd3", "300": "#fda4af", "400": "#fb7185", "500": "#f43f5e", "600": "#e11d48", "700": "#be123c", "800": "#9f1239", "900": "#881337" }
 	onMount(async () => {
 		await AuthGuard()
 		.then((res) => {
@@ -69,28 +69,20 @@
 	userProfileDataStore.subscribe(val => userProfile = val);
 	socketUserStore.subscribe(val => socketUser = val);
 	socketFriendStore.subscribe(val => socketFriend = val);
-	
 </script>
 
 {#if myProfile.login}
 	<header class="flex items-center space-x-4 justify-center">
-		<nav>
-			<ul>
-				<li aria-current={$page.url.pathname === '/' ? 'page' : undefined}>
-					<a href="/">Home</a>
-				</li>
-				<li aria-current={$page.url.pathname === '/game' ? 'page' : undefined}>
-					<a href="/game">Game</a>
-				</li>
-        		<li aria-current={$page.url.pathname === '/chat' ? 'page' : undefined}>
-					<a href="/chat">Chat</a>
-			  	</li>
-			</ul>
-		</nav>
-		<DarkMode />
-		<SearchUsers />
-		<Notifications />
-		<AvatarProfile />
+		<Navbar let:hidden>
+			<NavUl {hidden}>
+				<NavLi href="/" class={$page.url.pathname === '/'? "active" : ""}>Home</NavLi>
+				<NavLi href="/game" class={$page.url.pathname === '/game'? "active" : ""}>Game</NavLi>
+				<NavLi href="/chat" class={$page.url.pathname === '/chat'? "active" : ""}>Chat</NavLi>
+			</NavUl>
+			<SearchUsers />
+			<Notifications />
+			<AvatarProfile />
+		</Navbar>
 	</header>
 {/if}
 

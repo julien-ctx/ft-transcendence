@@ -1,8 +1,7 @@
 <script lang="ts">
-	import "../app.postcss";
-    import Header from './Header.svelte';
+	import "../app.scss";
+    import "../app.postcss";
     import { page } from '$app/stores';
-    import './styles.css';
     import { onMount } from "svelte";
     import { io } from "socket.io-client";
     import { UpdateProfileToStore } from "$lib/profileUtils";
@@ -10,19 +9,19 @@
     import { myProfileDataStore, userProfileDataStore, usersDataStore } from "$lib/store/user";
     import { socketFriendStore, socketUserStore } from "$lib/store/socket";
     import { GetAllUsers } from "$lib/userUtils";
-    import { all } from "axios";
     import { AuthGuard } from "$lib/AuthGuard";
     import { goto } from "$app/navigation";
+    import Header from "./Header.svelte";
 
-	let allUsers : any;
-	let userProfile : any;
-	let myProfile : any;
+    let allUsers : any;
+    let userProfile : any;
+    let myProfile : any;
 
-	userProfileDataStore.subscribe(val => userProfile = val);
-	usersDataStore.subscribe(val => allUsers = val);
-	myProfileDataStore.subscribe(val => myProfile = val);
+    userProfileDataStore.subscribe(val => userProfile = val);
+    usersDataStore.subscribe(val => allUsers = val);
+    myProfileDataStore.subscribe(val => myProfile = val);
 
-	onMount(async () => {		
+    onMount(async () => {		
 		if (getJwt() != undefined) {
 			await AuthGuard()
 			.then((res) => {
@@ -82,11 +81,11 @@
 	})
 </script> 
 
-<div>
-	{#if $page.url.pathname != "/login" && $page.url.pathname != "/login2fa"}
-		<Header/>
+<div class="container mx-auto h-screen">
+	{#if $page.url.pathname != "/login"}
+		<Header />
 	{/if}
-	<main>
+	<main class="h-full">
 		<slot></slot>
 	</main>
 </div>

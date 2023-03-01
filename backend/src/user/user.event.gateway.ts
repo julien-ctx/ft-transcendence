@@ -58,7 +58,8 @@ export class UserEventGateway implements OnGatewayInit, OnGatewayConnection, OnG
 	@SubscribeMessage("disconnect_user")
 	async disconnectUser(@MessageBody() user : User) {
 		await this.userService.updateUser({
-			status : 0
+			status : 0,
+			twoFaAuth : false
 		}, user.id)
 		.then((userUpdate : User) => {
 			this.server.emit("event_user", userUpdate);

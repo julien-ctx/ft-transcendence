@@ -16,6 +16,7 @@ import { ChatService } from './chat.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from 'src/user/user.service';
 import { RoomClass } from './room.interface';
+import { Socket } from 'dgram';
 
 @WebSocketGateway({
 	path : '/chat',
@@ -104,7 +105,11 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 		}
 		});
 		client.emit('successCreate');
-		client.emit('rooms', room.name);
+		client.emit('rooms', {
+			name : room.name,
+			owner : true,
+			status : room.status,
+		});
 	}
 
 	@SubscribeMessage('joinRoom')
@@ -174,7 +179,11 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 		}
 		});
 		client.emit('successJoin');
-		client.emit('rooms', room.name);
+		client.emit('rooms', {
+			name : room.name,
+			owner : false,
+			status : room.status,
+		});
 		return ;
 	}
 
@@ -197,11 +206,15 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 				id_room: room.id,
 			}
 		});
-		await this.prisma.roomToUser.delete({
-			where: {
-				id: relation[0].id,
-			}
-		});
+		
+		if (relation.length > 0) {
+			await this.prisma.roomToUser.delete({
+				where: {
+					id: relation[0].id,
+				}
+			});
+		}
+
 		client.emit('deletedRoom', data.roomName);
 	}
 
@@ -269,6 +282,45 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 				user : elem.User.id_user,
 			}); 
 		});
+	}
+
+	@SubscribeMessage('verifPassword')
+	async handleVerifPassword(@ConnectedSocket() client, @MessageBody() data: any) {
+		const token = client.handshake.query.token as string;
+		const user = this.jwt.decode(token);
+		if (user === undefined) return;
+
+		// console.log(data);
+		const User = await this.Service.getOneById(user['id']);
+		const Room = await this.chatService.getRoomByName(data.roomName);
+		const valide = await this.chatService.verifyPass(data.password, Room.password);
+		// console.log(valide);
+		if (valide === false) 
+			client.emit('wrongEdit', 'Wrong password');
+		else
+			client.emit('successVerify');
+	}
+
+	@SubscribeMessage('changePass')
+	async handleChangePass(@ConnectedSocket() client, @MessageBody() data: any) {
+		const token = client.handshake.query.token as string;
+		const user = this.jwt.decode(token);
+		if (user === undefined) return;
+
+		const User = await this.Service.getOneById(user['id']);
+		const Room = await this.chatService.getRoomByName(data.roomName);
+		
+		let mdp = await this.chatService.hashedPass(data.Pass);
+		console.log(mdp);
+		await this.prisma.room.update({
+			where: {
+				id: Room.id,
+			},
+			data: {
+				password: mdp,
+			},
+		});
+		client.emit('successEdit');
 	}
 
 	handleDisconnect(client: any) {

@@ -1,9 +1,10 @@
 <script lang="ts">
     import { UpdateProfileImg, UpdateProfileLogin, UpdateProfileToStore } from "$lib/profileUtils";
-	import { Avatar, Button, Card, Dropdown, DropdownItem, MenuButton } from "flowbite-svelte";
+	import { Avatar, Button, Card, Dropdown, DropdownItem, MenuButton, Modal } from "flowbite-svelte";
     import { myProfileDataStore, userProfileDataStore, usersDataStore } from "$lib/store/user";
     import { socketFriendStore, socketUserStore } from "$lib/store/socket";
     import { onMount } from "svelte";
+	import DM  from '../../modules/privateMessage.svelte';
 
 	let fileInput : any;
 	let isEditLogin : boolean = false;
@@ -12,6 +13,8 @@
 	let allUsers : any;
 	let socketFriend : any;
 	let socketUser : any;
+	let modalDm : boolean = false;
+	let currentDm : any;
 
 	myProfileDataStore.subscribe(val => {
 		myProfile = val;
@@ -50,6 +53,13 @@
 			submitFormLogin();
 	}
 
+	function openDm(user : any) {
+		console.log('test');
+		modalDm = true;
+		currentDm = user;
+	}
+
+	let size = "xl";
 </script>
 
 {#if myProfile.first_name}
@@ -101,7 +111,7 @@
 						{/if}
 						<Button href={`/users?id=${user.id}`}>View profile</Button>
 						<Button>Invitation play</Button>
-						<Button>Private message</Button>
+						<Button on:click={() => openDm(user)}>Private message</Button>
 						<Button on:click={() => socketFriend.emit('delete_friend', { id_user_send : myProfile.id, id_user_receive : user.id})}>Delete friend</Button>
 					</div>
 				{/if}

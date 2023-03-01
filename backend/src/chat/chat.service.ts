@@ -54,6 +54,52 @@ export class ChatService {
 		return roomObj;
 	}
 
+	async getAll(id : number) {
+		const relation = await this.prisma.roomToUser.findMany({
+			where: {
+				id_user : {
+					not : id
+				}
+			},
+			include: {
+				room: true,
+			}
+		});
+
+		const room = await this.prisma.room.findMany();
+
+		let Rooms : any = [];// {name : string, status : string, members : number} = [];
+		let All = await this.prisma.roomToUser.findMany({
+			include: {
+				room: true,
+				user: true,
+			}
+
+		});
+		let isIn;
+		for (let i = 0; i < room.length; i++) {
+			isIn = false;
+			for (let j = 0; j < All.length; j++) {
+				if (All[j].room === room[i] && All[j].user.id_user === id)
+					isIn = true;
+			}
+			if (isIn === false) {
+				let members = await this.prisma.roomToUser.findMany({
+					where: {
+						id_room: room[i].id,
+					}
+				});
+				Rooms.push({
+					name : room[i].name,
+					status : room[i].status,
+					members : members.length,
+				});
+			}
+		}
+		console.log(Rooms);
+		return Rooms;
+	}
+
 	async getRoomByName(name : string) {
 		const room = await this.prisma.room.findUnique({
 			where: {

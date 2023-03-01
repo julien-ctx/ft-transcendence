@@ -24,7 +24,7 @@ export class UserController{
 	}
 
 	@Get("getAllHimSelf")
-	getAllHimSelf(@User() user : UserDto) {
+	getAllHimSelf() {
 		return this.userService.getAllHimSelf();
 	}
 

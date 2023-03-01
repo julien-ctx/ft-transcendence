@@ -19,8 +19,7 @@
 		})
 	});
 	
-	let mouse: boolean = false;
-	let keyboard: boolean = false;
+	let gameStarted: boolean = false;
 	let maxScore: number = 2;
 
 	let canvas: HTMLCanvasElement;
@@ -105,7 +104,6 @@
 				mouseY = canvas.height - (leftPaddle.height);
 			}
 			leftPaddle.y = mouseY;
-			drawPaddles('blue');
 		});
 
 		canvas.addEventListener('mouseleave', (event) => {
@@ -143,10 +141,7 @@
 					canvas.width / 2 - ctx.measureText('Right Paddle won!').width / 2,
 					canvas.height / 2
 				)
-				if (mouse)
-					mouse = false;
-				else
-					keyboard = false;
+				gameStarted = false;
 			}
 		}
 		else if (ball.x > canvas.width - ball.size) {
@@ -158,10 +153,7 @@
 					canvas.width / 2 - ctx.measureText('Left Paddle won!').width / 2,
 					canvas.height / 2 
 				)
-				if (mouse)
-					mouse = false;
-				else
-					keyboard = false;
+				gameStarted = false;
 			}
 		}
 		ctx.font = 'bold ' + canvas.width * 0.03 + 'px Courier';
@@ -194,14 +186,11 @@
 		}
 		
 		checkBallPosition();
-		if (mouse || keyboard) {
+		if (gameStarted) {
 			drawSep('blue');
 			drawBall('red');
-			if (mouse) {
-				mouseMoves(canvas);
-			} else if (keyboard) {
-				keyboardMoves(canvas);
-			}
+			mouseMoves(canvas);
+			keyboardMoves(canvas);
 			requestAnimationFrame(gameLoop);
 		}
 	}
@@ -221,11 +210,6 @@
 	}
 
 	function initData() {
-		canvas = document.getElementById('main-game-canvas') as HTMLCanvasElement;
-		canvas.width = window.innerWidth * 0.7;
-		canvas.height = window.innerHeight * 0.8;
-		ctx = canvas.getContext('2d');
-		ctx.font = 'bold ' + canvas.width * 0.03 + 'px Courier';
 		rightPaddle = {
 			x: canvas.width - canvas.width * 0.015,
 			y: canvas.height * 0.5 - (canvas.height * 0.15 / 2),
@@ -252,19 +236,25 @@
 	}
 
 	onMount(() => {
-		initData();
+		canvas = document.getElementById('main-game-canvas') as HTMLCanvasElement;
+		canvas.width = window.innerWidth * 0.7;
+		canvas.height = window.innerHeight * 0.8;
+		ctx = canvas.getContext('2d');
+		ctx.font = 'bold ' + canvas.width * 0.03 + 'px Courier';
+		ctx.fillStyle = 'blue';
+		const WelcomeMsg = 'Click to start the game!';
+  		ctx.fillText(
+			WelcomeMsg,
+			canvas.width * 0.5 - ctx.measureText(WelcomeMsg).width / 2,
+			canvas.height * 0.5
+		);
+		canvas.onclick = isReady;
 	});
 
-	function enableMouse() {
-		if (!keyboard && !mouse) {
-			mouse = true;
-			startGame();
-		}
-	}
-
-	function enableKeyboard() {
-		if (!keyboard && !mouse) {
-			keyboard = true;
+	function isReady() {
+		if (!gameStarted) {
+			initData();
+			gameStarted = true;
 			startGame();
 		}
 	}
@@ -283,9 +273,10 @@
 		margin-left: auto;
 		margin-right: auto;
 		display: block;
+		outline: lightgrey 0.5vw solid;
+		display: flex;
+		margin-top: 2%;
 	}
 </style>
-<Button on:click={enableMouse}>Mouse</Button>
-<Button on:click={enableKeyboard}>Keyboard</Button>
 <canvas id="main-game-canvas" class="game-canvas">
 </canvas>

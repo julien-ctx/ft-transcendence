@@ -31,8 +31,10 @@
 	let paddleDirection: number = 0;
 
 	let ball: any;
-	let speedX: number = -7.5;
-	let speedY: number = -7;
+	let speed = {
+		x: Math.round(Math.random()) * 2 - 1 < 0 ? -6 : 6,
+		y: Math.round(Math.random()) * 2 - 1 < 0 ? -7 : 7,
+	}
 
 	function drawPaddles(color: string) {
 		ctx.fillStyle = color;
@@ -122,15 +124,18 @@
   		ctx.fillText(rightPaddle.score, canvas.width * 0.6 - ctx.measureText(rightPaddle.score).width, canvas.height * 0.1);
 	}
 
+	function resetBall(direction: number) {
+		ball.x = canvas.width * 0.5;
+		ball.y = canvas.height * 0.5;
+		if ((direction < 0 && speed.x > 0) ||
+			(direction > 0 && speed.x < 0))
+			ball.speedX = -speed.x;
+		ball.speedY = Math.round(Math.random()) * 2 - 1 < 0 ? speed.y : -speed.y;
+	}
+
 	function checkBallPosition() {
 		if (ball.x < 0) {
-			ball = {
-				x: canvas.width * 0.5,
-				y: canvas.height * 0.5,
-				size: canvas.width * 0.01,
-			};
-			speedX = -7.5;
-			speedY = -7;
+			resetBall(-1);
 			if (++rightPaddle.score === maxScore) {
 				ctx.font = 'bold ' + canvas.width * 0.03 + 'px Courier';
 				ctx.fillText(
@@ -145,13 +150,7 @@
 			}
 		}
 		else if (ball.x > canvas.width - ball.size) {
-			ball = {
-				x: canvas.width * 0.5,
-				y: canvas.height * 0.5,
-				size: canvas.width * 0.01,
-			};
-			speedX = 7.5;
-			speedY = -7;
+			resetBall(1);
 			if (++leftPaddle.score === maxScore) {
 				ctx.font = 'bold ' + canvas.width * 0.03 + 'px Courier';
 				ctx.fillText(
@@ -173,24 +172,24 @@
 		if (!ctx) return;
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
 		drawPaddles('blue');
-		ball.x += speedX;
-		ball.y += speedY;
+		ball.x += ball.speedX;
+		ball.y += ball.speedY;
 		
 		if (ball.y < 0) {
 			ball.y = 0;
-			speedY = -speedY;
+			ball.speedY = -ball.speedY;
 		}
 		else if (ball.y > canvas.height - ball.size) {
 			ball.y = canvas.height - ball.size;
-			speedY = -speedY;
+			ball.speedY = -ball.speedY;
 		}
 		
 		if (collision(leftPaddle)) {
-			speedX = -speedX;
+			ball.speedX = -ball.speedX;
 			ball.x = leftPaddle.x + leftPaddle.width;
 		}
 		else if (collision(rightPaddle)) {
-			speedX = -speedX;
+			ball.speedX = -ball.speedX;
 			ball.x = rightPaddle.x - ball.size;
 		}
 		
@@ -247,6 +246,8 @@
 			x: canvas.width * 0.5,
 			y: canvas.height * 0.5,
 			size: canvas.width * 0.01,
+			speedX: speed.x,
+			speedY: speed.y,
 		};
 	}
 

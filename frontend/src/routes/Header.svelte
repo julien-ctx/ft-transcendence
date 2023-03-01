@@ -25,7 +25,7 @@
 	userProfileDataStore.subscribe(val => userProfile = val);
 	socketUserStore.subscribe(val => socketUser = val);
 	socketFriendStore.subscribe(val => socketFriend = val);
-
+	
 </script>
 
 {#if myProfile.login}

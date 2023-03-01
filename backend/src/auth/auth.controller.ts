@@ -1,11 +1,10 @@
-import { Body, Controller, Post, Request, UseGuards, Get, Req, Res, UnauthorizedException } from "@nestjs/common";
+import { Body, Controller, Post, Request, UseGuards, Get, Req, Res, UnauthorizedException, Param } from "@nestjs/common";
 import { PrismaService } from "src/prisma/prisma.service";
 import { AuthService } from "./auth.service";
 import { AuthDto } from "./dto";
 import { JwtAuthGuard } from "./guard/jwt-auth.guard";
 import { TwoFaService } from "./twoFa.service";
-import { toDataURL } from "qrcode"
-import { User } from "src/user/user.decorator";
+import { UserDec } from "src/user/user.decorator";
 
 @Controller("auth")
 export class AuthController{
@@ -36,6 +35,16 @@ export class AuthController{
 		}
 	}
 
+	@Get("one/:id")
+	async getOne(@Param("id") id ) {
+		let idNumber : number = +id;
+		return await this.prisma.user.findUnique({
+			where : {
+				id_user : idNumber
+			}
+		})
+	}
+
 	@UseGuards(JwtAuthGuard)
 	@Get("me")
 	me(@Request() req) {
@@ -43,29 +52,54 @@ export class AuthController{
 	}
 
 	@UseGuards(JwtAuthGuard)
-	@Post("2fa/setup")
-	async setup2fa(@User() user) {
+	@Post("2fa/enable")
+	async enable2fa(@UserDec() user) {
 		return await this.prisma.user.update({
 			where : {
 				id : user.id
 			},
 			data : {
-				twoFaEnabled : true
+				twoFaEnabled : true,
+				twoFaSecret : this.twoFaService.generateSecret(),
+				twoFaAuth : true
 			}
 		})
 	}
 
 	@UseGuards(JwtAuthGuard)
-	@Get("2fa/getQrCode")
-	async getQrCode(@User() user) {
-		const { otpAuthUrl } = await this.twoFaService.generateTwoFactorAuthSecret(user)
-		return await this.twoFaService.qrCodeUrl(otpAuthUrl);
+	@Post("2fa/disable")
+	async disable2fa(@UserDec() user) {
+		return await this.prisma.user.update({
+			where : {
+				id : user.id
+			},
+			data : {
+				twoFaEnabled : false,
+				twoFaSecret : "",
+				twoFaAuth: false
+			}
+		})
 	}
 
-	@UseGuards(JwtAuthGuard)
-	@Post("2fa/login")
-	async login(@Body("code2fa") code2fa, @User() user) {
+	@Post("2fa/getQrCode")
+	async getQrCode(@Body("user") user : any) {
+		return this.twoFaService.generateQrCode(user);
+	}
 
+	@Post("2fa/login")
+	async login(@Body("code2fa") code2fa, @Body("dto") dto : AuthDto, @Body("user") user) {
+		const codeIsValid =  this.twoFaService.verifyTwoFaCode(code2fa, user)
+		if (!codeIsValid)
+			throw new UnauthorizedException();
+		await this.prisma.user.update({
+			where: {
+				id : user.id
+			},
+			data : {
+				twoFaAuth : true
+			}
+		})
+		return await this.authService.signin(dto);
 	}
 
 }

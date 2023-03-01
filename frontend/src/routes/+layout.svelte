@@ -22,11 +22,13 @@
 	usersDataStore.subscribe(val => allUsers = val);
 	myProfileDataStore.subscribe(val => myProfile = val);
 
-	onMount(async () => {
+	onMount(async () => {		
 		if (getJwt() != undefined) {
 			await AuthGuard()
 			.then((res) => {
-				UpdateProfileToStore(res.data);			
+				UpdateProfileToStore(res.data);
+				console.log(myProfile);
+						
 			})
 			.catch((err) => {
 				if (err.response.status == 401) {
@@ -46,7 +48,7 @@
 				UpdateProfileToStore(data);
 			})
 			socketUser.on("event_user", (data : any) => {
-				console.log("data", data, "userprofile", userProfile, "alluser", allUsers);
+				// console.log("data", data, "userprofile", userProfile, "alluser", allUsers);
 				if (data.id && userProfile.id && data.id == userProfile.id)
 					userProfileDataStore.set(data);
 				if (allUsers && allUsers.length != 0) {
@@ -74,6 +76,8 @@
 				UpdateProfileToStore(data);			
 			});
 			socketFriendStore.set(socketFriend);
+		} else {
+			goto("/login")
 		}
 	})
 </script> 

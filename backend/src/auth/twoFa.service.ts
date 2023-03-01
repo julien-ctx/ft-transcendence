@@ -3,44 +3,24 @@ import { User } from "@prisma/client";
 import { authenticator } from "otplib";
 import { toDataURL } from 'qrcode';
 import { PrismaService } from "src/prisma/prisma.service";
+import { AuthDto } from "./dto";
 
 @Injectable()
 export class TwoFaService {
 	constructor(private prisma : PrismaService) {}
 
-	async generateTwoFactorAuthSecret(user : User) {
-		const secret = authenticator.generateSecret();
-		const otpAuthUrl = authenticator.keyuri(user.first_name, "Transcendence", secret);
-		await this.prisma.user.update({
-			where : {
-				id: user.id
-			},
-			data : {
-				twoFaSecret : secret
-			}
-		})
-		return {secret, otpAuthUrl};
+	generateSecret() : string {
+		return authenticator.generateSecret();
 	}
 
-	async turn2Fa(user : User) {
-		return await this.prisma.user.update({
-			where : {
-				id: user.id
-			},
-			data : {
-				twoFaEnabled : (user.twoFaEnabled)? false : true
-			}
-		})
+	generateQrCode(user : User) {
+		return toDataURL(authenticator.keyuri(user.first_name, "Transcendence", user.twoFaSecret));
 	}
 
-	async verifyTwoFaCode(code : string, user : User) {
+	verifyTwoFaCode(code : string, user : any) {
 		return authenticator.verify({
 			token : code,
 			secret: user.twoFaSecret
 		})
-	}
-
-	async qrCodeUrl(otpAuthUrl : string) {
-		return toDataURL(otpAuthUrl);
 	}
 }

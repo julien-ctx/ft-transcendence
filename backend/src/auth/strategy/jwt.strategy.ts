@@ -20,10 +20,9 @@ export class JwtStrategy extends PassportStrategy(Strategy, "jwt-two-factor"){
 		})
 		if (!user)
 			throw new UnauthorizedException()
-		
-		if (!user.twoFaEnabled)
-			return user;
-		if (!payload.twoFaAuth)
-			return user;
+		if (user.twoFaEnabled && !user.twoFaAuth) {
+			throw new UnauthorizedException()
+		}
+		return user;
 	}
 }

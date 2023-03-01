@@ -53,18 +53,27 @@
 			submitFormLogin();
 	}
 
-	async function turnOnTwoFA() {
-		await axios.post("http://localhost:4000/auth/2fa/setup", "" ,{
+	async function enbaleTwoFA() {
+		await axios.post("http://localhost:4000/auth/2fa/enable", "" ,{
 			headers : {
 				Authorization : `Bearer ${getJwt()}`
 			}
 		})
 		.then((res) => {
-			console.log(res.data);
+			UpdateProfileToStore(res.data);
 		})
 	}
 
-
+	async function disableTwoFA() {
+		await axios.post("http://localhost:4000/auth/2fa/disable", "" ,{
+			headers : {
+				Authorization : `Bearer ${getJwt()}`
+			}
+		})
+		.then((res) => {
+			UpdateProfileToStore(res.data);
+		})
+	}
 
 
 </script>
@@ -98,10 +107,10 @@
 					<div>Firstname: {myProfile.first_name}</div>
 					<div>Lastname: {myProfile.last_name}</div>
 					<div>Email: {myProfile.email}</div>
-					{#if myProfile.twoFaEnabled}
-						<div>2FA is turn on</div>
+					{#if !myProfile.twoFaEnabled}
+						<Button on:click={enbaleTwoFA}>Turn on 2FA</Button>
 					{:else}
-						<Button on:click={turnOnTwoFA}>Turn on 2FA</Button>
+						<Button on:click={disableTwoFA}>Turn off 2FA</Button>
 					{/if}
 				</div>
 			</div>

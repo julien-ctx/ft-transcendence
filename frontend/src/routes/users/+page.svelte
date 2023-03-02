@@ -32,10 +32,10 @@
 		}
 	})
 
-	function handleClickAcceptFriend() {
+	function handleClickAcceptFriend(user : any) {
 		let notif : any;
 		myProfile.notification.forEach((elem : any) => {
-			if (elem.type == 0 && elem.id_user_send == userProfile.id)
+			if (elem.type == 0 && elem.id_user_send == user.id)
 				notif = elem;
 		});
 		socketFriend.emit("accept_friend", { user : myProfile, notif});
@@ -77,7 +77,7 @@
 						<div>Pending request friend</div>
 						<Button on:click={() => socketFriend.emit("cancel_friend", {id_user_send : myProfile.id, id_user_receive : userProfile.id})}>Cancel request</Button>
 					{:else if myProfile.req_received_friend && myProfile.req_received_friend.includes(userProfile.id)}
-						<Button on:click={handleClickAcceptFriend}>Accept request friend</Button>
+						<Button on:click={() => handleClickAcceptFriend(userProfile)}>Accept request friend</Button>
 					{:else if myProfile.friend_id && myProfile.friend_id.includes(userProfile.id)}
 						<Button on:click={() => socketFriend.emit('delete_friend', { id_user_send : myProfile.id, id_user_receive : userProfile.id})}>Delete friend</Button>
 					{:else}
@@ -94,7 +94,11 @@
 						<div class="flex justify-end">
 							<MenuButton />
 							<Dropdown class="w-36">
-								<DropdownItem>Block this user</DropdownItem>
+								{#if myProfile.block_id && myProfile.block_id.includes(user.id)}
+									<DropdownItem on:click={() => socketUser.emit("unblock_user", { id_user_send : myProfile.id, id_user_receive : user.id})}>Unblock this user</DropdownItem>
+								{:else}
+									<DropdownItem on:click={() => socketUser.emit("block_user", { id_user_receive : user.id, id_user_send : myProfile.id})}>Block this user</DropdownItem>
+								{/if}
 							</Dropdown>
 						</div>
 						<div class="flex flex-col items-center pb-4 gap-2">
@@ -102,8 +106,32 @@
 							<h5 class="mb-1 text-xl font-medium text-gray-900 dark:text-white">{user.login}</h5>
 							<span class="text-sm text-gray-500 dark:text-gray-400 h-3">{user.kind}</span>
 							<div class="flex mt-4 space-x-3 lg:mt-6">
-							<Button class={buttonClass}>Add friend</Button>
-							<Button class={secondaryButtonClass}>Message</Button>
+							{#if myProfile.block_id && myProfile.block_id.includes(user.id)}
+								<Button on:click={() => socketUser.emit("unblock_user", { id_user_send : myProfile.id, id_user_receive : user.id})}>Unblock this user</Button>
+							{:else}
+								{#if user.block_id && user.block_id.includes(myProfile.id)}
+									<div>This user blocked you</div>
+								{:else}
+									{#if myProfile.req_send_friend && myProfile.req_send_friend.includes(user.id)}
+										<div>Pending request friend</div>
+										<Button class={buttonClass} on:click={() => socketFriend.emit("cancel_friend", {id_user_send : myProfile.id, id_user_receive : user.id})}>Cancel request</Button>
+									{:else if myProfile.req_received_friend && myProfile.req_received_friend.includes(user.id)}
+										<Button on:click={() => handleClickAcceptFriend(user)}>Accept request friend</Button>
+									{:else if myProfile.friend_id && myProfile.friend_id.includes(user.id)}
+										<Button class={buttonClass} on:click={() => socketFriend.emit('delete_friend', { id_user_send : myProfile.id, id_user_receive : user.id})}>Delete friend</Button>
+									{:else}
+										<Button class={buttonClass} on:click={() => socketFriend.emit('add_friend', { user_send : myProfile, user_receive : user})}>Add friend</Button>
+									{/if}
+									<Button class={secondaryButtonClass}>Message</Button>
+								{/if}
+							{/if}
+							
+							<!-- {#if myProfile.block_id && myProfile.block_id.includes(user.id)}
+								<Button class={buttonClass} on:click={() => socketUser.emit("unblock_user", { id_user_send : myProfile.id, id_user_receive : user.id})}>Unblock this user</Button>
+							{:else}
+								<Button class={buttonClass} on:click={() => socketFriend.emit('add_friend', { user_send : myProfile, user_receive : user})}>Add friend</Button>
+							{/if}
+							<Button class={secondaryButtonClass}>Message</Button> -->
 							</div>
 						</div>
 					</Card>

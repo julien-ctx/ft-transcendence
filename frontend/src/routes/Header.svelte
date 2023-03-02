@@ -9,24 +9,21 @@
     import Notifications from '../modules/headerComponent/notifications.svelte';
     import { goto } from '$app/navigation';
     import { getJwt, removeJwt } from '$lib/jwtUtils';
-	import io from 'socket.io-client';
-    import { GetAllUsers } from '$lib/userUtils';
-    import axios from 'axios';
     import { socketFriendStore, socketUserStore } from '$lib/store/socket';
-	import { Navbar, NavBrand, NavLi, NavUl, NavHamburger, Avatar, Dropdown, DropdownItem, DropdownHeader, DropdownDivider, Input, Button } from 'flowbite-svelte'
+	import { Navbar, NavBrand, NavLi, NavUl, NavHamburger, Avatar, Dropdown, DropdownItem, DropdownHeader, DropdownDivider } from 'flowbite-svelte'
 	
-    import { socketFriendStore, socketRoomStore, socketUserStore } from '$lib/store/socket';
 
 	let myProfile : any;
 	let userProfile : any;
 	let allUsers : any;
 	let socketUser : any;
 	let socketFriend : any;
-	let socketRoom : any;
 
 	myProfileDataStore.subscribe(val => myProfile = val);
 	usersDataStore.subscribe(val => allUsers = val);
-	socketRoomStore.subscribe(val => socketRoom = val);
+	userProfileDataStore.subscribe(val => userProfile = val);
+	socketUserStore.subscribe(val => socketUser = val);
+	socketFriendStore.subscribe(val => socketFriend = val);
 
 	onMount(async () => {
 		await AuthGuard()
@@ -64,15 +61,7 @@
 		// 		}
 		// 	}
 		// })
-
-		socketRoomStore.set(socketRoom);
-
 	})
-
-	userProfileDataStore.subscribe(val => userProfile = val);
-	socketUserStore.subscribe(val => socketUser = val);
-	socketFriendStore.subscribe(val => socketFriend = val);
-
 </script>
 {#if myProfile.first_name}
 	<Navbar let:hidden let:toggle navClass="!bg-primary !border-secondary border-b w-full px-2 sm:px-4 py-2.5">

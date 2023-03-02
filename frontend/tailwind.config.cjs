@@ -10,8 +10,8 @@ const config = {
 			transparent: 'transparent',
 			current: 'currentColor',
 			"primary" : "#3A3C42",
-			"secondary" : "#DFDECA",
-			"third" : "#9CCD62",
+			"secondary" : "#808080",
+			"third" : "#EA519D",
 			"white" : "#F7F8E2",
 			"base" : "primary",
 			"dark" : "#000"

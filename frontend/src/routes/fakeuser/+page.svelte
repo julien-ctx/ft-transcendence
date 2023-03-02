@@ -11,6 +11,7 @@
 			first_name: "jhon",
 			last_name: "doe",
 			img_link: "",
+			kind : "staff",
 			status: 0
 		},
 		{
@@ -20,6 +21,7 @@
 			first_name: "scott",
 			last_name: "doe",
 			img_link: "",
+			kind : "student",
 			status: 0
 		},
 		{
@@ -29,7 +31,8 @@
 			first_name: "zoe",
 			last_name: "doe",
 			img_link: "",
-			status: 0
+			kind : "student",
+			status: 1
 		},
 		{
 			id_user : 4,
@@ -38,7 +41,7 @@
 			first_name: "camille",
 			last_name: "doe",
 			img_link: "",
-			status: 0
+			status: 2
 		},
 		{
 			id_user : 5,
@@ -47,6 +50,7 @@
 			first_name: "barbara",
 			last_name: "doe",
 			img_link: "",
+			kind : "student",
 			status: 0
 		},
 		{
@@ -56,6 +60,7 @@
 			first_name: "huge",
 			last_name: "doe",
 			img_link: "",
+			kind : "student",
 			status: 0
 		},
 		{
@@ -74,6 +79,7 @@
 			first_name: "alfonse",
 			last_name: "doe",
 			img_link: "",
+			kind : "student",
 			status: 0
 		},
 		{
@@ -83,6 +89,7 @@
 			first_name: "bernard",
 			last_name: "doe",
 			img_link: "",
+			kind : "student",
 			status: 0
 		},
 		{
@@ -92,6 +99,7 @@
 			first_name: "elvis",
 			last_name: "doe",
 			img_link: "",
+			kind : "student",
 			status: 0
 		}
 	]

@@ -9,15 +9,12 @@ const config = {
 		colors : {
 			transparent: 'transparent',
 			current: 'currentColor',
-			"primary" : "#43467C",
-			'white': '#ffffff',
-			'purple': '#3f3cbb',
-			'midnight': '#121063',
-			'metal': '#565584',
-			'tahiti': '#3ab7bf',
-			'silver': '#ecebff',
-			'bubble-gum': '#ff77e9',
-			'bermuda': '#78dcca',
+			"primary" : "#3A3C42",
+			"secondary" : "#DFDECA",
+			"third" : "#9CCD62",
+			"white" : "#F7F8E2",
+			"base" : "primary",
+			"dark" : "#000"
 		}
 	},
 	plugins: [

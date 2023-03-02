@@ -1,0 +1,3 @@
+export const inputClass = "bg-secondary focus:border-secondary focus:ring-0 focus:ring-offset-0 transition duration-300 border-secondary text-dark";
+export const buttonClass = "bg-third hover:bg-secondary text-black hover:text-third transition-colors duration-300 !focus:ring-0 !focus:ring-offset-0 !focus:outline-0";
+export const secondaryButtonClass = "hover:bg-third hover:text-dark bg-secondary border-none text-third !border-b-2 transition-colors duration-300"

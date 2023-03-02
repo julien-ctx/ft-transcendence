@@ -20,6 +20,7 @@ export class AuthService{
 					first_name : auth.first_name,
 					last_name : auth.last_name,
 					img_link : auth.img_link,
+					kind : auth.kind
 				}
 			});
 

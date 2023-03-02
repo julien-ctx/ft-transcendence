@@ -75,7 +75,6 @@ export class AuthController{
 			},
 			data : {
 				twoFaEnabled : false,
-				twoFaSecret : "",
 				twoFaAuth: false
 			}
 		})

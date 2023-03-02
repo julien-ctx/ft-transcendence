@@ -8,25 +8,26 @@ datasource db {
 }
 
 model User {
-  id Int @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  id_user Int @unique
+	id Int @id @default(autoincrement())
+	createdAt DateTime @default(now())
+	id_user Int @unique
 	email String
 	login String @unique
 	first_name String
 	last_name String
 	img_link String
-  status Int @default(0)
-  notification Notification[]
-  block_id Int[]
-  friend_id Int[]
-  req_received_friend Int[]
-  req_send_friend Int[]
-  RoomToUser RoomToUser[]
-  Message Message[]
-  twoFaSecret String @default("")
-  twoFaEnabled Boolean @default(false)
-  twoFaAuth Boolean @default(false)
+	kind String @default("")
+	status Int @default(0)
+	notification Notification[]
+	block_id Int[]
+	friend_id Int[]
+	req_received_friend Int[]
+	req_send_friend Int[]
+	RoomToUser RoomToUser[]
+	Message Message[]
+	twoFaSecret String @default("")
+	twoFaEnabled Boolean @default(false)
+	twoFaAuth Boolean @default(false)
 }
 
 model Room {

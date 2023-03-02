@@ -53,8 +53,6 @@
 			submitFormLogin();
 	}
 
-	let size = "xl";
-</script>
 	async function enbaleTwoFA() {
 		await axios.post("http://localhost:4000/auth/2fa/enable", "" ,{
 			headers : {
@@ -133,7 +131,7 @@
 						{/if}
 						<Button href={`/users?id=${user.id}`}>View profile</Button>
 						<Button>Invitation play</Button>
-						<Button on:click={() => openDm(user)}>Private message</Button>
+						<!-- <Button on:click={() => openDm(user)}>Private message</Button> -->
 						<Button on:click={() => socketFriend.emit('delete_friend', { id_user_send : myProfile.id, id_user_receive : user.id})}>Delete friend</Button>
 					</div>
 				{/if}

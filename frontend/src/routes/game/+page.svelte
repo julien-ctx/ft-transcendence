@@ -5,7 +5,6 @@
     import { removeJwt } from "$lib/jwtUtils";
 	import { Button } from 'flowbite-svelte';
 	import io, { Socket } from 'socket.io-client';
-    import { right } from "@popperjs/core";
 	
 	let isLogged = false;
 	onMount(async () => {
@@ -20,7 +19,7 @@
 	});
 	
 	let gameStarted: boolean = false;
-	let maxScore: number = 2;
+	let maxScore: number;
 
 	let canvas: HTMLCanvasElement;
 	let ctx: any;
@@ -28,20 +27,18 @@
 
 	let rightPaddle: any;
 	let leftPaddle: any;
-	let paddleDirection: number = 0;
-
 	let ball: any;
-	let direction = {
-		x: 4 * randomDirection(),
-		y: 5 * randomDirection(),
-	}
 
-	let speed = {
-		x: 2,
-		y: 2,
-	}
+	let paddleDirection: number = 0;
+	let ballDirection: any;
 
-	function randomDirection(): number {
+	let ballSpeed: any;
+	let paddleSpeed: number;
+	
+
+	const socket = io('http://localhost:4000');
+
+	function randomballDirection(): number {
 		return Math.round(Math.random()) * 2 - 1;
 	}
 
@@ -58,86 +55,39 @@
 			rightPaddle.width, rightPaddle.height
 		);
 	}
-
+		
+	function drawBall(color: string) {
+		ctx.fillStyle = color;
+		const radius = ball.size / 2;
+		ctx.beginPath();
+		ctx.arc(ball.x + ball.size / 2, ball.y + ball.size / 2, radius, 0, 2 * Math.PI);
+		ctx.fill();
+		ctx.stroke();
+	}
+		
 	function drawSep(color: string) {
 		for (let i = 0; i < canvas.width; i += ball.size * 2) {
 			ctx.fillStyle = color;
-			ctx.fillRect(canvas.width  / 2 - ball.size, i, ball.size, ball.size);
+			ctx.fillRect(canvas.width / 2 - ball.size / 4, i, ball.size / 2, ball.size);
+			ctx.fillStyle = 'red';
+			ctx.fillRect(canvas.width / 2, canvas.height / 2, 1, 1);
 		}
 	}
-
-	function collision(paddle: any) {
-		const circleDistanceX = Math.abs(ball.x + ball.size - (paddle.x + paddle.width / 2));
-		const circleDistanceY = Math.abs(ball.y + ball.size - (paddle.y + paddle.height / 2));
-		if (circleDistanceX > (paddle.width / 2 + ball.size)) return false;
-		if (circleDistanceY > (paddle.height / 2 + ball.size)) return false;
-
-		if (circleDistanceX <= (paddle.width / 2)) return true;
-		if (circleDistanceY <= (paddle.height / 2)) return true;
-
-		const cornerDistanceSq = Math.pow(circleDistanceX - paddle.width / 2, 2) +
-								Math.pow(circleDistanceY - paddle.height / 2, 2);
-		return cornerDistanceSq <= Math.pow(ball.size, 2);
-	}
-
-	function keyboardMoves(canvas: HTMLCanvasElement) {
-		document.addEventListener('keydown', function(e) {
-			if (e.key == 'ArrowUp') {
-				paddleDirection = -1;
-			}
-			else if (e.key == 'ArrowDown') {
-				paddleDirection = 1;
-			}
-		});
-
-		document.addEventListener('keyup', function(e) {
-			if (e.key == 'ArrowUp' || e.key == 'ArrowDown') {
-				paddleDirection = 0;
-			}
-		});
-
-		if (paddleDirection == -1) {
-			if (leftPaddle.y - 10 >= 0) {
-				leftPaddle.y -= 10;
-			} else {
-				leftPaddle.y = 0;
-			}
-		}
-		else if (paddleDirection == 1) {
-			if (leftPaddle.y + 10 <= canvas.height - leftPaddle.height) {
-				leftPaddle.y += 10;
-			} else {
-				leftPaddle.y = canvas.height - leftPaddle.height;
-			}
-		}
-	}
-
-	function mouseMoves(canvas: HTMLCanvasElement) {
-		canvas.addEventListener('mousemove', (event) => {
-			mouseY = event.clientY - canvas.offsetTop;
-			if (mouseY < 0) {
-				mouseY = 0;
-			} else if (mouseY > canvas.height - (leftPaddle.height)) {
-				mouseY = canvas.height - (leftPaddle.height);
-			}
-			leftPaddle.y = mouseY;
-		});	
-	}
-
+		
 	function displayScore() {
-  		ctx.fillText(leftPaddle.score, canvas.width * 0.4, canvas.height * 0.1);
-  		ctx.fillText(rightPaddle.score, canvas.width * 0.6 - ctx.measureText(rightPaddle.score).width, canvas.height * 0.1);
+			ctx.fillText(leftPaddle.score, canvas.width * 0.4, canvas.height * 0.1);
+			ctx.fillText(rightPaddle.score, canvas.width * 0.6 - ctx.measureText(rightPaddle.score).width, canvas.height * 0.1);
 	}
-
+	
 	function resetBall(side: number) {
 		ball.x = canvas.width * 0.5;
 		ball.y = canvas.height * 0.5;
-		if ((side < 0 && direction.x > 0) ||
-			(side > 0 && direction.x < 0))
-			ball.dirX = -direction.x;
-		ball.dirY = randomDirection() < 0 ? direction.y : -direction.y;
+		if ((side < 0 && ballDirection.x > 0) ||
+			(side > 0 && ballDirection.x < 0))
+			ball.dirX = -ballDirection.x;
+		ball.dirY = randomballDirection() < 0 ? ballDirection.y : -ballDirection.y;
 	}
-
+	
 	function checkBallPosition() {
 		if (ball.x < 0) {
 			resetBall(-1);
@@ -168,20 +118,75 @@
 		ctx.font = 'bold ' + canvas.width * 0.03 + 'px Courier';
 		displayScore();
 	}
+
+	function collision(paddle: any) {
+		const deltaX = ball.x - Math.max(paddle.x, Math.min(ball.x, paddle.x + paddle.width));
+		const deltaY = ball.y - Math.max(paddle.y, Math.min(ball.y, paddle.y + paddle.height));
+		return (deltaX * deltaX + deltaY * deltaY) < (ball.size * ball.size);
+	}
+
+	function keyboardMoves(canvas: HTMLCanvasElement) {
+		document.addEventListener('keydown', function(e) {
+			if (e.key == 'ArrowUp') {
+				paddleDirection = -1;
+			}
+			else if (e.key == 'ArrowDown') {
+				paddleDirection = 1;
+			}
+			e.preventDefault();
+			return false;
+		});
+
+		document.addEventListener('keyup', function(e) {
+			if (e.key == 'ArrowUp' || e.key == 'ArrowDown') {
+				paddleDirection = 0;
+			}
+			e.preventDefault();
+			return false;
+		});
+
+		if (paddleDirection == -1) {
+			if (leftPaddle.y - paddleSpeed >= 0) {
+				leftPaddle.y -= paddleSpeed;
+			} else {
+				leftPaddle.y = 0;
+			}
+		}
+		else if (paddleDirection == 1) {
+			if (leftPaddle.y + paddleSpeed <= canvas.height - leftPaddle.height) {
+				leftPaddle.y += paddleSpeed;
+			} else {
+				leftPaddle.y = canvas.height - leftPaddle.height;
+			}
+		}
+	}
+
+	function mouseMoves(canvas: HTMLCanvasElement) {
+		canvas.addEventListener('mousemove', (event) => {
+			mouseY = event.clientY - canvas.offsetTop;
+			if (mouseY < 0) {
+				mouseY = 0;
+			} else if (mouseY > canvas.height - (leftPaddle.height)) {
+				mouseY = canvas.height - (leftPaddle.height);
+			}
+			leftPaddle.y = mouseY;
+		});	
+	}
+
 		
 	function gameLoop() {
 		if (!ctx) return;
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
 		drawPaddles('blue');
-		ball.x += ball.dirX * speed.x;
-		ball.y += ball.dirY * speed.y;
+		ball.x += ball.dirX * ballSpeed.x;
+		ball.y += ball.dirY * ballSpeed.y;
 		
 		if (ball.y < 0) {
 			ball.y = 0;
 			ball.dirY = -ball.dirY;
 		}
-		else if (ball.y > canvas.height - ball.size * 2) {
-			ball.y = canvas.height - ball.size * 2;
+		else if (ball.y > canvas.height - ball.size) {
+			ball.y = canvas.height - ball.size;
 			ball.dirY = -ball.dirY;
 		}
 		
@@ -189,9 +194,9 @@
 			ball.dirX = -ball.dirX;
 			ball.x = leftPaddle.x + leftPaddle.width;
 		}
-		else if (ball.x + ball.size <= rightPaddle.x && collision(rightPaddle)) {
+		else if (ball.x + ball.size >= rightPaddle.x && collision(rightPaddle)) {
 			ball.dirX = -ball.dirX;
-			ball.x = rightPaddle.x - ball.size * 2;
+			ball.x = rightPaddle.x - ball.size;
 		}
 		
 		checkBallPosition();
@@ -208,18 +213,15 @@
 		gameLoop()
 	}
 
-	function drawBall(color: string) {
-		ctx.fillStyle = color;
-		const radius = ball.size;
-		ctx.beginPath();
-		ctx.arc(ball.x + ball.size, ball.y + ball.size, radius, 0, 2 * Math.PI);
-		ctx.fill();
-		ctx.stroke();
-	}
-
 	function initData() {
+		ballDirection = {
+			x: 2 * randomballDirection(),
+			y: 2 * randomballDirection(),
+		}
+		paddleDirection = 0;
+
 		rightPaddle = {
-			x: canvas.width - canvas.width * 0.015,
+			x: canvas.width - canvas.width * 0.015 - canvas.width * 0.005,
 			y: canvas.height * 0.5 - (canvas.height * 0.15 / 2),
 			width: canvas.width * 0.005,
 			height: canvas.height * 0.15,
@@ -237,10 +239,18 @@
 		ball = {
 			x: canvas.width * 0.5,
 			y: canvas.height * 0.5,
-			size: canvas.width * 0.01,
-			dirX: direction.x,
-			dirY: direction.y,
+			size: canvas.width * 0.02,
+			dirX: ballDirection.x,
+			dirY: ballDirection.y,
 		};
+		
+		ballSpeed = {
+			x: 2,
+			y: 2,
+		};
+		paddleSpeed = 10;
+
+		maxScore = 2;
 	}
 
 	onMount(() => {

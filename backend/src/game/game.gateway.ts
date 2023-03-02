@@ -10,9 +10,22 @@ export class GameGateway {
 
 	@WebSocketServer() server: Server;
 
-	@SubscribeMessage('setObjects')
-	setObjects(client: any, data: { rightPaddle: any, leftPaddle: any, ball: any }): void {
-		this.gameService.startGame(data.rightPaddle, data.leftPaddle, data.ball);
-		client.emit('data', data);
+	requestData(client: any, data: object) {
+		client.server.emit('requestData');
+	}
+
+	@SubscribeMessage('startGame')
+	startGame(client: any, data: { rightPaddle: any, leftPaddle: any, ball: any }): void {
+		this.gameService.setData(data.rightPaddle, data.leftPaddle, data.ball);
+		setInterval(this.requestData, 1000, client, data);
   	}
+
+	@SubscribeMessage('receiveData')
+	receivedData(client: any, data: { rightPaddle: any, leftPaddle: any, ball: any }): void {
+		this.gameService.setData(data.rightPaddle, data.leftPaddle, data.ball);
+	}	
+
+	@SubscribeMessage('endGame')
+	endGame(client: any, data: { rightPaddle: any, leftPaddle: any, ball: any }): void {
+	}	
 }

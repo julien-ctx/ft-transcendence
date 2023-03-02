@@ -20,7 +20,7 @@ export class ChatController {
 	}
 
 	@Get('getAll')
-	async getAll(@User() userReq: UserDto) {
+	async getAll(@UserDec() userReq: User) {
 		return await this.Chatservice.getAll(userReq.id_user);
 	}
 }

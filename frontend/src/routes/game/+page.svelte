@@ -34,11 +34,11 @@
 
 	let ballSpeed: any;
 	let paddleSpeed: number;
-	
+	let singlePlayer: boolean = true;
 
 	const socket = io('http://localhost:4000');
 
-	function randomballDirection(): number {
+	function randomBallDirection(): number {
 		return Math.round(Math.random()) * 2 - 1;
 	}
 
@@ -70,7 +70,6 @@
 			ctx.fillStyle = color;
 			ctx.fillRect(canvas.width / 2 - ball.size / 4, i, ball.size / 2, ball.size);
 			ctx.fillStyle = 'red';
-			ctx.fillRect(canvas.width / 2, canvas.height / 2, 1, 1);
 		}
 	}
 		
@@ -85,7 +84,7 @@
 		if ((side < 0 && ballDirection.x > 0) ||
 			(side > 0 && ballDirection.x < 0))
 			ball.dirX = -ballDirection.x;
-		ball.dirY = randomballDirection() < 0 ? ballDirection.y : -ballDirection.y;
+		ball.dirY = randomBallDirection() < 0 ? ballDirection.y : -ballDirection.y;
 	}
 	
 	function checkBallPosition() {
@@ -173,6 +172,21 @@
 		});	
 	}
 
+	function updateBot() {
+		const rate = Math.random() < 0.6 ? 1 : 0;
+		if (ball.y < rightPaddle.y + rightPaddle.height / 2 && ball.x > canvas.width / 2) {
+			if (rightPaddle.y - (paddleSpeed / 2) * rate < 0)
+				rightPaddle.y = 0;
+			else
+				rightPaddle.y  -= (paddleSpeed / 2) * rate;
+		}
+		else if (ball.y > rightPaddle.y + rightPaddle.height / 2 && ball.x > canvas.width / 2) {
+			if (rightPaddle.y + rightPaddle.height + (paddleSpeed / 2) * rate > canvas.height)
+				rightPaddle.y = canvas.height - rightPaddle.height;
+			else
+				rightPaddle.y  += (paddleSpeed / 2) * rate;
+		}
+	}
 		
 	function gameLoop() {
 		if (!ctx) return;
@@ -206,17 +220,19 @@
 			mouseMoves(canvas);
 			keyboardMoves(canvas);
 			requestAnimationFrame(gameLoop);
+			if (singlePlayer)
+				updateBot();
 		}
 	}
 
 	function startGame() {
-		gameLoop()
+		gameLoop();
 	}
 
 	function initData() {
 		ballDirection = {
-			x: 2 * randomballDirection(),
-			y: 2 * randomballDirection(),
+			x: 2 * randomBallDirection(),
+			y: 2 * randomBallDirection(),
 		}
 		paddleDirection = 0;
 

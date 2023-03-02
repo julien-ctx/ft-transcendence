@@ -18,4 +18,9 @@ export class ChatController {
 		
 		return await this.Chatservice.getRooms(userReq.id_user);
 	}
+
+	@Get('getAll')
+	async getAll(@UserDec() userReq: User) {
+		return await this.Chatservice.getAll(userReq.id_user);
+	}
 }

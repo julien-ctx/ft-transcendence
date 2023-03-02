@@ -15,14 +15,18 @@
     import { socketFriendStore, socketUserStore } from '$lib/store/socket';
 	import { Navbar, NavBrand, NavLi, NavUl, NavHamburger, Avatar, Dropdown, DropdownItem, DropdownHeader, DropdownDivider, Input, Button } from 'flowbite-svelte'
 	
+    import { socketFriendStore, socketRoomStore, socketUserStore } from '$lib/store/socket';
+
 	let myProfile : any;
 	let userProfile : any;
 	let allUsers : any;
 	let socketUser : any;
 	let socketFriend : any;
+	let socketRoom : any;
 
 	myProfileDataStore.subscribe(val => myProfile = val);
 	usersDataStore.subscribe(val => allUsers = val);
+	socketRoomStore.subscribe(val => socketRoom = val);
 
 	onMount(async () => {
 		await AuthGuard()
@@ -49,6 +53,7 @@
 		// 	query : { token : getJwt()}
 		// });
 
+
 		// socket.on("event_user", (data : any) => {
 		// 	if (allUsers.length != 0) {
 		// 		for (let i = 0; i < allUsers.length; i++) {
@@ -59,6 +64,9 @@
 		// 		}
 		// 	}
 		// })
+
+		socketRoomStore.set(socketRoom);
+
 	})
 
 	userProfileDataStore.subscribe(val => userProfile = val);

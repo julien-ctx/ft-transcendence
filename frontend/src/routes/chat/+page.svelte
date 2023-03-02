@@ -5,10 +5,12 @@
 	import { AuthGuard } from "$lib/AuthGuard";
     import { goto } from "$app/navigation";
     import { getJwt, removeJwt } from "$lib/jwtUtils";
-	import { ButtonGroup, Button, Select, FloatingLabelInput, Drawer, Heading, Hr, Listgroup, ListgroupItem } from 'flowbite-svelte';
+	import { Badge, Table, TableHead, TableHeadCell, TableBodyCell, ButtonGroup, Button, Select, FloatingLabelInput, Drawer, Heading, Hr, Listgroup, ListgroupItem, TableBody, TableBodyRow } from 'flowbite-svelte';
 	import { Modal } from 'flowbite-svelte'
 	import axios from 'axios';
 	import Chat from '../../modules/chat.svelte';
+	import Edit from '../../modules/roomEdit.svelte';
+	import { socketRoomStore } from '$lib/store/socket';
 
 	let isLogged = false;
 	let socket : any;
@@ -24,6 +26,8 @@
 	let color : string = '';
 	let err : any = {name : "", desc : "", status : "", pass : "", cpass : "", already : ""};
 	let rooms : any = [];
+	let allRooms : any = [];
+	socketRoomStore.subscribe(val => socket = val);
 	onMount(async () => {
 		AuthGuard()
 		.then((res) => {
@@ -34,12 +38,7 @@
 			goto("/login")
 		})		
 		let token : string = getJwt();
-		socket = io('http://localhost:4000', {
-			path: "/chat",
-				query: {
-					token: token,
-				}
-		});
+
 		try {
 			await axios.get('http://localhost:4000/Chat/getRooms', {
 				headers: {
@@ -47,7 +46,21 @@
 				}
 			}).then((res : any) => {
 				rooms = res.data;
+				console.log(rooms);
 			});
+		} catch (error) {
+			console.log(error);
+		}
+		try {
+			await axios.get('http://localhost:4000/Chat/getAll', {
+				headers : {
+					Authorization: `Bearer ${token}`
+				}
+			})
+		.then((res : any) => {
+			allRooms = res.data;
+			console.log(allRooms);
+		})
 		} catch (error) {
 			console.log(error);
 		}
@@ -59,7 +72,7 @@
 		});
 
 		socket.on('deletedRoom', (receivedRoom : string) => {
-			rooms = rooms.filter((room : string) => room !== receivedRoom);
+			rooms = rooms.filter((room : any) => room.name !== receivedRoom);
 			// console.log(rooms);
 		});
 
@@ -125,6 +138,11 @@
 		});
 	}
 
+	function editRoom(room : string) {
+		toEdit = room;
+		modalEdit = true;
+	}
+
 	let JoinName = '';
 	let JoinPass = '';
 
@@ -137,6 +155,8 @@
 	let activateClickOutside = false;
 	let toOpen : string = '';
 	let modalChat = false;
+	let modalEdit = false;
+	let toEdit : string = '';
 </script>	
 
 <div>
@@ -146,6 +166,45 @@
 		<Button shadow="green" color="green" on:click={() => {color="green"; modalJoin = true}} >Join Room</Button>
 		<Button outline color="dark" on:click={() => chatList = false}>Channels list</Button>
 	</ButtonGroup>
+	<div class="flex justify-center">
+		<h6 class="text-4xl">List of the channels</h6>
+	</div>
+	<div class="flex justify-center">
+		<Table striped={true}>
+			<TableHead defaultRow={false}>
+				<TableHeadCell>Name</TableHeadCell>
+				<TableHeadCell>Status</TableHeadCell>
+				<TableHeadCell>Members</TableHeadCell>
+				<TableHeadCell>Joinable</TableHeadCell>
+			</TableHead>
+			<TableBody>
+				{#each allRooms as room}
+					<TableBodyRow>
+						<TableBodyCell>{room.name}</TableBodyCell>
+						<TableBodyCell>
+							{#if room.status === "Public"}
+								<Badge color="green">Public</Badge>
+							{:else if room.status === "Private"}
+								<Badge color="red">Private</Badge>
+							{:else}
+								<Badge color="yellow">Protected</Badge>
+							{/if}
+						</TableBodyCell>
+						<TableBodyCell>{room.members}</TableBodyCell>
+						{#if room.status === "Public"}
+							<TableBodyCell>
+								<Button>
+									<!-- <img src="/link.png" alt="join"/> -->
+								</Button>
+							</TableBodyCell>
+						{:else}
+							<TableBodyCell></TableBodyCell>
+						{/if}
+					</TableBodyRow>
+				{/each}
+			</TableBody>
+		</Table>	
+	</div>
 
 	<Drawer bind:hidden={chatList} transitionType="fly">
 		<div class="flex justify-center">
@@ -158,8 +217,13 @@
 			<Listgroup active >
 			{#each rooms as room} 
 				<div class="flex">
-					<ListgroupItem on:click={() => openChat(room)}>{room}</ListgroupItem>
-					<Button outline color="red" on:click={leaveRoom(room)}>
+					<ListgroupItem on:click={() => openChat(room.name)}>{room.name}</ListgroupItem>
+					{#if room.owner === true && room.status === "Protected"}
+						<Button outline color="blue" on:click={() => editRoom(room.name)}>
+							<img src="/edit.svg" class="w-6 h-6" alt="edit"/>
+						</Button>
+					{/if}
+					<Button outline color="red" on:click={() => leaveRoom(room.name)}>
 						<img src="/delete.svg" class="w-6 h-6" alt="delete"/>
 					</Button>
 				</div>
@@ -170,6 +234,10 @@
 
 	{#if modalChat === true}
 		<Chat bind:socket={socket} bind:channel={toOpen} bind:modalChat={modalChat}/>
+	{/if}
+
+	{#if modalEdit === true}
+		<Edit bind:socket={socket} bind:room={toEdit} bind:modalEdit={modalEdit}/>
 	{/if}
 
 	<Modal bind:open={modalCreate} title="Create a room" {color}>

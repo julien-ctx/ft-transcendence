@@ -13,17 +13,18 @@
 	import io from 'socket.io-client';
     import { GetAllUsers } from '$lib/userUtils';
     import axios from 'axios';
-    import { socketFriendStore, socketUserStore } from '$lib/store/socket';
+    import { socketFriendStore, socketRoomStore, socketUserStore } from '$lib/store/socket';
 
 	let myProfile : any;
 	let userProfile : any;
 	let allUsers : any;
 	let socketUser : any;
 	let socketFriend : any;
+	let socketRoom : any;
 
 	myProfileDataStore.subscribe(val => myProfile = val);
 	usersDataStore.subscribe(val => allUsers = val);
-  
+	socketRoomStore.subscribe(val => socketRoom = val);
 	onMount(async () => {
 		await AuthGuard()
 		.then((res) => {
@@ -55,16 +56,7 @@
 			query : { token : getJwt()}
 		});
 
-		socket.on("event_user", (data : any) => {
-			if (allUsers.length != 0) {
-				for (let i = 0; i < allUsers.length; i++) {
-					if (allUsers[i].id == data.id) {
-						allUsers[i] = data;
-						usersDataStore.set(allUsers)
-					}
-				}
-			}
-		})
+		socketRoomStore.set(socketRoom);
 	})
 	userProfileDataStore.subscribe(val => userProfile = val);
 	socketUserStore.subscribe(val => socketUser = val);

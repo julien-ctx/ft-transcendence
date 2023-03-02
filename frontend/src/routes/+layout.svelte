@@ -64,7 +64,7 @@
 						allUsers.push(data)
 						usersDataStore.set(allUsers);
 					}
-				}
+				}                                                                                                                              
 			})
 			socketUserStore.set(socketUser);
 

@@ -109,6 +109,7 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 			name : room.name,
 			owner : true,
 			status : room.status,
+			admin : true,
 		});
 	}
 
@@ -183,6 +184,7 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 			name : room.name,
 			owner : false,
 			status : room.status,
+			admin : false,
 		});
 		return ;
 	}
@@ -207,14 +209,26 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 			}
 		});
 		
-		if (relation.length > 0) {
+		if (relation.length === 1) {
+			await this.prisma.roomToUser.delete({
+				where: {
+					id: relation[0].id,
+				}
+			});
+			await this.prisma.room.delete({
+				where: {
+					id: room.id,
+				}
+			});
+		}
+		else if (relation.length > 1) {
 			await this.prisma.roomToUser.delete({
 				where: {
 					id: relation[0].id,
 				}
 			});
 		}
-
+		
 		client.emit('deletedRoom', data.roomName);
 	}
 

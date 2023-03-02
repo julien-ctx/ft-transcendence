@@ -44,9 +44,9 @@ export class ChatService {
 			);
 		console.log(rooms);
 		let roomObj = [];
-		let Obj : {name : string, owner : boolean, status : string};
+		let Obj : {name : string, owner : boolean, status : string, admin : boolean};
 		relation.forEach((relat) => {
-			Obj = {name : relat.room.name, owner :relat.owner, status : relat.room.status};
+			Obj = {name : relat.room.name, owner :relat.owner, status : relat.room.status, admin : relat.admin};
 			// roomObj.push(relat.room.name, relat.owner);
 			roomObj.push(Obj);
 		});

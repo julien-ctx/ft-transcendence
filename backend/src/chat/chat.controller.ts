@@ -1,10 +1,10 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
 import { ChatService } from './chat.service';
-import { User } from 'src/user/user.decorator';
-import { UserDto } from "../user/dto/user.dto";
+import { UserDec } from 'src/user/user.decorator';
+import { User } from '@prisma/client';
+import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
 
-@UseGuards(AuthGuard("jwt"))
+@UseGuards(JwtAuthGuard)
 @Controller('Chat')
 export class ChatController {
 
@@ -13,7 +13,7 @@ export class ChatController {
 	) {}
 
 	@Get('getRooms')
-	async getRooms(@User() userReq : UserDto) {
+	async getRooms(@UserDec() userReq : User) {
 		// console.log(userReq);
 		
 		return await this.Chatservice.getRooms(userReq.id_user);

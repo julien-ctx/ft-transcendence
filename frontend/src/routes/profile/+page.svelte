@@ -4,7 +4,8 @@
     import { myProfileDataStore, userProfileDataStore, usersDataStore } from "$lib/store/user";
     import { socketFriendStore, socketUserStore } from "$lib/store/socket";
     import { onMount } from "svelte";
-	import DM  from '../../modules/privateMessage.svelte';
+    import axios from "axios";
+    import { getJwt } from "$lib/jwtUtils";
 
 	let fileInput : any;
 	let isEditLogin : boolean = false;
@@ -13,8 +14,7 @@
 	let allUsers : any;
 	let socketFriend : any;
 	let socketUser : any;
-	let modalDm : boolean = false;
-	let currentDm : any;
+	let imgSrc : any;
 
 	myProfileDataStore.subscribe(val => {
 		myProfile = val;
@@ -53,15 +53,32 @@
 			submitFormLogin();
 	}
 
-	function openDm(user : any) {
-		console.log('test');
-		modalDm = true;
-		currentDm = user;
-	}
-
 	let size = "xl";
 </script>
+	async function enbaleTwoFA() {
+		await axios.post("http://localhost:4000/auth/2fa/enable", "" ,{
+			headers : {
+				Authorization : `Bearer ${getJwt()}`
+			}
+		})
+		.then((res) => {
+			UpdateProfileToStore(res.data);
+		})
+	}
 
+	async function disableTwoFA() {
+		await axios.post("http://localhost:4000/auth/2fa/disable", "" ,{
+			headers : {
+				Authorization : `Bearer ${getJwt()}`
+			}
+		})
+		.then((res) => {
+			UpdateProfileToStore(res.data);
+		})
+	}
+
+
+</script>
 {#if myProfile.first_name}
 	<div class="container mx-auto flex items-center flex-col gap-10 mt-10">
 		<Card padding="sm" size="xl">
@@ -92,6 +109,11 @@
 					<div>Firstname: {myProfile.first_name}</div>
 					<div>Lastname: {myProfile.last_name}</div>
 					<div>Email: {myProfile.email}</div>
+					{#if !myProfile.twoFaEnabled}
+						<Button on:click={enbaleTwoFA}>Turn on 2FA</Button>
+					{:else}
+						<Button on:click={disableTwoFA}>Turn off 2FA</Button>
+					{/if}
 				</div>
 			</div>
 		</Card>

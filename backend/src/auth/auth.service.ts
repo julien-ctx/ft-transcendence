@@ -1,8 +1,10 @@
-import { ForbiddenException, Injectable } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import { PrismaService } from "src/prisma/prisma.service";
 import { AuthDto } from "./dto";
+import { toDataUrl } from "qrcode"
+import { User } from "@prisma/client";
 
 @Injectable()
 export class AuthService{
@@ -10,14 +12,14 @@ export class AuthService{
 
 	async signup(auth: AuthDto) {
 		try {
-			const user = await this.prisma.user.create({
+			await this.prisma.user.create({
 				data : {
 					id_user : auth.id,
 					email : auth.email,
 					login : auth.login,
 					first_name : auth.first_name,
 					last_name : auth.last_name,
-					img_link : auth.img_link
+					img_link : auth.img_link,
 				}
 			});
 

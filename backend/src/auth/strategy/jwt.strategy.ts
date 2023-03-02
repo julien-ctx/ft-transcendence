@@ -1,11 +1,11 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { PassportStrategy } from "@nestjs/passport";
 import { ExtractJwt, Strategy } from "passport-jwt";
 import { PrismaService } from "src/prisma/prisma.service";
 
 @Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy, "jwt"){
+export class JwtStrategy extends PassportStrategy(Strategy, "jwt-two-factor"){
 	constructor(config : ConfigService, private prisma : PrismaService) {
 		super({
 			jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -13,15 +13,16 @@ export class JwtStrategy extends PassportStrategy(Strategy, "jwt"){
 		})
 	}
 	async validate(payload : any) {
-		try {
-			const user = await this.prisma.user.findUnique({
-				where: {
-					id_user: payload.id
-				}
-			})
-			return user;
-		} catch (error) {
-			throw error
+		const user = await this.prisma.user.findUnique({
+			where: {
+				id_user: payload.id
+			}
+		})
+		if (!user)
+			throw new UnauthorizedException()
+		if (user.twoFaEnabled && !user.twoFaAuth) {
+			throw new UnauthorizedException()
 		}
+		return user;
 	}
 }

@@ -342,8 +342,6 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 		const user = this.jwt.decode(token);
 		if (user === undefined) return;
 
-		// console.log('Deco');
-
 		const User = this.prisma.user.findUnique({
 			where: {
 				id_user: user['id'],

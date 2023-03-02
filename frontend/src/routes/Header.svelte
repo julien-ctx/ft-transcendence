@@ -51,11 +51,9 @@
 			usersDataStore.set(res.data);
 		})
 		
-		socketRoom = io('http://localhost:4000', {
-			path: "/chat",
-				query: {
-					token: getJwt(),
-				}
+		let socket = io('http://localhost:4000', {
+			path: "/event_user",
+			query : { token : getJwt()}
 		});
 
 		socketRoomStore.set(socketRoom);
@@ -63,7 +61,7 @@
 	userProfileDataStore.subscribe(val => userProfile = val);
 	socketUserStore.subscribe(val => socketUser = val);
 	socketFriendStore.subscribe(val => socketFriend = val);
-
+	
 </script>
 
 {#if myProfile.login}

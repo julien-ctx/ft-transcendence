@@ -24,15 +24,25 @@
 
 	let canvas: HTMLCanvasElement;
 	let ctx: any;
+	let mouseY: number;
 
 	let rightPaddle: any;
 	let leftPaddle: any;
 	let paddleDirection: number = 0;
 
 	let ball: any;
+	let direction = {
+		x: 4 * randomDirection(),
+		y: 5 * randomDirection(),
+	}
+
 	let speed = {
-		x: Math.round(Math.random()) * 2 - 1 < 0 ? -6 : 6,
-		y: Math.round(Math.random()) * 2 - 1 < 0 ? -7 : 7,
+		x: 2,
+		y: 2,
+	}
+
+	function randomDirection(): number {
+		return Math.round(Math.random()) * 2 - 1;
 	}
 
 	function drawPaddles(color: string) {
@@ -52,15 +62,22 @@
 	function drawSep(color: string) {
 		for (let i = 0; i < canvas.width; i += ball.size * 2) {
 			ctx.fillStyle = color;
-			ctx.fillRect(canvas.width / 2 - ball.size / 4, i, ball.size / 2, ball.size);
+			ctx.fillRect(canvas.width  / 2 - ball.size, i, ball.size, ball.size);
 		}
 	}
 
 	function collision(paddle: any) {
-		return ball.x < paddle.x + paddle.width &&
-			ball.x + ball.size > paddle.x &&
-			ball.y < paddle.y + paddle.height &&
-			ball.y + ball.size > paddle.y;
+		const circleDistanceX = Math.abs(ball.x + ball.size - (paddle.x + paddle.width / 2));
+		const circleDistanceY = Math.abs(ball.y + ball.size - (paddle.y + paddle.height / 2));
+		if (circleDistanceX > (paddle.width / 2 + ball.size)) return false;
+		if (circleDistanceY > (paddle.height / 2 + ball.size)) return false;
+
+		if (circleDistanceX <= (paddle.width / 2)) return true;
+		if (circleDistanceY <= (paddle.height / 2)) return true;
+
+		const cornerDistanceSq = Math.pow(circleDistanceX - paddle.width / 2, 2) +
+								Math.pow(circleDistanceY - paddle.height / 2, 2);
+		return cornerDistanceSq <= Math.pow(ball.size, 2);
 	}
 
 	function keyboardMoves(canvas: HTMLCanvasElement) {
@@ -97,24 +114,14 @@
 
 	function mouseMoves(canvas: HTMLCanvasElement) {
 		canvas.addEventListener('mousemove', (event) => {
-			let mouseY = event.clientY - canvas.offsetTop;
+			mouseY = event.clientY - canvas.offsetTop;
 			if (mouseY < 0) {
 				mouseY = 0;
 			} else if (mouseY > canvas.height - (leftPaddle.height)) {
 				mouseY = canvas.height - (leftPaddle.height);
 			}
 			leftPaddle.y = mouseY;
-		});
-
-		canvas.addEventListener('mouseleave', (event) => {
-			console.log(leftPaddle.y);
-			if (leftPaddle.y < canvas.height / 2) {
-				leftPaddle.y = 0;
-			}
-			else if (leftPaddle.y >= canvas.height / 2) {
-				leftPaddle.y = canvas.height - leftPaddle.height;
-			}
-		})
+		});	
 	}
 
 	function displayScore() {
@@ -122,13 +129,13 @@
   		ctx.fillText(rightPaddle.score, canvas.width * 0.6 - ctx.measureText(rightPaddle.score).width, canvas.height * 0.1);
 	}
 
-	function resetBall(direction: number) {
+	function resetBall(side: number) {
 		ball.x = canvas.width * 0.5;
 		ball.y = canvas.height * 0.5;
-		if ((direction < 0 && speed.x > 0) ||
-			(direction > 0 && speed.x < 0))
-			ball.speedX = -speed.x;
-		ball.speedY = Math.round(Math.random()) * 2 - 1 < 0 ? speed.y : -speed.y;
+		if ((side < 0 && direction.x > 0) ||
+			(side > 0 && direction.x < 0))
+			ball.dirX = -direction.x;
+		ball.dirY = randomDirection() < 0 ? direction.y : -direction.y;
 	}
 
 	function checkBallPosition() {
@@ -136,9 +143,10 @@
 			resetBall(-1);
 			if (++rightPaddle.score === maxScore) {
 				ctx.font = 'bold ' + canvas.width * 0.03 + 'px Courier';
+				let winMsg: string = 'Right Paddle won!';
 				ctx.fillText(
-					'Right Paddle won!',
-					canvas.width / 2 - ctx.measureText('Right Paddle won!').width / 2,
+					winMsg,
+					canvas.width / 2 - ctx.measureText(winMsg).width / 2,
 					canvas.height / 2
 				)
 				gameStarted = false;
@@ -147,10 +155,11 @@
 		else if (ball.x > canvas.width - ball.size) {
 			resetBall(1);
 			if (++leftPaddle.score === maxScore) {
+				let winMsg: string = 'Left Paddle won!';
 				ctx.font = 'bold ' + canvas.width * 0.03 + 'px Courier';
 				ctx.fillText(
-					'Left Paddle won!',
-					canvas.width / 2 - ctx.measureText('Left Paddle won!').width / 2,
+					winMsg,
+					canvas.width / 2 - ctx.measureText(winMsg).width / 2,
 					canvas.height / 2 
 				)
 				gameStarted = false;
@@ -164,25 +173,25 @@
 		if (!ctx) return;
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
 		drawPaddles('blue');
-		ball.x += ball.speedX;
-		ball.y += ball.speedY;
+		ball.x += ball.dirX * speed.x;
+		ball.y += ball.dirY * speed.y;
 		
 		if (ball.y < 0) {
 			ball.y = 0;
-			ball.speedY = -ball.speedY;
+			ball.dirY = -ball.dirY;
 		}
-		else if (ball.y > canvas.height - ball.size) {
-			ball.y = canvas.height - ball.size;
-			ball.speedY = -ball.speedY;
+		else if (ball.y > canvas.height - ball.size * 2) {
+			ball.y = canvas.height - ball.size * 2;
+			ball.dirY = -ball.dirY;
 		}
 		
-		if (collision(leftPaddle)) {
-			ball.speedX = -ball.speedX;
+		if (ball.x <= leftPaddle.x + leftPaddle.width && collision(leftPaddle)) {
+			ball.dirX = -ball.dirX;
 			ball.x = leftPaddle.x + leftPaddle.width;
 		}
-		else if (collision(rightPaddle)) {
-			ball.speedX = -ball.speedX;
-			ball.x = rightPaddle.x - ball.size;
+		else if (ball.x + ball.size <= rightPaddle.x && collision(rightPaddle)) {
+			ball.dirX = -ball.dirX;
+			ball.x = rightPaddle.x - ball.size * 2;
 		}
 		
 		checkBallPosition();
@@ -201,9 +210,9 @@
 
 	function drawBall(color: string) {
 		ctx.fillStyle = color;
-		const radius = ball.size / 2;
+		const radius = ball.size;
 		ctx.beginPath();
-		ctx.arc(ball.x + ball.size / 2, ball.y + ball.size / 2, radius, 0, 2 * Math.PI);
+		ctx.arc(ball.x + ball.size, ball.y + ball.size, radius, 0, 2 * Math.PI);
 		ctx.fill();
 		ctx.stroke();
 	}
@@ -228,9 +237,9 @@
 		ball = {
 			x: canvas.width * 0.5,
 			y: canvas.height * 0.5,
-			size: canvas.width * 0.02,
-			speedX: speed.x,
-			speedY: speed.y,
+			size: canvas.width * 0.01,
+			dirX: direction.x,
+			dirY: direction.y,
 		};
 	}
 
@@ -245,10 +254,11 @@
   		ctx.fillText(
 			WelcomeMsg,
 			canvas.width * 0.5 - ctx.measureText(WelcomeMsg).width / 2,
-			canvas.height * 0.5
+			canvas.height * 0.5,
 		);
 		canvas.onclick = isReady;
 	});
+	
 
 	function isReady() {
 		if (!gameStarted) {
@@ -274,7 +284,10 @@
 		display: block;
 		outline: lightgrey 0.5vw solid;
 		display: flex;
-		margin-top: 2%;
+		margin-top: 5vh;
+		margin-bottom: 5vh;
+		width: 70vw;
+		height: 70vh;
 	}
 </style>
 <canvas id="main-game-canvas" class="game-canvas">

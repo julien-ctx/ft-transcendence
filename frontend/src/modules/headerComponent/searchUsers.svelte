@@ -14,17 +14,21 @@
 
 	function handleChange() {
 		if (searchInput !== "") {
-			allUsers.forEach((elem : any) => {
-				const toComp = elem.login.substr(0, searchInput.length);
-				if (toComp == searchInput && elem.id != userProfile.id) {
-					if (!usersComponent.includes(elem)) {
-						usersComponent.push(elem);
+			if (allUsers && allUsers.length > 0) {
+				allUsers.forEach((elem : any) => {
+					if (elem.login) {
+						const toComp = elem.login.substr(0, searchInput.length);
+						if (toComp == searchInput && elem.id != userProfile.id) {
+							if (!usersComponent.includes(elem)) {
+								usersComponent.push(elem);
+							}
+						}
+						else if (usersComponent.includes(elem)){
+							usersComponent.pop(elem);
+						}
 					}
-				}
-				else if (usersComponent.includes(elem)){
-					usersComponent.pop(elem);
-				}
-			});
+				});
+			}
 		} else
 			usersComponent = []
 		usersComponent = usersComponent;

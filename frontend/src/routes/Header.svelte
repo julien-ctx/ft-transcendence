@@ -36,34 +36,11 @@
 				goto("/login")
 			}
 		})
-
-
-		// await GetAllUsers()
-		// .then((res) => {
-		// 	usersDataStore.set(res.data);
-		// 	console.log(res);
-			
-		// })
-		
-		// let socket = io('http://localhost:4000', {
-		// 	path: "/event_user",
-		// 	query : { token : getJwt()}
-		// });
-
-
-		// socket.on("event_user", (data : any) => {
-		// 	if (allUsers.length != 0) {
-		// 		for (let i = 0; i < allUsers.length; i++) {
-		// 			if (allUsers[i].id == data.id) {
-		// 				allUsers[i] = data;
-		// 				usersDataStore.set(allUsers)
-		// 			}
-		// 		}
-		// 	}
-		// })
 	})
+
 </script>
-{#if myProfile.first_name}
+
+{#if myProfile && myProfile.first_name}
 	<Navbar let:hidden let:toggle navClass="!bg-primary !border-secondary border-b w-full px-2 sm:px-4 py-2.5">
 	<NavBrand href="/">
 		<img src="https://flowbite.com/docs/images/logo.svg" class="mr-3 h-6 sm:h-9" alt="Flowbite Logo"/>

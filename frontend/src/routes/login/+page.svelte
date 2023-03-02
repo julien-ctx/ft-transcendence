@@ -84,6 +84,7 @@
 									path: "/event_user",
 									query : { token : getJwt()}
 								});
+								console.log("curent", currentUser);
 								myProfileDataStore.set(currentUser);
 								goto("/");
 							}

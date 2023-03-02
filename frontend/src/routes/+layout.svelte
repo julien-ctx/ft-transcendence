@@ -26,13 +26,20 @@
 		if (getJwt() != undefined) {
 			await AuthGuard()
 			.then((res) => {
-				UpdateProfileToStore(res.data);						
+				UpdateProfileToStore(res.data);
+				console.log(res.data);
+									
 			})
 			.catch((err) => {
 				if (err.response.status == 401) {
 					removeJwt();
 					goto("/login")
 				}
+			})
+
+			await GetAllUsers()
+			.then((res) => {
+				usersDataStore.set(res.data);
 			})
 
 			await axios.get("http://localhost:4000/users/getAllHimSelf", {
@@ -44,10 +51,6 @@
 				usersHimSelfDataStore.set(res.data);
 			});
 
-			await GetAllUsers()
-			.then((res) => {
-				usersDataStore.set(res.data);
-			})
 			let socketUser = io('http://localhost:4000', {
 				path: "/event_user",
 				query : { token : getJwt()}

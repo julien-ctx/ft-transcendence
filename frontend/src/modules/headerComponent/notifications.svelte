@@ -20,11 +20,13 @@
 		await GetAllUsers()
 		.then((res) => {
 			const users = res.data;
-			users.forEach((elem : any) => {
-				if (elem.id == notif.id_user_send) {
-					socketUser.emit("block_user", {id_user_receive : myProfile.id, id_user_send : elem.id})
-				}
-			});
+			if (users) {
+				users.forEach((elem : any) => {
+					if (elem.id == notif.id_user_send) {
+						socketUser.emit("block_user", {id_user_receive : myProfile.id, id_user_send : elem.id})
+					}
+				});
+			}
 		})
 	}
 
@@ -41,7 +43,7 @@
 		<path fill-rule="evenodd" clip-rule="evenodd" d="M23.0002 0C12.5068 0 4.00017 8.50659 4.00017 19V32.5335C4.00017 32.8383 3.9145 33.1371 3.75292 33.3956L0.912672 37.94C0.0801118 39.2721 1.0378 41 2.60867 41H43.3917C44.9625 41 45.9202 39.2721 45.0877 37.94L42.2474 33.3956C42.0858 33.1371 42.0002 32.8383 42.0002 32.5335V19C42.0002 8.50659 33.4936 0 23.0002 0ZM23.0002 48C20.2388 48 18.0002 45.7614 18.0002 43H28.0002C28.0002 45.7614 25.7616 48 23.0002 48Z"></path>
 	</svg>
 </div>
-{#if myProfile.notification.length > 0}
+{#if myProfile.notification && myProfile.notification.length > 0}
 	<Dropdown bind:open={openDropdown}>
 		{#each myProfile.notification as notif}
 			<Card horizontal size="xl">

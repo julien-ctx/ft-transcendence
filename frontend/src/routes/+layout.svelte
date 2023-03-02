@@ -1,34 +1,32 @@
 <script lang="ts">
-	import "../app.postcss";
-    import Header from './Header.svelte';
+	import "../app.scss";
+    import "../app.postcss";
     import { page } from '$app/stores';
-    import './styles.css';
     import { onMount } from "svelte";
     import { io } from "socket.io-client";
     import { UpdateProfileToStore } from "$lib/profileUtils";
     import { getJwt, removeJwt } from "$lib/jwtUtils";
-    import { myProfileDataStore, userProfileDataStore, usersDataStore } from "$lib/store/user";
+    import { myProfileDataStore, userProfileDataStore, usersDataStore, usersHimSelfDataStore } from "$lib/store/user";
     import { socketFriendStore, socketUserStore } from "$lib/store/socket";
     import { GetAllUsers } from "$lib/userUtils";
-    import { all } from "axios";
     import { AuthGuard } from "$lib/AuthGuard";
     import { goto } from "$app/navigation";
+    import Header from "./Header.svelte";
+    import axios from "axios";
 
-	let allUsers : any;
-	let userProfile : any;
-	let myProfile : any;
+    let allUsers : any;
+    let userProfile : any;
+    let myProfile : any;
 
-	userProfileDataStore.subscribe(val => userProfile = val);
-	usersDataStore.subscribe(val => allUsers = val);
-	myProfileDataStore.subscribe(val => myProfile = val);
+    userProfileDataStore.subscribe(val => userProfile = val);
+    usersDataStore.subscribe(val => allUsers = val);
+    myProfileDataStore.subscribe(val => myProfile = val);
 
-	onMount(async () => {		
+    onMount(async () => {		
 		if (getJwt() != undefined) {
 			await AuthGuard()
 			.then((res) => {
-				UpdateProfileToStore(res.data);
-				console.log(myProfile);
-						
+				UpdateProfileToStore(res.data);						
 			})
 			.catch((err) => {
 				if (err.response.status == 401) {
@@ -36,6 +34,16 @@
 					goto("/login")
 				}
 			})
+
+			await axios.get("http://localhost:4000/users/getAllHimSelf", {
+			headers : {
+				Authorization : `Bearer ${getJwt()}`
+			}
+			})
+			.then((res) => {
+				usersHimSelfDataStore.set(res.data);
+			});
+
 			await GetAllUsers()
 			.then((res) => {
 				usersDataStore.set(res.data);
@@ -48,7 +56,6 @@
 				UpdateProfileToStore(data);
 			})
 			socketUser.on("event_user", (data : any) => {
-				// console.log("data", data, "userprofile", userProfile, "alluser", allUsers);
 				if (data.id && userProfile.id && data.id == userProfile.id)
 					userProfileDataStore.set(data);
 				if (allUsers && allUsers.length != 0) {
@@ -82,48 +89,11 @@
 	})
 </script> 
 
-<div>
-	{#if $page.url.pathname != "/login" && $page.url.pathname != "/login2fa"}
-		<Header/>
+<div class="mx-auto h-full">
+	{#if $page.url.pathname != "/login"}
+		<Header />
 	{/if}
-	<main>
+	<main class="h-full">
 		<slot></slot>
 	</main>
 </div>
-
-<style>
-	/* .app {
-		display: flex;
-		flex-direction: column;
-		min-height: 100vh;
-	} */
-
-	/* main {
-		flex: 1;
-		display: flex;
-		flex-direction: column;
-		padding: 1rem;
-		width: 100%;
-		max-width: 64rem;
-		margin: 0 auto;
-		box-sizing: border-box;
-	} */
-
-	/* footer {
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
-		padding: 12px;
-	}
-
-	footer a {
-		font-weight: bold;
-	}
-
-	@media (min-width: 480px) {
-		footer {
-			padding: 12px 0;
-		}
-	} */
-</style>

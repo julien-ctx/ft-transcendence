@@ -1,12 +1,14 @@
 <script lang="ts">
+	import { slide } from 'svelte/transition';
 	import { Avatar, Dropdown, DropdownItem, MenuButton, Indicator } from "flowbite-svelte";
-    import { myProfileDataStore, usersDataStore } from '$lib/store/user';
+    import { myProfileDataStore, userProfileDataStore, usersDataStore } from '$lib/store/user';
     import { socketFriendStore, socketUserStore } from '$lib/store/socket';
     import SvgAdd from "../../modules/htmlComponent/svgAdd.svelte";
     import SvgDelete from "../../modules/htmlComponent/svgDelete.svelte";
     import SvgProfile from "../../modules/htmlComponent/svgProfile.svelte";
     import SvgMsg from "../../modules/htmlComponent/svgMsg.svelte";
     import { goto } from "$app/navigation";
+    import { GetOneUser } from "$lib/userUtils";
 
 	let socketFriend : any;
 	let socketUser : any;
@@ -27,6 +29,15 @@
 		});
 		socketFriend.emit("accept_friend", { user : myProfile, notif});
 	}
+
+    async function handleGotoUser() {
+        await GetOneUser(user.id)
+        .then((res) => {
+            userProfileDataStore.set(res.data);
+        })
+        goto(`/user?id=${user.id}`);
+    }
+
 </script>
 
 <div class="grid grid-cols-2 gap-5 grid-flow-row sm:grid-cols-6 bg-third p-3 rounded sm:pb-3 pb-5">
@@ -63,38 +74,42 @@
         Silver
     </div>
     <div class="flex items-center justify-center gap-3">
-        {#if myProfile.block_id && myProfile.block_id.includes(user.id)}
-            <button on:click={() => socketUser.emit("unblock_user", { id_user_send : myProfile.id, id_user_receive : user.id})}>
-                Unblock this user
-            </button>
-        {:else}
-            {#if user.block_id && user.block_id.includes(myProfile.id)}
-                <div>This user blocked you</div>
-            {:else}
-                {#if myProfile.req_send_friend && myProfile.req_send_friend.includes(user.id)}
-                    <button on:click={() => socketFriend.emit("cancel_friend", {id_user_send : myProfile.id, id_user_receive : user.id})}>
-                        <SvgDelete />
-                    </button>
-                {:else if myProfile.req_received_friend && myProfile.req_received_friend.includes(user.id)}
-                    <button on:click={() => handleClickAcceptFriend(user)}>
-                        <SvgAdd/>
-                    </button>
-                {:else if myProfile.friend_id && myProfile.friend_id.includes(user.id)}
-                    <button on:click={() => socketFriend.emit('delete_friend', { id_user_send : myProfile.id, id_user_receive : user.id})}>
-                        <SvgDelete />
-                    </button>
+        {#if myProfile.id != user.id}
+            {#if myProfile.block_id && myProfile.block_id.includes(user.id)}
+                <button on:click={() => socketUser.emit("unblock_user", { id_user_send : myProfile.id, id_user_receive : user.id})}>
+                    Unblock this user
+                </button>
                 {:else}
-                    <button on:click={() => socketFriend.emit('add_friend', { user_send : myProfile, user_receive : user})}>
-                        <SvgAdd/>
+                    {#if user.block_id && user.block_id.includes(myProfile.id)}
+                        <div>This user blocked you</div>
+                    {:else}
+                        {#if myProfile.req_send_friend && myProfile.req_send_friend.includes(user.id)}
+                            <button on:click={() => socketFriend.emit("cancel_friend", {id_user_send : myProfile.id, id_user_receive : user.id})}>
+                                <SvgDelete />
+                            </button>
+                        {:else if myProfile.req_received_friend && myProfile.req_received_friend.includes(user.id)}
+                            <button on:click={() => handleClickAcceptFriend(user)}>
+                                <SvgAdd/>
+                            </button>
+                        {:else if myProfile.friend_id && myProfile.friend_id.includes(user.id)}
+                            <button on:click={() => socketFriend.emit('delete_friend', { id_user_send : myProfile.id, id_user_receive : user.id})}>
+                                <SvgDelete />
+                            </button>
+                        {:else}
+                            <button on:click={() => socketFriend.emit('add_friend', { user_send : myProfile, user_receive : user})}>
+                                <SvgAdd/>
+                            </button>
+                        {/if}
+                    <button>
+                        <SvgMsg />
                     </button>
                 {/if}
-                <button>
-                    <SvgMsg />
-                </button>
             {/if}
+            <button on:click={handleGotoUser}>
+                <SvgProfile />
+            </button>
+            {:else}
+                <button on:click={() => goto("/profile")}>My Profile</button>
         {/if}
-        <button on:click={() => goto(`/user?id=${user.id}`)}>
-            <SvgProfile />
-        </button>
     </div>
 </div>

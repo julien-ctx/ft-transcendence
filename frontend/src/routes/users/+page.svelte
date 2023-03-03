@@ -12,6 +12,7 @@
 
 	usersDataStore.subscribe(val => allUsers = val);
 
+	
 	onMount(async () => {
 		await GetAllUsers()
 		.then((res) => {

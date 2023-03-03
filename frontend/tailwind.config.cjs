@@ -9,10 +9,10 @@ const config = {
 		colors : {
 			transparent: 'transparent',
 			current: 'currentColor',
-			"primary" : "#3A3C42",
-			"secondary" : "#808080",
-			"third" : "#EA519D",
-			"white" : "#F7F8E2",
+			"primary" : "#434343",
+			"secondary" : "#C1EFFF",
+			"third" : "#54BAB9",
+			"white" : "#F7ECDE",
 			"base" : "primary",
 			"dark" : "#000"
 		}

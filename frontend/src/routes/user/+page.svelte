@@ -1,11 +1,10 @@
 <script lang="ts">
     import { GetOneUser } from '$lib/userUtils';
-	import { Avatar, Card, Button, Indicator, Tabs, TabItem, Accordion, AccordionItem } from "flowbite-svelte";
+	import { Avatar, Card, Button, Indicator, Tabs, TabItem } from "flowbite-svelte";
     import { onMount } from 'svelte';
-    import { myProfileDataStore, userProfileDataStore, usersDataStore, usersHimSelfDataStore } from '$lib/store/user';
+    import { myProfileDataStore, userProfileDataStore, usersHimSelfDataStore } from '$lib/store/user';
     import { socketFriendStore, socketUserStore } from '$lib/store/socket';
-    import axios from 'axios';
-    import { getJwt } from '$lib/jwtUtils';
+    import UserCard from '../../modules/htmlComponent/userCard.svelte';
 
     let allUsers : any; //With myProfile
     let myProfile : any;
@@ -29,7 +28,7 @@
 			.then((res) => {
 				userProfileDataStore.set(res.data);
 			});
-		}
+		}        
 	})
 
 	function handleClickAcceptFriend(user : any) {
@@ -43,7 +42,7 @@
 </script>
 
 {#if userProfile.id}
-    <div class="container mx-auto flex items-center flex-col">
+    <div class="container mx-auto flex items-center flex-col p-5">
         <Card padding="sm" size="md">
             <div class="flex items-center space-x-4">
                 <Avatar size="xl" src={userProfile.img_link} class="object-cover"/>
@@ -82,31 +81,17 @@
             {/if}
         </Card>
         <Tabs defaultClass="w-full flex flex-row gap-2" contentClass="w-full">
-			<!-- User friend -->
 			<TabItem title="Friend" open defaultClass="w-full"> 
                 {#if userProfile.friend_id && userProfile.friend_id.length == 0}
                     No friend
                 {:else if allUsers}
-                    {#each allUsers as user}
-                        {#if userProfile.friend_id.includes(user.id)}
-                            <div class="flex direction-row m-4 gap-4 justify-between">
-                                <Avatar src={user.img_link} class="object-cover"/>
-                                <div class="self-end">{user.login}</div>
-                                {#if user.status === 0}
-                                    <Indicator color="red"/> Offline
-                                {:else if user.status === 1}
-                                    <Indicator color="green"/> Online
-                                {:else if user.status === 2}
-                                    <Indicator color="blue" /> In game
-                                {/if}
-                                {#if user.id != myProfile.id}
-                                    <Button href={`/users?id=${user.id}`}>View profile</Button>
-                                {:else}
-                                    <Button href="/profile">My profile</Button>
-                                {/if}
-                            </div>
-                        {/if}
-                    {/each}
+                    <div class="flex flex-col gap-5 mt-5">
+                        {#each allUsers as user}
+                            {#if userProfile.friend_id.includes(user.id)}
+                                <UserCard user={user}/>
+                            {/if}
+                        {/each}
+                    </div>
                 {/if}
 			</TabItem>
 			<TabItem title="Match history" defaultClass="w-full">

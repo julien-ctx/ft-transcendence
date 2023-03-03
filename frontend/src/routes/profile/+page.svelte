@@ -1,4 +1,5 @@
 <script lang="ts">
+    import UserCard from "../../modules/htmlComponent/userCard.svelte";
     import { UpdateProfileImg, UpdateProfileLogin, UpdateProfileToStore } from "$lib/profileUtils";
 	import { Accordion, AccordionItem, Avatar, Button, Card, Dropdown, DropdownItem, MenuButton, Modal, TabItem, Tabs } from "flowbite-svelte";
     import { myProfileDataStore, userProfileDataStore, usersDataStore } from "$lib/store/user";
@@ -118,28 +119,17 @@
 				<Accordion defaultClass="w-full">
 					<AccordionItem open={myProfile.friend_id && myProfile.friend_id.length > 0}>
 						<span slot="header">My friends</span>
-						{#each allUsers as user}
-							{#if myProfile.friend_id.includes(user.id)}
-								<div class="flex direction-row m-4 gap-4 justify-between">
-									<Avatar src={user.img_link} class="object-cover"/>
-									<div class="self-end">{user.login}</div>
-									{#if user.status == 0}
-										<div>Disconnected</div>
-									{:else if user.status == 1}
-										<div>Connected</div>
-									{:else if user.status == 2}
-										<div>In game</div>
-									{/if}
-									<Button href={`/users?id=${user.id}`}>View profile</Button>
-									<Button>Invitation play</Button>
-									<!-- <Button on:click={() => openDm(user)}>Private message</Button> -->
-									<Button on:click={() => socketFriend.emit('delete_friend', { id_user_send : myProfile.id, id_user_receive : user.id})}>Delete friend</Button>
-								</div>
-							{/if}
-						{/each}
+						<div class="flex flex-col gap-5 p-5">
 						{#if myProfile.friend_id && myProfile.friend_id.length == 0}
 							No friend
+						{:else}
+							{#each allUsers as user}
+								{#if myProfile.friend_id.includes(user.id)}
+									<UserCard user={user} />
+								{/if}
+							{/each}
 						{/if}
+						</div>
 					</AccordionItem>
 					<AccordionItem>
 						<span slot="header">Pending request</span>
@@ -162,18 +152,15 @@
 					<AccordionItem>
 						<span slot="header">Request send</span>
 						{#if myProfile.req_send_friend && myProfile.req_send_friend.length > 0}
+							<div class="flex flex-col gap-5 p-5">
 							{#each myProfile.req_send_friend as req}
 								{#each allUsers as user}
 									{#if user.id == req}
-										<div class="flex direction-row m-4 gap-4 justify-between">
-											<Avatar src={user.img_link} class="object-cover"/>
-											<div class="self-end">{user.login}</div>
-											<Button href={`/users?id=${user.id}`}>View profile</Button>
-											<Button on:click={() => socketFriend.emit("cancel_friend", {id_user_send : myProfile.id, id_user_receive : user.id})}>Cancel request</Button>
-										</div>
+										<UserCard user={user} />
 									{/if}
 								{/each}
 							{/each}
+							</div>
 						{:else if myProfile.req_send_friend && myProfile.req_send_friend.length == 0}
 							No Data
 						{/if}

@@ -76,6 +76,10 @@
 				if (!arrId.includes(data.id) && data.id != myProfile.id) {
 					allUsers.push(data)
 					usersDataStore.set(allUsers);
+					usersHimSelfDataStore.set(allUsers);
+				} else if (!arrId.includes(data.id) && data.id == myProfile.id) {
+					allUsers.push(data)
+					usersHimSelfDataStore.set(allUsers);
 				}
 			}                                                                                                                              
 		})

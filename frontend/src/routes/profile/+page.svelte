@@ -14,7 +14,7 @@
 	let allUsers : any;
 	let socketFriend : any;
 	let socketUser : any;
-	let imgSrc : any;
+
 
 	myProfileDataStore.subscribe(val => {
 		myProfile = val;
@@ -24,9 +24,6 @@
 	socketFriendStore.subscribe(val => socketFriend = val);
 	socketUserStore.subscribe(val => socketUser = val);
 
-	onMount(() => {
-		userProfileDataStore.set("");
-	})
 
 	async function submitFormImg() {
 		const formData = new FormData();
@@ -77,7 +74,7 @@
 
 
 </script>
-{#if myProfile.first_name}
+{#if myProfile && myProfile.first_name}
 	<div class="container mx-auto flex items-center flex-col gap-10 mt-10">
 		<Card padding="sm" size="xl">
 			<div class="flex items-center space-x-4">

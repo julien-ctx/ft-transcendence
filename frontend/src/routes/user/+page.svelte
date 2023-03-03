@@ -1,11 +1,13 @@
 <script lang="ts">
-    import { GetAllUsers, GetOneUser } from '$lib/userUtils';
-	import { Avatar, Card, Button, Dropdown, DropdownItem, MenuButton, Search } from "flowbite-svelte";
+    import { GetOneUser } from '$lib/userUtils';
+	import { Avatar, Card, Button, Indicator, Tabs, TabItem, Accordion, AccordionItem } from "flowbite-svelte";
     import { onMount } from 'svelte';
-    import { myProfileDataStore, userProfileDataStore, usersDataStore } from '$lib/store/user';
+    import { myProfileDataStore, userProfileDataStore, usersDataStore, usersHimSelfDataStore } from '$lib/store/user';
     import { socketFriendStore, socketUserStore } from '$lib/store/socket';
-    import { buttonClass, secondaryButtonClass, inputClass } from '$lib/classComponent';
+    import axios from 'axios';
+    import { getJwt } from '$lib/jwtUtils';
 
+    let allUsers : any; //With myProfile
     let myProfile : any;
     let userProfile : any;
     let socketFriend : any;
@@ -14,9 +16,10 @@
 
     myProfileDataStore.subscribe(val => myProfile = val);
 	userProfileDataStore.subscribe(val => userProfile = val);
+    usersHimSelfDataStore.subscribe(val => allUsers = val);
 	socketFriendStore.subscribe(val => socketFriend = val);
     socketUserStore.subscribe(val => socketUser = val);
-
+        
 	onMount(async () => {
 		const urlParams = new URLSearchParams(window.location.search);
 		hasId = urlParams.has("id");
@@ -25,12 +28,9 @@
 			await GetOneUser(id)
 			.then((res) => {
 				userProfileDataStore.set(res.data);
-                console.log(res.data);
-                
 			});
 		}
 	})
-
 
 	function handleClickAcceptFriend(user : any) {
 		let notif : any;
@@ -48,12 +48,12 @@
             <div class="flex items-center space-x-4">
                 <Avatar size="xl" src={userProfile.img_link} class="object-cover"/>
                 <div class="space-y-1 font-medium dark:text-white">
-                    {#if userProfile.status == 0}
-                        <div>Disconnected</div>
-                    {:else if userProfile.status == 1}
-                        <div>Connected</div>
-                    {:else if userProfile.status == 2}
-                        <div>In game</div>
+                    {#if userProfile.status === 0}
+                        <Indicator color="red"/> Offline
+                    {:else if userProfile.status === 1}
+                        <Indicator color="green"/> Online
+                    {:else if userProfile.status === 2}
+                        <Indicator color="blue" /> In game
                     {/if}
                     <div>Login: {userProfile.login}</div>
                     <div>Firstname: {userProfile.first_name}</div>
@@ -68,7 +68,7 @@
             {/if}
             {#if userProfile.block_id && userProfile.block_id.includes(myProfile.id)}
                 <div>This user blocked you</div>
-            {:else}
+            {:else if myProfile.block_id && !myProfile.block_id.includes(userProfile.id)}
                 {#if myProfile.req_send_friend && myProfile.req_send_friend.includes(userProfile.id)}
                     <div>Pending request friend</div>
                     <Button on:click={() => socketFriend.emit("cancel_friend", {id_user_send : myProfile.id, id_user_receive : userProfile.id})}>Cancel request</Button>
@@ -81,5 +81,42 @@
                 {/if}
             {/if}
         </Card>
+        <Tabs defaultClass="w-full flex flex-row gap-2" contentClass="w-full">
+			<!-- User friend -->
+			<TabItem title="Friend" open defaultClass="w-full"> 
+                {#if userProfile.friend_id && userProfile.friend_id.length == 0}
+                    No friend
+                {:else if allUsers}
+                    {#each allUsers as user}
+                        {#if userProfile.friend_id.includes(user.id)}
+                            <div class="flex direction-row m-4 gap-4 justify-between">
+                                <Avatar src={user.img_link} class="object-cover"/>
+                                <div class="self-end">{user.login}</div>
+                                {#if user.status === 0}
+                                    <Indicator color="red"/> Offline
+                                {:else if user.status === 1}
+                                    <Indicator color="green"/> Online
+                                {:else if user.status === 2}
+                                    <Indicator color="blue" /> In game
+                                {/if}
+                                {#if user.id != myProfile.id}
+                                    <Button href={`/users?id=${user.id}`}>View profile</Button>
+                                {:else}
+                                    <Button href="/profile">My profile</Button>
+                                {/if}
+                            </div>
+                        {/if}
+                    {/each}
+                {/if}
+			</TabItem>
+			<TabItem title="Match history" defaultClass="w-full">
+			</TabItem>
+			<TabItem title="Achievement" defaultClass="w-full">
+			</TabItem>
+			<TabItem title="League" defaultClass="w-full">
+			</TabItem>
+			<TabItem title="Level" defaultClass="w-full">
+			</TabItem>
+		</Tabs>
     </div>
 {/if}

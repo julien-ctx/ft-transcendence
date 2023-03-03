@@ -1,6 +1,6 @@
 <script lang="ts">
     import { UpdateProfileImg, UpdateProfileLogin, UpdateProfileToStore } from "$lib/profileUtils";
-	import { Avatar, Button, Card, Dropdown, DropdownItem, MenuButton, Modal } from "flowbite-svelte";
+	import { Accordion, AccordionItem, Avatar, Button, Card, Dropdown, DropdownItem, MenuButton, Modal, TabItem, Tabs } from "flowbite-svelte";
     import { myProfileDataStore, userProfileDataStore, usersDataStore } from "$lib/store/user";
     import { socketFriendStore, socketUserStore } from "$lib/store/socket";
     import { onMount } from "svelte";
@@ -112,58 +112,82 @@
 				</div>
 			</div>
 		</Card>
-		<Card padding="sm" size="xl">
-			My friends
-			{#each allUsers as user}
-				{#if myProfile.friend_id.includes(user.id)}
-					<div class="flex direction-row m-4 gap-4 justify-between">
-						<Avatar src={user.img_link} class="object-cover"/>
-						<div class="self-end">{user.login}</div>
-						{#if user.status == 0}
-							<div>Disconnected</div>
-						{:else if user.status == 1}
-							<div>Connected</div>
-						{:else if user.status == 2}
-							<div>In game</div>
+		<Tabs defaultClass="w-full flex flex-row gap-2" contentClass="w-full">
+			<!-- User friend -->
+			<TabItem title="Friend" open defaultClass="w-full"> 
+				<Accordion defaultClass="w-full">
+					<AccordionItem open={myProfile.friend_id && myProfile.friend_id.length > 0}>
+						<span slot="header">My friends</span>
+						{#each allUsers as user}
+							{#if myProfile.friend_id.includes(user.id)}
+								<div class="flex direction-row m-4 gap-4 justify-between">
+									<Avatar src={user.img_link} class="object-cover"/>
+									<div class="self-end">{user.login}</div>
+									{#if user.status == 0}
+										<div>Disconnected</div>
+									{:else if user.status == 1}
+										<div>Connected</div>
+									{:else if user.status == 2}
+										<div>In game</div>
+									{/if}
+									<Button href={`/users?id=${user.id}`}>View profile</Button>
+									<Button>Invitation play</Button>
+									<!-- <Button on:click={() => openDm(user)}>Private message</Button> -->
+									<Button on:click={() => socketFriend.emit('delete_friend', { id_user_send : myProfile.id, id_user_receive : user.id})}>Delete friend</Button>
+								</div>
+							{/if}
+						{/each}
+						{#if myProfile.friend_id && myProfile.friend_id.length == 0}
+							No friend
 						{/if}
-						<Button href={`/users?id=${user.id}`}>View profile</Button>
-						<Button>Invitation play</Button>
-						<!-- <Button on:click={() => openDm(user)}>Private message</Button> -->
-						<Button on:click={() => socketFriend.emit('delete_friend', { id_user_send : myProfile.id, id_user_receive : user.id})}>Delete friend</Button>
-					</div>
-				{/if}
-			{/each}
-			<hr>
-			Pending request
-			{#if myProfile.notification}
-				{#each myProfile.notification as notif}
-					{#if notif.type == 0}
-						<div class="flex direction-row m-4 gap-4 justify-between">
-							<Avatar src={notif.img_link} class="object-cover"/>
-							<div class="self-end">{notif.login_send}</div>
-							<Button href={`/users?id=${notif.id_user_send}`}>View profile</Button>
-							<Button on:click={() => socketFriend.emit("accept_friend", { user : myProfile, notif})}>Accept friend</Button>
-							<Button on:click={() => socketFriend.emit("refuse_friend", {user : myProfile, notif})}>Refuse friend</Button>
-						</div>
-					{/if}
-				{/each}
-			{/if}
-			<hr>
-			Request send
-			{#if myProfile.req_send_friend}
-				{#each myProfile.req_send_friend as req}
-					{#each allUsers as user}
-						{#if user.id == req}
-							<div class="flex direction-row m-4 gap-4 justify-between">
-								<Avatar src={user.img_link} class="object-cover"/>
-								<div class="self-end">{user.login}</div>
-								<Button href={`/users?id=${user.id}`}>View profile</Button>
-								<Button on:click={() => socketFriend.emit("cancel_friend", {id_user_send : myProfile.id, id_user_receive : user.id})}>Cancel request</Button>
-							</div>
+					</AccordionItem>
+					<AccordionItem>
+						<span slot="header">Pending request</span>
+						{#if myProfile.notification && myProfile.notification.length > 0}
+							{#each myProfile.notification as notif}
+								{#if notif.type == 0}
+									<div class="flex direction-row m-4 gap-4 justify-between">
+										<Avatar src={notif.img_link} class="object-cover"/>
+										<div class="self-end">{notif.login_send}</div>
+										<Button href={`/users?id=${notif.id_user_send}`}>View profile</Button>
+										<Button on:click={() => socketFriend.emit("accept_friend", { user : myProfile, notif})}>Accept friend</Button>
+										<Button on:click={() => socketFriend.emit("refuse_friend", {user : myProfile, notif})}>Refuse friend</Button>
+									</div>
+								{/if}
+							{/each}
+						{:else if myProfile.notification && myProfile.notification.length == 0}
+							No Data
 						{/if}
-					{/each}
-				{/each}
-			{/if}
-		</Card>
+					</AccordionItem>
+					<AccordionItem>
+						<span slot="header">Request send</span>
+						{#if myProfile.req_send_friend && myProfile.req_send_friend.length > 0}
+							{#each myProfile.req_send_friend as req}
+								{#each allUsers as user}
+									{#if user.id == req}
+										<div class="flex direction-row m-4 gap-4 justify-between">
+											<Avatar src={user.img_link} class="object-cover"/>
+											<div class="self-end">{user.login}</div>
+											<Button href={`/users?id=${user.id}`}>View profile</Button>
+											<Button on:click={() => socketFriend.emit("cancel_friend", {id_user_send : myProfile.id, id_user_receive : user.id})}>Cancel request</Button>
+										</div>
+									{/if}
+								{/each}
+							{/each}
+						{:else if myProfile.req_send_friend && myProfile.req_send_friend.length == 0}
+							No Data
+						{/if}
+					</AccordionItem>
+				</Accordion>
+			</TabItem>
+			<TabItem title="Match history" defaultClass="w-full">
+			</TabItem>
+			<TabItem title="Achievement" defaultClass="w-full">
+			</TabItem>
+			<TabItem title="League" defaultClass="w-full">
+			</TabItem>
+			<TabItem title="Level" defaultClass="w-full">
+			</TabItem>
+		</Tabs>
 	</div>
 {/if}

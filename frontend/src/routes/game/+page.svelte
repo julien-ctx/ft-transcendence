@@ -18,6 +18,7 @@
 		})
 	});
 	
+	/* Game data */
 	let gameStarted: boolean = false;
 	let maxScore: number;
 
@@ -42,6 +43,7 @@
 		return Math.round(Math.random()) * 2 - 1;
 	}
 
+	/* Drawing functions */
 	function drawPaddles(color: string) {
 		ctx.fillStyle = color;
 		ctx.fillRect(
@@ -66,14 +68,13 @@
 	}
 		
 	function drawSep(color: string) {
-		for (let i = 0; i < canvas.width; i += ball.size * 2) {
+		for (let i = 0; i < canvas.height; i += ball.size * 2) {
 			ctx.fillStyle = color;
 			ctx.fillRect(canvas.width / 2 - ball.size / 4, i, ball.size / 2, ball.size);
-			ctx.fillStyle = 'red';
 		}
 	}
 		
-	function displayScore() {
+	function drawScore() {
 			ctx.fillText(leftPaddle.score, canvas.width * 0.4, canvas.height * 0.1);
 			ctx.fillText(rightPaddle.score, canvas.width * 0.6 - ctx.measureText(rightPaddle.score).width, canvas.height * 0.1);
 	}
@@ -115,35 +116,10 @@
 			}
 		}
 		ctx.font = 'bold ' + canvas.width * 0.03 + 'px Courier';
-		displayScore();
+		drawScore();
 	}
-
-	function collision(paddle: any) {
-		const deltaX = ball.x - Math.max(paddle.x, Math.min(ball.x, paddle.x + paddle.width));
-		const deltaY = ball.y - Math.max(paddle.y, Math.min(ball.y, paddle.y + paddle.height));
-		return (deltaX * deltaX + deltaY * deltaY) < (ball.size * ball.size);
-	}
-
-	function keyboardMoves(canvas: HTMLCanvasElement) {
-		document.addEventListener('keydown', function(e) {
-			if (e.key == 'ArrowUp') {
-				paddleDirection = -1;
-			}
-			else if (e.key == 'ArrowDown') {
-				paddleDirection = 1;
-			}
-			e.preventDefault();
-			return false;
-		});
-
-		document.addEventListener('keyup', function(e) {
-			if (e.key == 'ArrowUp' || e.key == 'ArrowDown') {
-				paddleDirection = 0;
-			}
-			e.preventDefault();
-			return false;
-		});
-
+	
+	function movePaddles() {
 		if (paddleDirection == -1) {
 			if (leftPaddle.y - paddleSpeed >= 0) {
 				leftPaddle.y -= paddleSpeed;
@@ -159,35 +135,28 @@
 			}
 		}
 	}
-
-	function mouseMoves(canvas: HTMLCanvasElement) {
-		canvas.addEventListener('mousemove', (event) => {
-			mouseY = event.clientY - canvas.offsetTop;
-			if (mouseY < 0) {
-				mouseY = 0;
-			} else if (mouseY > canvas.height - (leftPaddle.height)) {
-				mouseY = canvas.height - (leftPaddle.height);
-			}
-			leftPaddle.y = mouseY;
-		});	
+	
+	function collision(paddle: any) {
+		const deltaX = ball.x - Math.max(paddle.x, Math.min(ball.x, paddle.x + paddle.width));
+		const deltaY = ball.y - Math.max(paddle.y, Math.min(ball.y, paddle.y + paddle.height));
+		return (deltaX * deltaX + deltaY * deltaY) < (ball.size * ball.size);
 	}
 
 	function updateBot() {
-		const rate = Math.random() < 0.6 ? 1 : 0;
-		if (ball.y < rightPaddle.y + rightPaddle.height / 2 && ball.x > canvas.width / 2) {
-			if (rightPaddle.y - (paddleSpeed / 2) * rate < 0)
+		if (ball.y < rightPaddle.y + rightPaddle.height / 2) {
+			if (rightPaddle.y - (paddleSpeed / 2) < 0)
 				rightPaddle.y = 0;
 			else
-				rightPaddle.y  -= (paddleSpeed / 2) * rate;
+				rightPaddle.y -= (paddleSpeed / 1.25);
 		}
-		else if (ball.y > rightPaddle.y + rightPaddle.height / 2 && ball.x > canvas.width / 2) {
-			if (rightPaddle.y + rightPaddle.height + (paddleSpeed / 2) * rate > canvas.height)
+		else if (ball.y > rightPaddle.y + rightPaddle.height / 2) {
+			if (rightPaddle.y + rightPaddle.height + (paddleSpeed / 2) > canvas.height)
 				rightPaddle.y = canvas.height - rightPaddle.height;
 			else
-				rightPaddle.y  += (paddleSpeed / 2) * rate;
+				rightPaddle.y += (paddleSpeed / 1.25);
 		}
 	}
-		
+
 	function gameLoop() {
 		if (!ctx) return;
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -217,11 +186,10 @@
 		if (gameStarted) {
 			drawSep('blue');
 			drawBall('red');
-			mouseMoves(canvas);
-			keyboardMoves(canvas);
+			movePaddles();
 			requestAnimationFrame(gameLoop);
 			if (singlePlayer)
-				updateBot();
+				updateBot();	
 		}
 	}
 
@@ -260,19 +228,74 @@
 			dirY: ballDirection.y,
 		};
 		
+		paddleSpeed = canvas.height * 0.015;
 		ballSpeed = {
-			x: 2,
-			y: 2,
+			x: canvas.width * 0.004,
+			y: canvas.height * 0.007,
 		};
-		paddleSpeed = 10;
 
-		maxScore = 2;
+		maxScore = 40;
+	}
+
+	function addEvents() {
+		window.addEventListener('resize', function(e) {
+			const width = canvas.width;
+			const height = canvas.height;
+			canvas.width = window.innerWidth * 0.7;
+			canvas.height = window.innerHeight * 0.8;
+			rightPaddle.x = canvas.width - canvas.width * 0.015 - canvas.width * 0.005;	
+			rightPaddle.width =  canvas.width * 0.005;
+			rightPaddle.height = canvas.height * 0.15;
+			rightPaddle.y = rightPaddle.y * canvas.height / height;
+			leftPaddle.x = canvas.width * 0.015;
+			leftPaddle.width = canvas.width * 0.005;
+			leftPaddle.height = canvas.height * 0.15;
+			leftPaddle.y = leftPaddle.y * canvas.height / height;
+			ball.size = canvas.width * 0.02;
+			ball.x = ball.x * canvas.width / width;
+			ball.y = ball.y * canvas.height / height;
+			paddleSpeed = canvas.height * 0.015;
+			ballSpeed = {
+				x: canvas.width * 0.004,
+				y: canvas.height * 0.007,
+			};
+		}, true);
+
+		canvas.addEventListener('mousemove', (event) => {
+			mouseY = event.clientY - canvas.offsetTop;
+			if (mouseY < 0) {
+				mouseY = 0;
+			} else if (mouseY > canvas.height - (leftPaddle.height)) {
+				mouseY = canvas.height - (leftPaddle.height);
+			}
+			leftPaddle.y = mouseY;
+		});	
+
+		document.addEventListener('keydown', function(e) {
+			if (e.key == 'ArrowUp') {
+				paddleDirection = -1;
+			}
+			else if (e.key == 'ArrowDown') {
+				paddleDirection = 1;
+			}
+			e.preventDefault();
+			return false;
+		});
+
+		document.addEventListener('keyup', function(e) {
+			if (e.key == 'ArrowUp' || e.key == 'ArrowDown') {
+				paddleDirection = 0;
+			}
+			e.preventDefault();
+			return false;
+		});
 	}
 
 	onMount(() => {
 		canvas = document.getElementById('main-game-canvas') as HTMLCanvasElement;
 		canvas.width = window.innerWidth * 0.7;
 		canvas.height = window.innerHeight * 0.8;
+		console.log(canvas.width, canvas.height);
 		ctx = canvas.getContext('2d');
 		ctx.font = 'bold ' + canvas.width * 0.03 + 'px Courier';
 		ctx.fillStyle = 'blue';
@@ -290,6 +313,7 @@
 		if (!gameStarted) {
 			initData();
 			gameStarted = true;
+			addEvents();
 			startGame();
 		}
 	}

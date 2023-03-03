@@ -11,6 +11,9 @@
     import { getJwt, removeJwt } from '$lib/jwtUtils';
     import { socketFriendStore, socketUserStore } from '$lib/store/socket';
 	import { Navbar, NavBrand, NavLi, NavUl, NavHamburger, Avatar, Dropdown, DropdownItem, DropdownHeader, DropdownDivider } from 'flowbite-svelte'
+    import { GetAllUsers } from '$lib/userUtils';
+    import axios from 'axios';
+    import { io } from 'socket.io-client';
 	
 
 	let myProfile : any;
@@ -36,6 +39,57 @@
 				goto("/login")
 			}
 		})
+
+		await GetAllUsers()
+		.then((res) => {
+			usersDataStore.set(res.data);
+		})
+
+		await axios.get("http://localhost:4000/users/getAllHimSelf", {
+		headers : {
+			Authorization : `Bearer ${getJwt()}`
+		}
+		})
+		.then((res) => {
+			usersHimSelfDataStore.set(res.data);
+		});
+
+		let socketUser = io('http://localhost:4000', {
+			path: "/event_user",
+			query : { token : getJwt()}
+		});
+		socketUser.on("update_me", (data : any) => {
+			UpdateProfileToStore(data);
+		})
+		socketUser.on("event_user", (data : any) => {
+			if (data.id && userProfile.id && data.id == userProfile.id)
+				userProfileDataStore.set(data);
+			if (allUsers && allUsers.length != 0) {
+				let arrId : number [] = [];
+				for (let i = 0; i < allUsers.length; i++) {
+					if (allUsers[i].id == data.id) {
+						allUsers[i] = data;
+						usersDataStore.set(allUsers)
+						arrId.push(data.id);
+					}
+				}
+				if (!arrId.includes(data.id) && data.id != myProfile.id) {
+					allUsers.push(data)
+					usersDataStore.set(allUsers);
+				}
+			}                                                                                                                              
+		})
+
+		socketUserStore.set(socketUser);
+		
+		let socketFriend = io('http://localhost:4000', {
+			path: "/notif_friend",
+			query : { token : getJwt()}
+		});
+		socketFriend.on('event_friend', (data : any) => {
+			UpdateProfileToStore(data);			
+		});
+		socketFriendStore.set(socketFriend);
 	})
 
 </script>

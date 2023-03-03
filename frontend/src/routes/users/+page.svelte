@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Avatar, Card, Button, Dropdown, DropdownItem, MenuButton, Search } from "flowbite-svelte";
+	import { Avatar, Card, Button, Dropdown, DropdownItem, MenuButton, Search, Select } from "flowbite-svelte";
     import { onMount } from 'svelte';
     import { myProfileDataStore, usersDataStore } from '$lib/store/user';
     import { socketFriendStore, socketUserStore } from '$lib/store/socket';
@@ -17,15 +17,7 @@
 	usersDataStore.subscribe(val => allUsers = val);
 	socketFriendStore.subscribe(val => socketFriend = val);
 	socketUserStore.subscribe(val => socketUser = val);
-
-
-	onMount(async () => {
-		await GetAllUsers()
-		.then((res) => {
-			usersComponent = res.data;
-		})
-		
-	})
+	usersComponent = allUsers;
 
 	function handleClickAcceptFriend(user : any) {
 		let notif : any;
@@ -58,6 +50,7 @@
 			usersComponent = allUsers;
 		usersComponent = usersComponent;
 	}
+
 </script>
 
 <div class="p-10">

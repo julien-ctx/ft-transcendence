@@ -93,6 +93,7 @@
 			resetBall(-1);
 			if (++rightPaddle.score === maxScore) {
 				ctx.font = 'bold ' + canvas.width * 0.03 + 'px Courier';
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
 				let winMsg: string = 'Right Paddle won!';
 				ctx.fillText(
 					winMsg,
@@ -105,6 +106,7 @@
 		else if (ball.x > canvas.width - ball.size) {
 			resetBall(1);
 			if (++leftPaddle.score === maxScore) {
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
 				let winMsg: string = 'Left Paddle won!';
 				ctx.font = 'bold ' + canvas.width * 0.03 + 'px Courier';
 				ctx.fillText(
@@ -157,13 +159,12 @@
 		}
 	}
 
-	function gameLoop() {
+	async function gameLoop() {
 		if (!ctx) return;
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
 		drawPaddles('blue');
 		ball.x += ball.dirX * ballSpeed.x;
 		ball.y += ball.dirY * ballSpeed.y;
-		
 		if (ball.y < 0) {
 			ball.y = 0;
 			ball.dirY = -ball.dirY;
@@ -187,13 +188,20 @@
 			drawSep('blue');
 			drawBall('red');
 			movePaddles();
-			requestAnimationFrame(gameLoop);
 			if (singlePlayer)
-				updateBot();	
+			updateBot();	
+			requestAnimationFrame(gameLoop);
 		}
 	}
 
-	function startGame() {
+	async function startGame() {
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
+		for (let i = 3; i > 0; i--) {
+			ctx.font = 'bold ' + canvas.width * 0.1 + 'px Courier';
+			ctx.fillText(i, canvas.width * 0.5 - ctx.measureText(i).width / 2, canvas.height * 0.5);
+			await new Promise(r => setTimeout(r, 500));
+			ctx.clearRect(0, 0, canvas.width, canvas.height);	
+		}
 		gameLoop();
 	}
 
@@ -234,7 +242,7 @@
 			y: canvas.height * 0.007,
 		};
 
-		maxScore = 40;
+		maxScore = 2;
 	}
 
 	function addEvents() {
@@ -243,7 +251,7 @@
 			const height = canvas.height;
 			canvas.width = window.innerWidth * 0.7;
 			canvas.height = window.innerHeight * 0.8;
-			rightPaddle.x = canvas.width - canvas.width * 0.015 - canvas.width * 0.005;	
+			rightPaddle.x = canvas.width - canvas.width * 0.015 - canvas.width * 0.005;
 			rightPaddle.width =  canvas.width * 0.005;
 			rightPaddle.height = canvas.height * 0.15;
 			rightPaddle.y = rightPaddle.y * canvas.height / height;
@@ -290,7 +298,7 @@
 			return false;
 		});
 	}
-
+	
 	onMount(() => {
 		canvas = document.getElementById('main-game-canvas') as HTMLCanvasElement;
 		canvas.width = window.innerWidth * 0.7;
@@ -300,7 +308,7 @@
 		ctx.font = 'bold ' + canvas.width * 0.03 + 'px Courier';
 		ctx.fillStyle = 'blue';
 		const WelcomeMsg = 'Click to start the game!';
-  		ctx.fillText(
+		ctx.fillText(
 			WelcomeMsg,
 			canvas.width * 0.5 - ctx.measureText(WelcomeMsg).width / 2,
 			canvas.height * 0.5,
@@ -308,7 +316,6 @@
 		canvas.onclick = isReady;
 	});
 	
-
 	function isReady() {
 		if (!gameStarted) {
 			initData();

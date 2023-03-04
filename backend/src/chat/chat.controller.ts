@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Post, Controller, Get, Param, UseGuards } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { UserDec } from 'src/user/user.decorator';
 import { User } from '@prisma/client';
@@ -22,5 +22,10 @@ export class ChatController {
 	@Get('getAll')
 	async getAll(@UserDec() userReq: User) {
 		return await this.Chatservice.getAll(userReq.id_user);
+	}
+s
+	@Get('getMembers/:room')
+	async getRoom(@UserDec() userReq: User, @Param('room') room: string) {
+		return await this.Chatservice.getMembers(room, userReq.id_user);
 	}
 }

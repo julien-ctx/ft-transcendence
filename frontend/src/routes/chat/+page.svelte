@@ -2,20 +2,22 @@
 
 	import { onMount } from 'svelte';
 	import { io } from 'socket.io-client';
-	import { AuthGuard } from "$lib/AuthGuard";
+	import { AuthGuard } from "$lib/store/AuthGuard";
     import { goto } from "$app/navigation";
     import { getJwt, removeJwt } from "$lib/jwtUtils";
-	import { Badge, Table, TableHead, TableHeadCell, TableBodyCell, ButtonGroup, Button, Select, FloatingLabelInput, Drawer, Heading, Hr, Listgroup, ListgroupItem, TableBody, TableBodyRow } from 'flowbite-svelte';
+	import { Dropdown, DropdownItem, Chevron, Badge, Table, TableHead, TableHeadCell, TableBodyCell, ButtonGroup, Button, Select, FloatingLabelInput, Drawer, Heading, Hr, Listgroup, ListgroupItem, TableBody, TableBodyRow, MenuButton } from 'flowbite-svelte';
 	import { Modal } from 'flowbite-svelte'
 	import axios from 'axios';
 	import Chat from '../../modules/chat.svelte';
 	import Edit from '../../modules/roomEdit.svelte';
-	import { socketRoomStore } from '$lib/store/socket';
+	// import { socketRoomStore } from '$lib/store/socket';
+	import Admin  from '../../modules/admin.svelte';
 
 	let isLogged = false;
 	let socket : any;
 	let modalCreate = false;
 	let modalJoin = false;
+	let modalAdmin = false;
 	let status : string = '';
 	let needPass : string = '';
 	let states = [
@@ -27,7 +29,7 @@
 	let err : any = {name : "", desc : "", status : "", pass : "", cpass : "", already : ""};
 	let rooms : any = [];
 	let allRooms : any = [];
-	socketRoomStore.subscribe(val => socket = val);
+	// socketRoomStore.subscribe(val => socket = val);
 	onMount(async () => {
 		AuthGuard()
 		.then((res) => {
@@ -36,8 +38,17 @@
 		.catch((err) => {
 			removeJwt();
 			goto("/login")
-		})		
+		})
+
+
 		let token : string = getJwt();
+
+		socket = io('http://localhost:4000', {
+			path : '/chat',
+			query : {
+				token : token,
+			}
+		});
 
 		try {
 			await axios.get('http://localhost:4000/Chat/getRooms', {
@@ -143,6 +154,11 @@
 		modalEdit = true;
 	}
 
+	function admin(room : string) {
+		toAdmin = room;
+		modalAdmin = true;
+	}
+
 	let JoinName = '';
 	let JoinPass = '';
 
@@ -157,6 +173,7 @@
 	let modalChat = false;
 	let modalEdit = false;
 	let toEdit : string = '';
+	let toAdmin : string = '';
 </script>	
 
 <div>
@@ -206,7 +223,7 @@
 		</Table>	
 	</div>
 
-	<Drawer bind:hidden={chatList} transitionType="fly">
+	<Drawer bind:hidden={chatList} transitionType="fly" width="w-2/6">
 		<div class="flex justify-center">
 			<Heading tag="h2" customSize="text-4xl font-extrabold ">Channels</Heading>
 		</div>
@@ -226,6 +243,10 @@
 					<Button outline color="red" on:click={() => leaveRoom(room.name)}>
 						<img src="/delete.svg" class="w-6 h-6" alt="delete"/>
 					</Button>
+					{#if room.admin === true}
+						<MenuButton />
+						<Admin bind:socket={socket} bind:room={room.name}/>
+					{/if}
 				</div>
 			{/each}
 			</Listgroup>
@@ -238,6 +259,10 @@
 
 	{#if modalEdit === true}
 		<Edit bind:socket={socket} bind:room={toEdit} bind:modalEdit={modalEdit}/>
+	{/if}
+
+	{#if modalAdmin === true}
+		<Admin bind:socket={socket} bind:room={toAdmin} bind:open={modalAdmin}/>
 	{/if}
 
 	<Modal bind:open={modalCreate} title="Create a room" {color}>

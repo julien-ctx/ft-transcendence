@@ -140,4 +140,25 @@ export class ChatService {
 		});
 		return message;
 	}
+
+	async getMembers(name : string, id : number) {
+		const room = await this.getRoomByName(name);
+		const relation = await this.prisma.roomToUser.findMany({
+			where: {
+				id_room: room.id,
+			},
+			include: {
+				user: true,
+			},
+		});
+		const members = relation.filter((relat) => relat.user.id_user !== id);
+		console.log(members);
+		const membersObj = members.map((member) => {
+			return {
+				member : member.user,
+			}
+		});
+		console.log(membersObj);
+		return membersObj;
+	}
 }

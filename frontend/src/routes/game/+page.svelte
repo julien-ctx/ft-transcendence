@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from "svelte";
-	import { AuthGuard } from "../../lib/AuthGuard";
+	import { AuthGuard } from "$lib/store/AuthGuard";
     import { goto } from "$app/navigation";
     import { removeJwt } from "$lib/jwtUtils";
 	import { Button } from 'flowbite-svelte';

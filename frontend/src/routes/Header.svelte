@@ -1,16 +1,16 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
-    import { AuthGuard } from '../lib/AuthGuard';
+    import { AuthGuard } from '$lib/store/AuthGuard';
     import { myProfileDataStore, userProfileDataStore, usersDataStore } from '$lib/store/user';
     import { UpdateProfileConnected, UpdateProfileToStore } from '$lib/profileUtils';
-    import Notifications from '../modules/notifications.svelte';
     import { goto } from '$app/navigation';
     import { getJwt, removeJwt } from '$lib/jwtUtils';
     import { socketFriendStore, socketUserStore } from '$lib/store/socket';
 	import { Navbar, NavBrand, NavLi, NavUl, NavHamburger, Avatar, Dropdown, DropdownItem, DropdownHeader, DropdownDivider } from 'flowbite-svelte'
     import { GetAllUsers } from '$lib/userUtils';
     import { io } from 'socket.io-client';
+    import Notifications from '../modules/notifications.svelte';
 	
 
 	let myProfile : any;
@@ -45,6 +45,11 @@
 			usersDataStore.set(res.data);
 		})
 
+		await GetAllUsers()
+		.then((res) => {
+			usersDataStore.set(res.data);
+		})
+    
 		let socketUser = io('http://localhost:4000', {
 			path: "/event_user",
 			query : { token : getJwt()}

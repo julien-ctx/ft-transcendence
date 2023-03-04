@@ -30,11 +30,10 @@ export class UserEventGateway implements OnGatewayInit, OnGatewayConnection, OnG
 		if (user == undefined) return;
 		await this.userService.getOneByIdUser(user['id'])
 		.then(async (userGet : User) => {
-			// console.log("userget" userGet);
-			
 			this.usersArr.push({user : userGet, client});
 			await this.userService.updateUser({
-				activity : 1
+				activity : 1,
+				twoFaAuth : true
 			}, userGet.id)
 			.then((user : User) => {
 				this.server.emit("event_user", user)
@@ -61,7 +60,7 @@ export class UserEventGateway implements OnGatewayInit, OnGatewayConnection, OnG
 	async disconnectUser(@MessageBody() user : User) {
 		await this.userService.updateUser({
 			activity : 0,
-			twoFaAuth : false
+			// twoFaAuth : false
 		}, user.id)
 		.then((userUpdate : User) => {
 			this.server.emit("event_user", userUpdate);

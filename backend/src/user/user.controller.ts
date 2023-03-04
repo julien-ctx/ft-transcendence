@@ -50,7 +50,7 @@ export class UserController{
 
 	@Post("updateConnected")
 	async updateConnected(@Body("activity") activity : any, @UserDec() user : User) {
-		if (user.twoFaEnabled && user.twoFaAuth) {
+		if (user.twoFaEnabled && user.twoFaAuth && activity == 0) {
 			return await this.userService.updateUser({
 				activity,
 				twoFaAuth : false

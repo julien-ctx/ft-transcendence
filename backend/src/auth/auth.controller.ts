@@ -54,13 +54,16 @@ export class AuthController{
 	@UseGuards(JwtAuthGuard)
 	@Post("2fa/enable")
 	async enable2fa(@UserDec() user) {
+		let secret : string = user.twoFaSecret;
+		if (user.twFaSecret == "")
+			secret  = this.twoFaService.generateSecret();
 		return await this.prisma.user.update({
 			where : {
 				id : user.id
 			},
 			data : {
 				twoFaEnabled : true,
-				twoFaSecret : this.twoFaService.generateSecret(),
+				twoFaSecret : secret,
 				twoFaAuth : true
 			}
 		})
@@ -69,6 +72,7 @@ export class AuthController{
 	@UseGuards(JwtAuthGuard)
 	@Post("2fa/disable")
 	async disable2fa(@UserDec() user) {
+		console.log(user);
 		return await this.prisma.user.update({
 			where : {
 				id : user.id

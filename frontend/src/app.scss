@@ -3,3 +3,26 @@
 // 	// border: 1px solid $secondary;
 // 	box-shadow: 0 0px 3px $secondary;
 // }
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+#search {
+	padding: 4px;
+	border-bottom: 1px solid $third;
+	background-color: transparent;
+	max-width: 200px;
+}
+
+#order,
+#filter {
+	cursor: pointer;
+	border: none;
+	padding-left: 2px;
+	padding-bottom: 4px;
+	border-bottom: 1px solid $third;
+	background-color: transparent;
+	max-width: 150px;
+}

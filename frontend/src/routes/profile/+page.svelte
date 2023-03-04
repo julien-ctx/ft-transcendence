@@ -70,7 +70,7 @@
 	}
 
 	async function disableTwoFA() {
-		await axios.post("http://localhost:4000/auth/2fa/disable", "" ,{
+		await axios.post("http://localhost:4000/auth/2fa/disable", {user : myProfile} ,{
 			headers : {
 				Authorization : `Bearer ${getJwt()}`
 			}
@@ -118,11 +118,11 @@
                 <div class="flex items-center justify-around gap-3 p-3">
 					{#if !myProfile.twoFaEnabled}
 						<button on:click={enbaleTwoFA}>
-							<Svg2faEnable />
+							<Svg2faDisabled />
 						</button>
 					{:else}
 						<button on:click={disableTwoFA}>
-							<Svg2faDisabled />
+							<Svg2faEnable />
 						</button>
 					{/if}
                 </div>

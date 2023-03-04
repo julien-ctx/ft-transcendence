@@ -85,14 +85,14 @@
 </script>
 
 <div class="p-10 container mx-auto gap-10 max-w-screen-xl">
-	<div class="flex gap-5">
+	<div class="grid grid-cols-1 md:grid-cols-6 gap-10">
 		<div class="flex flex-col justify-between">
-			<label for="search">Search an user</label>
-			<input id="search" placeholder="Search by nickname" bind:value={searchInput} on:input={handleChangeSearch}/>
+			<label for="search">Search an user :</label>
+			<input class="focus:outline-none focus:ring-0" id="search" placeholder="Search by nickname" bind:value={searchInput} on:input={handleChangeSearch}/>
 		</div>
 		<div class="flex flex-col justify-between">
-			<label for="filter">Filter:</label>
-			<select id="filter" bind:value={selectFilter} on:change={updateUserComponent}>
+			<label for="filter">Filter :</label>
+			<select class="focus:outline-none focus-visible:ring-transparent focus:ring-transparent" id="filter" bind:value={selectFilter} on:change={updateUserComponent}>
 				<option value="activity">Activity</option>
 				<option value="winrate">Win rate</option>
 				<option value="ranking">Ranking</option>
@@ -100,10 +100,10 @@
 			</select>
 		</div>
 		<div class="flex flex-col justify-between">
-			<label for="order">Order:</label>
-			<select id="order" bind:value={selectOrder} on:change={updateUserComponent}>
-				<option value="desc">Desc</option>
-				<option value="asc">Asc</option>
+			<label for="order">Order :</label>
+			<select  class="focus:outline-none focus-visible:ring-transparent focus:ring-transparent" id="order" bind:value={selectOrder} on:change={updateUserComponent}>
+				<option value="desc">Descending</option>
+				<option value="asc">Ascending</option>
 			</select>
 		</div>
 	</div>

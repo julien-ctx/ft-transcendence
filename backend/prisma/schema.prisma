@@ -27,6 +27,7 @@ model User {
   twoFaSecret String @default("")
   twoFaEnabled Boolean @default(false)
   twoFaAuth Boolean @default(false)
+  
 }
 
 model Room {

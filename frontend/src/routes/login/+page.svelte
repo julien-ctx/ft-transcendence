@@ -5,7 +5,7 @@
     import { getJwt, setJwt } from "$lib/jwtUtils";
     import { io } from "socket.io-client";
     import { GetOneUser } from "$lib/userUtils";
-    import { AuthGuard } from "$lib/AuthGuard";
+    // import { AuthGuard } from "$lib/store/AuthGuard";
     import { myProfileDataStore } from "$lib/store/user";
 
 	let qrCode : string;

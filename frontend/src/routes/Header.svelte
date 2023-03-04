@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
-    import { AuthGuard } from '../lib/AuthGuard';
+    import { AuthGuard } from '$lib/store/AuthGuard';
 	import { DarkMode } from 'flowbite-svelte';
     import { myProfileDataStore, userProfileDataStore, usersDataStore, usersHimSelfDataStore } from '$lib/store/user';
     import { UpdateProfileToStore } from '$lib/profileUtils';
@@ -51,12 +51,12 @@
 			usersDataStore.set(res.data);
 		})
 		
-		let socket = io('http://localhost:4000', {
-			path: "/event_user",
-			query : { token : getJwt()}
-		});
+		// let socket = io('http://localhost:4000', {
+		// 	path: "/event_user",
+		// 	query : { token : getJwt()}
+		// });
 
-		socketRoomStore.set(socketRoom);
+		// socketRoomStore.set(socketRoom);
 	})
 	userProfileDataStore.subscribe(val => userProfile = val);
 	socketUserStore.subscribe(val => socketUser = val);

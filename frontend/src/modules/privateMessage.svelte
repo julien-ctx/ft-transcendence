@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { io } from 'socket.io-client';
-	import { AuthGuard } from "$lib/AuthGuard";
+	import { AuthGuard } from "$lib/store/AuthGuard";
 	import { goto } from "$app/navigation";
 	import { getJwt, removeJwt } from "$lib/jwtUtils";
 	import { socketRoomStore } from '$lib/store/socket';

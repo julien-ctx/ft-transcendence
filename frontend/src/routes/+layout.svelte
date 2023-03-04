@@ -11,7 +11,7 @@
     import { socketFriendStore, socketUserStore } from "$lib/store/socket";
     import { GetAllUsers } from "$lib/userUtils";
     import { all } from "axios";
-    import { AuthGuard } from "$lib/AuthGuard";
+    import { AuthGuard } from "$lib/store/AuthGuard";
     import { goto } from "$app/navigation";
 
 	let allUsers : any;

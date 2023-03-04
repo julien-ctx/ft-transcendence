@@ -3,9 +3,13 @@
 	import { AuthGuard } from "$lib/store/AuthGuard";
     import { goto } from "$app/navigation";
     import { removeJwt } from "$lib/jwtUtils";
-	import { Button } from 'flowbite-svelte';
+	import { Button, ButtonGroup } from 'flowbite-svelte';
 	import io, { Socket } from 'socket.io-client';
 	
+	const TEXT_COLOR: string = "#dcd3bc";
+	const OBJ_COLOR: string = "#dcd3bc";
+	const BALL_COLOR: string = "#e36c5d";
+
 	let isLogged = false;
 	onMount(async () => {
 		AuthGuard()
@@ -16,9 +20,14 @@
 			removeJwt();
 			goto("/login")
 		})
+		canvas = document.getElementById('main-game-canvas') as HTMLCanvasElement;
+		canvas.width = window.innerWidth * 0.7;
+		canvas.height = window.innerHeight * 0.8;
+		ctx = canvas.getContext('2d');
+		ctx.font = canvas.width * 0.03 + 'px Courier';
+		ctx.fillStyle = TEXT_COLOR;
 	});
 	
-	/* Game data */
 	let gameStarted: boolean = false;
 	let maxScore: number;
 
@@ -35,7 +44,7 @@
 
 	let ballSpeed: any;
 	let paddleSpeed: number;
-	let singlePlayer: boolean = true;
+	let playerNumber: number = 0;
 
 	const socket = io('http://localhost:4000');
 
@@ -43,9 +52,8 @@
 		return Math.round(Math.random()) * 2 - 1;
 	}
 
-	/* Drawing functions */
-	function drawPaddles(color: string) {
-		ctx.fillStyle = color;
+	function drawPaddles() {
+		ctx.fillStyle = OBJ_COLOR;
 		ctx.fillRect(
 			leftPaddle.x,
 			leftPaddle.y,
@@ -58,8 +66,8 @@
 		);
 	}
 		
-	function drawBall(color: string) {
-		ctx.fillStyle = color;
+	function drawBall() {
+		ctx.fillStyle = BALL_COLOR;
 		const radius = ball.size / 2;
 		ctx.beginPath();
 		ctx.arc(ball.x + ball.size / 2, ball.y + ball.size / 2, radius, 0, 2 * Math.PI);
@@ -67,10 +75,10 @@
 		ctx.stroke();
 	}
 		
-	function drawSep(color: string) {
+	function drawSep() {
+		ctx.fillStyle = OBJ_COLOR;
 		for (let i = 0; i < canvas.height; i += ball.size * 2) {
-			ctx.fillStyle = color;
-			ctx.fillRect(canvas.width / 2 - ball.size / 4, i, ball.size / 2, ball.size);
+			ctx.fillRect(canvas.width / 2 - ball.size / 4, i, ball.size / 4, ball.size);
 		}
 	}
 		
@@ -162,7 +170,7 @@
 	async function gameLoop() {
 		if (!ctx) return;
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
-		drawPaddles('blue');
+		drawPaddles();
 		ball.x += ball.dirX * ballSpeed.x;
 		ball.y += ball.dirY * ballSpeed.y;
 		if (ball.y < 0) {
@@ -185,11 +193,11 @@
 		
 		checkBallPosition();
 		if (gameStarted) {
-			drawSep('blue');
-			drawBall('red');
+			drawSep();
+			drawBall();
 			movePaddles();
-			if (singlePlayer)
-			updateBot();	
+			if (playerNumber === 1)
+				updateBot();	
 			requestAnimationFrame(gameLoop);
 		}
 	}
@@ -298,15 +306,11 @@
 			return false;
 		});
 	}
-	
-	onMount(() => {
-		canvas = document.getElementById('main-game-canvas') as HTMLCanvasElement;
-		canvas.width = window.innerWidth * 0.7;
-		canvas.height = window.innerHeight * 0.8;
-		console.log(canvas.width, canvas.height);
-		ctx = canvas.getContext('2d');
-		ctx.font = 'bold ' + canvas.width * 0.03 + 'px Courier';
-		ctx.fillStyle = 'blue';
+
+	function createCanvas(nb: number) {
+		if (playerNumber)
+			ctx.clearRect(0, 0, canvas.width, canvas.height);	
+		playerNumber = nb;
 		const WelcomeMsg = 'Click to start the game!';
 		ctx.fillText(
 			WelcomeMsg,
@@ -314,8 +318,8 @@
 			canvas.height * 0.5,
 		);
 		canvas.onclick = isReady;
-	});
-	
+	}
+
 	function isReady() {
 		if (!gameStarted) {
 			initData();
@@ -333,13 +337,14 @@
 	}
 
 	canvas {
-		background-color: black;
+		background-color: "#dcd3bc";
+		border-radius: 10px;
 		padding-left: 0;
 		padding-right: 0;
 		margin-left: auto;
 		margin-right: auto;
 		display: block;
-		outline: lightgrey 0.5vw solid;
+		outline: #dcd3bc 0.35vw solid;
 		display: flex;
 		margin-top: 5vh;
 		margin-bottom: 5vh;
@@ -347,5 +352,12 @@
 		height: 70vh;
 	}
 </style>
+
+
+
+<ButtonGroup>
+	<Button outline color="dark" on:click={() => {createCanvas(1);}}>Solo</Button>
+	<Button outline color="dark" on:click={() => {createCanvas(2);}}>Multiplayer</Button>
+</ButtonGroup>
 <canvas id="main-game-canvas" class="game-canvas">
 </canvas>

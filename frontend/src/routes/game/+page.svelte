@@ -253,58 +253,58 @@
 		maxScore = 2;
 	}
 
+	function handleResize() {
+		const width = canvas.width;
+		const height = canvas.height;
+		canvas.width = window.innerWidth * 0.7;
+		canvas.height = window.innerHeight * 0.8;
+		rightPaddle.x = canvas.width - canvas.width * 0.015 - canvas.width * 0.005;
+		rightPaddle.width =  canvas.width * 0.005;
+		rightPaddle.height = canvas.height * 0.15;
+		rightPaddle.y = rightPaddle.y * canvas.height / height;
+		leftPaddle.x = canvas.width * 0.015;
+		leftPaddle.width = canvas.width * 0.005;
+		leftPaddle.height = canvas.height * 0.15;
+		leftPaddle.y = leftPaddle.y * canvas.height / height;
+		ball.size = canvas.width * 0.02;
+		ball.x = ball.x * canvas.width / width;
+		ball.y = ball.y * canvas.height / height;
+		paddleSpeed = canvas.height * 0.015;
+		ballSpeed = {
+			x: canvas.width * 0.004,
+			y: canvas.height * 0.007,
+		};
+	}
+
+	function handleMouseMove(e: any) {
+		mouseY = e.clientY - canvas.offsetTop;
+		if (mouseY < 0) {
+			mouseY = 0;
+		} else if (mouseY > canvas.height - (leftPaddle.height)) {
+			mouseY = canvas.height - (leftPaddle.height);
+		}
+		leftPaddle.y = mouseY;
+	}
+
+	function handleKeyDown(e: any) {
+		if (e.key == 'ArrowUp') {
+			paddleDirection = -1;
+		}
+		else if (e.key == 'ArrowDown') {
+			paddleDirection = 1;
+		}
+	}
+
+	function handleKeyUp(e: any) {
+		if (e.key == 'ArrowUp' || e.key == 'ArrowDown') {
+			paddleDirection = 0;
+		}
+		e.preventDefault();
+	}
+
 	function addEvents() {
-		window.addEventListener('resize', function(e) {
-			const width = canvas.width;
-			const height = canvas.height;
-			canvas.width = window.innerWidth * 0.7;
-			canvas.height = window.innerHeight * 0.8;
-			rightPaddle.x = canvas.width - canvas.width * 0.015 - canvas.width * 0.005;
-			rightPaddle.width =  canvas.width * 0.005;
-			rightPaddle.height = canvas.height * 0.15;
-			rightPaddle.y = rightPaddle.y * canvas.height / height;
-			leftPaddle.x = canvas.width * 0.015;
-			leftPaddle.width = canvas.width * 0.005;
-			leftPaddle.height = canvas.height * 0.15;
-			leftPaddle.y = leftPaddle.y * canvas.height / height;
-			ball.size = canvas.width * 0.02;
-			ball.x = ball.x * canvas.width / width;
-			ball.y = ball.y * canvas.height / height;
-			paddleSpeed = canvas.height * 0.015;
-			ballSpeed = {
-				x: canvas.width * 0.004,
-				y: canvas.height * 0.007,
-			};
-		}, true);
-
-		canvas.addEventListener('mousemove', (event) => {
-			mouseY = event.clientY - canvas.offsetTop;
-			if (mouseY < 0) {
-				mouseY = 0;
-			} else if (mouseY > canvas.height - (leftPaddle.height)) {
-				mouseY = canvas.height - (leftPaddle.height);
-			}
-			leftPaddle.y = mouseY;
-		});	
-
-		document.addEventListener('keydown', function(e) {
-			if (e.key == 'ArrowUp') {
-				paddleDirection = -1;
-			}
-			else if (e.key == 'ArrowDown') {
-				paddleDirection = 1;
-			}
-			e.preventDefault();
-			return false;
-		});
-
-		document.addEventListener('keyup', function(e) {
-			if (e.key == 'ArrowUp' || e.key == 'ArrowDown') {
-				paddleDirection = 0;
-			}
-			e.preventDefault();
-			return false;
-		});
+		window.addEventListener('resize', handleResize, true);
+		canvas.addEventListener('mousemove', handleMouseMove);	
 	}
 
 	function createCanvas(nb: number) {
@@ -353,11 +353,13 @@
 	}
 </style>
 
-
-
 <ButtonGroup>
 	<Button outline color="dark" on:click={() => {createCanvas(1);}}>Solo</Button>
 	<Button outline color="dark" on:click={() => {createCanvas(2);}}>Multiplayer</Button>
 </ButtonGroup>
 <canvas id="main-game-canvas" class="game-canvas">
 </canvas>
+<svelte:window
+  on:keydown|preventDefault={handleKeyDown}
+  on:keyup|preventDefault={handleKeyUp}
+/>

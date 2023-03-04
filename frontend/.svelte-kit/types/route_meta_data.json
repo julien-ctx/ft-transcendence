@@ -1,0 +1,14 @@
+{
+	"/": [
+		"src/routes/+page.ts"
+	],
+	"/chat": [],
+	"/fakeuser": [],
+	"/game": [],
+	"/login": [],
+	"/logout": [],
+	"/profile": [],
+	"/proto": [],
+	"/users": [],
+	"/user": []
+}

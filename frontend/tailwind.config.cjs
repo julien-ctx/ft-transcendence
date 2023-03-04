@@ -9,12 +9,12 @@ const config = {
 		colors : {
 			transparent: 'transparent',
 			current: 'currentColor',
-			"primary" : "#434343",
-			"secondary" : "#C1EFFF",
-			"third" : "#54BAB9",
+			"primary" : "#FCFBF4",
+			"secondary" : "#dcd3bc",
+			"third" : "#AB9158",
 			"white" : "#F7ECDE",
 			"base" : "primary",
-			"dark" : "#000"
+			"dark" : "#282828"
 		}
 	},
 	plugins: [

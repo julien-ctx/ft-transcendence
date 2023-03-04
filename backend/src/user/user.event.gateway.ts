@@ -27,12 +27,14 @@ export class UserEventGateway implements OnGatewayInit, OnGatewayConnection, OnG
 	async handleConnection(@ConnectedSocket() client : Socket) {
 		const token = client.handshake.query.token as string;
 		const user = this.jwt.decode(token);
-		if (user == undefined) return;		
+		if (user == undefined) return;
 		await this.userService.getOneByIdUser(user['id'])
 		.then(async (userGet : User) => {
+			// console.log("userget" userGet);
+			
 			this.usersArr.push({user : userGet, client});
 			await this.userService.updateUser({
-				status : 1
+				activity : 1
 			}, userGet.id)
 			.then((user : User) => {
 				this.server.emit("event_user", user)
@@ -44,7 +46,7 @@ export class UserEventGateway implements OnGatewayInit, OnGatewayConnection, OnG
 		for (let i = 0; i < this.usersArr.length; i++) {
 			if (this.usersArr[i].client.id == client.id) {
 				await this.userService.updateUser({
-					status : 0
+					activity : 0
 				}, this.usersArr[i].user.id)
 				.then((user : User) => {
 					this.server.emit("event_user", user)
@@ -58,7 +60,7 @@ export class UserEventGateway implements OnGatewayInit, OnGatewayConnection, OnG
 	@SubscribeMessage("disconnect_user")
 	async disconnectUser(@MessageBody() user : User) {
 		await this.userService.updateUser({
-			status : 0,
+			activity : 0,
 			twoFaAuth : false
 		}, user.id)
 		.then((userUpdate : User) => {
@@ -96,7 +98,7 @@ export class UserEventGateway implements OnGatewayInit, OnGatewayConnection, OnG
 					id_user_receive : body.id_user_send
 				}
 			})
-	
+
 			await this.userService.getOne(body.id_user_send)
 			.then(async (res) => {
 				const friendId = this.userService.filterId(res.friend_id, body.id_user_receive);

@@ -59,20 +59,11 @@ export class UserService {
 
 	async getAll(id : number) {
 		return await this.prisma.user.findMany({
-			where: {
-				id : {
-					not: id
-				}
-			},
 			include : {
 				notification: true,
 				RoomToUser: true,
 			}
 		});
-	}
-
-	async getAllHimSelf() {
-		return await this.prisma.user.findMany();
 	}
 
 	async addNotifFriend(userSend : User, userReceive : User) {

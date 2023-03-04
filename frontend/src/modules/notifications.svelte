@@ -1,9 +1,11 @@
 <script lang="ts">
-    import { Avatar, Button, Dropdown, DropdownDivider, Card } from "flowbite-svelte";
+    import { Avatar, Button, Dropdown, MenuButton, DropdownItem } from "flowbite-svelte";
     import { myNotifLength, myProfileDataStore } from '$lib/store/user';
     import { socketFriendStore, socketUserStore } from "$lib/store/socket";
     import { GetAllUsers } from "$lib/userUtils";
     import { inputClass, buttonClass } from '$lib/classComponent'
+    import SvgAdd from "./htmlComponent/svgAdd.svelte";
+    import SvgDelete from "./htmlComponent/svgDelete.svelte";
 
 	let socketFriend : any;
 	let socketUser : any;
@@ -23,7 +25,7 @@
 			if (users) {
 				users.forEach((elem : any) => {
 					if (elem.id == notif.id_user_send) {
-						socketUser.emit("block_user", {id_user_receive : myProfile.id, id_user_send : elem.id})
+						socketUser.emit("block_user", { id_user_receive : elem.id, id_user_send : myProfile.id })
 					}
 				});
 			}
@@ -44,18 +46,33 @@
 	</svg>
 </div>
 {#if myProfile.notification && myProfile.notification.length > 0}
-	<Dropdown bind:open={openDropdown}>
-		{#each myProfile.notification as notif}
-			<Card horizontal size="xl">
-				<Avatar src={notif.img_link} class="object-cover"/>
-				{#if notif.type == 0}
-					<div>Demande d'ami de {notif.login_send}</div>
-					<Button on:click={() => socketFriend.emit("accept_friend", { user : myProfile, notif})}>Accepter</Button>
-					<Button on:click={() => socketFriend.emit("refuse_friend", {user : myProfile, notif})}>Refuser</Button>
-					<Button on:click={() => blockUser(notif)}>Blocker</Button>
-				{/if}
-			</Card>
-			<DropdownDivider/>
-		{/each}
+	<Dropdown bind:open={openDropdown} frameClass="shadow-md !bg-primary p-3">
+		<!-- <div class="shadow-md"> -->
+			{#each myProfile.notification as notif}
+				<div>
+					<Avatar src={notif.img_link} class="object-cover" rounded/>
+					<MenuButton />
+					<Dropdown class="w-36">
+						<button on:click={() => blockUser(notif)}>
+							Block this user
+						</button>
+					</Dropdown>
+					{#if notif.type == 0}
+						<div>Friend request from {notif.login_send}</div>
+						<button on:click={() => socketFriend.emit("accept_friend", { user : myProfile, notif})}>
+							<SvgAdd />
+						</button>
+						<button on:click={() => socketFriend.emit("refuse_friend", {user : myProfile, notif})}>
+							<SvgDelete />
+						</button>
+						<!-- <button on:click={() => blockUser(notif)}>
+							block
+						</button> -->
+						<!-- <Button on:click={() => socketFriend.emit("refuse_friend", {user : myProfile, notif})}>Refuser</Button> -->
+						<!-- <Button on:click={() => blockUser(notif)}>Blocker</Button> -->
+					{/if}
+				</div>
+			{/each}
+		<!-- </div> -->
 	</Dropdown>
 {/if}

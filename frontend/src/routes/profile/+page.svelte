@@ -1,12 +1,19 @@
 <script lang="ts">
     import UserCard from "../../modules/htmlComponent/userCard.svelte";
     import { UpdateProfileImg, UpdateProfileLogin, UpdateProfileToStore } from "$lib/profileUtils";
-	import { Accordion, AccordionItem, Avatar, Button, Card, Dropdown, DropdownItem, MenuButton, Modal, TabItem, Tabs } from "flowbite-svelte";
-    import { myProfileDataStore, userProfileDataStore, usersDataStore } from "$lib/store/user";
+	import { Accordion, AccordionItem, Avatar, Button, Card, Dropdown, MenuButton, TabItem, Tabs } from "flowbite-svelte";
+    import { myProfileDataStore, usersDataStore } from "$lib/store/user";
     import { socketFriendStore, socketUserStore } from "$lib/store/socket";
-    import { onMount } from "svelte";
     import axios from "axios";
     import { getJwt } from "$lib/jwtUtils";
+    import HeaderUserCard from "../../modules/htmlComponent/headerUserCard.svelte";
+    import CardRank from "../../modules/htmlComponent/cardRank.svelte";
+    import UserActivity from "../../modules/htmlComponent/userActivity.svelte";
+    import SvgCancel from "../../modules/htmlComponent/svgCancel.svelte";
+    import SvgConfirm from "../../modules/htmlComponent/svgConfirm.svelte";
+    import SvgEdit from "../../modules/htmlComponent/svgEdit.svelte";
+    import Svg2faEnable from "../../modules/htmlComponent/svg2faEnable.svelte";
+    import Svg2faDisabled from "../../modules/htmlComponent/svg2faDisabled.svelte";
 
 	let fileInput : any;
 	let isEditLogin : boolean = false;
@@ -77,42 +84,52 @@
 </script>
 {#if myProfile && myProfile.first_name}
 	<div class="container mx-auto flex items-center flex-col gap-10 mt-10">
-		<Card padding="sm" size="xl">
-			<div class="flex items-center space-x-4">
-				<div class="flex">
-					<Avatar size="xl" src={myProfile.img_link} class="object-cover"/>
-					<MenuButton/>
-					<Dropdown>
-						<DropdownItem defaultClass="flex">
+		<div class="grid grid-cols-1 md:grid-cols-2 gap-20">
+			<Card padding="none" class="!bg-secondary !border-none">
+                <div class="flex flex-col gap-5 items-center bg-primary p-3 rounded-tl rounded-tr px-20">
+                    <div class="space-y-2">
+						<MenuButton />
+						<Dropdown class="w-36">
 							<label for="file" class="w-full cursor-pointer p-1">
 								Edit
 								<input type="file" bind:this={fileInput} on:change={submitFormImg} class="hidden" name="file" id="file">
 							</label>
-						</DropdownItem>
-					</Dropdown>
-				</div>
-				<div class="space-y-1 font-medium dark:text-white">
-					<div class="flex">
+						</Dropdown>
+                        <Avatar size="xl" src={myProfile.img_link} class="object-cover" rounded/>
+                    </div>
+                    <div class="flex gap-3 items-center">
+                        <UserActivity user={myProfile}/>
 						{#if !isEditLogin}
 							<div>{myProfile.login}</div>
-							<Button on:click={() => isEditLogin = true}>Edit</Button>
+							<button on:click={() => isEditLogin = true}>
+								<SvgEdit />
+							</button>
 						{:else}
-							<input type="text" bind:value={loginTmp} on:keypress={handleKeyPress}>
-							<Button on:click={() => {isEditLogin = false; loginTmp = myProfile.login}}>Cancel</Button>
-							<Button on:click={submitFormLogin} >Confirm</Button>
+							<input type="text" bind:value={loginTmp} on:keypress={handleKeyPress}/>
+							<button on:click={() => {isEditLogin = false; loginTmp = myProfile.login}}>
+								<SvgCancel />
+							</button>
+							<button on:click={submitFormLogin}>
+								<SvgConfirm />
+							</button>
 						{/if}
-					</div>
-					<div>Firstname: {myProfile.first_name}</div>
-					<div>Lastname: {myProfile.last_name}</div>
-					<div>Email: {myProfile.email}</div>
+                    </div>
+                </div>
+                <div class="flex items-center justify-around gap-3 p-3">
 					{#if !myProfile.twoFaEnabled}
-						<Button on:click={enbaleTwoFA}>Turn on 2FA</Button>
+						<button on:click={enbaleTwoFA}>
+							<Svg2faEnable />
+						</button>
 					{:else}
-						<Button on:click={disableTwoFA}>Turn off 2FA</Button>
+						<button on:click={disableTwoFA}>
+							<Svg2faDisabled />
+						</button>
 					{/if}
-				</div>
-			</div>
-		</Card>
+                </div>
+            </Card>
+			<CardRank user={myProfile} />
+		</div>
+
 		<Tabs defaultClass="w-full flex flex-row gap-2" contentClass="w-full">
 			<!-- User friend -->
 			<TabItem title="Friend" open defaultClass="w-full"> 
@@ -123,6 +140,7 @@
 						{#if myProfile.friend_id && myProfile.friend_id.length == 0}
 							No friend
 						{:else}
+							<HeaderUserCard />
 							{#each allUsers as user}
 								{#if myProfile.friend_id.includes(user.id)}
 									<UserCard user={user} />
@@ -134,16 +152,13 @@
 					<AccordionItem>
 						<span slot="header">Pending request</span>
 						{#if myProfile.notification && myProfile.notification.length > 0}
+							<HeaderUserCard />
 							{#each myProfile.notification as notif}
-								{#if notif.type == 0}
-									<div class="flex direction-row m-4 gap-4 justify-between">
-										<Avatar src={notif.img_link} class="object-cover"/>
-										<div class="self-end">{notif.login_send}</div>
-										<Button href={`/users?id=${notif.id_user_send}`}>View profile</Button>
-										<Button on:click={() => socketFriend.emit("accept_friend", { user : myProfile, notif})}>Accept friend</Button>
-										<Button on:click={() => socketFriend.emit("refuse_friend", {user : myProfile, notif})}>Refuse friend</Button>
-									</div>
-								{/if}
+								{#each allUsers as user}
+									{#if notif.id_user_send == user.id}
+										<UserCard user={user} />
+									{/if}
+								{/each}
 							{/each}
 						{:else if myProfile.notification && myProfile.notification.length == 0}
 							No Data
@@ -153,6 +168,7 @@
 						<span slot="header">Request send</span>
 						{#if myProfile.req_send_friend && myProfile.req_send_friend.length > 0}
 							<div class="flex flex-col gap-5 p-5">
+								<HeaderUserCard />
 							{#each myProfile.req_send_friend as req}
 								{#each allUsers as user}
 									{#if user.id == req}
@@ -172,8 +188,6 @@
 			<TabItem title="Achievement" defaultClass="w-full">
 			</TabItem>
 			<TabItem title="League" defaultClass="w-full">
-			</TabItem>
-			<TabItem title="Level" defaultClass="w-full">
 			</TabItem>
 		</Tabs>
 	</div>

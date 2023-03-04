@@ -9,6 +9,7 @@
     import SvgMsg from "../../modules/htmlComponent/svgMsg.svelte";
     import { goto } from "$app/navigation";
     import { GetOneUser } from "$lib/userUtils";
+    import UserActivity from './userActivity.svelte';
 
 	let socketFriend : any;
 	let socketUser : any;
@@ -40,38 +41,36 @@
 
 </script>
 
-<div class="grid grid-cols-2 gap-5 grid-flow-row sm:grid-cols-6 bg-third p-3 rounded sm:pb-3 pb-5">
+<div class="grid grid-cols-2 gap-5 grid-flow-row sm:grid-cols-7 bg-primary p-3 rounded sm:pb-3 pb-5 div-card-user shadow-md">
     <div class="flex items-center sm:items-start justify-center sm:justify-start sm:flex-row flex-col gap-2">
-        <MenuButton />
-        <Dropdown class="w-36">
-            {#if myProfile.block_id && myProfile.block_id.includes(user.id)}
-                <DropdownItem on:click={() => socketUser.emit("unblock_user", { id_user_send : myProfile.id, id_user_receive : user.id})}>Unblock this user</DropdownItem>
-            {:else}
-                <DropdownItem on:click={() => socketUser.emit("block_user", { id_user_receive : user.id, id_user_send : myProfile.id})}>Block this user</DropdownItem>
-            {/if}
-        </Dropdown>
+        {#if myProfile.id != user.id}
+            <MenuButton />
+            <Dropdown class="w-36">
+                {#if  myProfile.block_id && myProfile.block_id.includes(user.id)}
+                    <DropdownItem on:click={() => socketUser.emit("unblock_user", { id_user_send : myProfile.id, id_user_receive : user.id })}>Unblock this user</DropdownItem>
+                {:else}
+                    <DropdownItem on:click={() => socketUser.emit("block_user", { id_user_send : myProfile.id, id_user_receive : user.id })}>Block this user</DropdownItem>
+                {/if}
+            </Dropdown>
+        {:else}
+            <div class="p-4"></div>
+        {/if}
         <Avatar size="lg" src={user.img_link} class="object-cover" rounded/>
     </div>
     <div class="flex items-center justify-center">
         {user.login}
     </div>
     <div class="flex gap-2 items-center justify-center">
-        {#if user.status == 0}
-            <Indicator color="red"/> 
-            <div>Offline</div>
-        {:else if user.status == 1}
-            <Indicator color="green"/>
-            <div>Online</div>
-        {:else if user.status == 2}
-            <Indicator color="blue" />
-            <div>In game</div>
-        {/if}
+        <UserActivity user={user}/>
     </div>
     <div class="flex items-center justify-center">
-        100%
+        {user.level}
     </div>
     <div class="flex items-center justify-center">
-        Silver
+        {user.winrate}
+    </div>
+    <div class="flex items-center justify-center">
+        {user.ranking}
     </div>
     <div class="flex items-center justify-center gap-3">
         {#if myProfile.id != user.id}
@@ -79,7 +78,7 @@
                 <button on:click={() => socketUser.emit("unblock_user", { id_user_send : myProfile.id, id_user_receive : user.id})}>
                     Unblock this user
                 </button>
-                {:else}
+            {:else}
                     {#if user.block_id && user.block_id.includes(myProfile.id)}
                         <div>This user blocked you</div>
                     {:else}

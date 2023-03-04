@@ -56,7 +56,6 @@
 						first_name: res.data.first_name,
 						last_name: res.data.last_name,
 						img_link: res.data.image.link,
-						kind: res.data.kind
 					};
 					await axios.post("http://localhost:4000/auth/signin", {
 						id: res.data.id,
@@ -65,7 +64,6 @@
 						first_name: res.data.first_name,
 						last_name: res.data.last_name,
 						img_link: res.data.image.link,
-						kind: res.data.kind
 					})
 					.then(async (resAccessToken) => {
 						await axios.get(`http://localhost:4000/auth/one/${userIntra.id}`)

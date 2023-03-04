@@ -23,11 +23,6 @@ export class UserController{
 		return await this.userService.getAll(user.id);
 	}
 
-	@Get("getAllHimSelf")
-	getAllHimSelf() {
-		return this.userService.getAllHimSelf();
-	}
-
 	@Get(":id")
 	async getOne(@Param("id") id : string) {
 		let idNumber : number = +id;
@@ -54,14 +49,14 @@ export class UserController{
 	}
 
 	@Post("updateConnected")
-	async updateConnected(@Body("connected") connected : any, @UserDec() user : User) {
+	async updateConnected(@Body("activity") activity : any, @UserDec() user : User) {
 		if (user.twoFaEnabled && user.twoFaAuth) {
 			return await this.userService.updateUser({
-				connected,
+				activity,
 				twoFaAuth : false
 			}, user.id)
 		}
-		return await this.userService.updateUser({ connected }, user.id);
+		return await this.userService.updateUser({ activity }, user.id);
 	}
 
 	@Post("fakeUser")

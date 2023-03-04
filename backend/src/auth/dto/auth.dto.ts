@@ -18,7 +18,4 @@ export class AuthDto {
 	
 	@IsString()
 	img_link : string;
-
-	@IsString()
-	kind : string;
 }

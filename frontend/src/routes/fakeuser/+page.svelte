@@ -11,8 +11,11 @@
 			first_name: "jhon",
 			last_name: "doe",
 			img_link: "",
-			kind : "staff",
-			status: 0
+			activity: 0,
+			level : 6,
+			winrate : 69.99,
+			exp : 19597844,
+			ranking: 5
 		},
 		{
 			id_user : 2,
@@ -21,8 +24,11 @@
 			first_name: "scott",
 			last_name: "doe",
 			img_link: "",
-			kind : "student",
-			status: 0
+			activity: 0,
+			level : 2,
+			winrate : 84.99,
+			exp : 1944,
+			ranking: 3
 		},
 		{
 			id_user : 3,
@@ -31,8 +37,11 @@
 			first_name: "zoe",
 			last_name: "doe",
 			img_link: "",
-			kind : "student",
-			status: 1
+			activity: 1,
+			level : 7,
+			winrate : 89.99,
+			exp : 19597844,
+			ranking: 5
 		},
 		{
 			id_user : 4,
@@ -41,7 +50,11 @@
 			first_name: "camille",
 			last_name: "doe",
 			img_link: "",
-			status: 2
+			activity: 2,
+			level : 5,
+			winrate : 59.5,
+			exp : 18794,
+			ranking: 4
 		},
 		{
 			id_user : 5,
@@ -50,8 +63,11 @@
 			first_name: "barbara",
 			last_name: "doe",
 			img_link: "",
-			kind : "student",
-			status: 0
+			activity: 1,
+			level : 3,
+			winrate : 9.5,
+			exp : 194,
+			ranking: 1
 		},
 		{
 			id_user : 6,
@@ -60,8 +76,11 @@
 			first_name: "huge",
 			last_name: "doe",
 			img_link: "",
-			kind : "student",
-			status: 0
+			activity: 0,
+			level : 3,
+			winrate : 9.5,
+			exp : 194,
+			ranking: 1
 		},
 		{
 			id_user : 7,
@@ -70,7 +89,11 @@
 			first_name: "jean",
 			last_name: "doe",
 			img_link: "",
-			status: 0
+			activity: 0,
+			level : 3,
+			winrate : 9.5,
+			exp : 194,
+			ranking: 1
 		},
 		{
 			id_user : 8,
@@ -79,8 +102,11 @@
 			first_name: "alfonse",
 			last_name: "doe",
 			img_link: "",
-			kind : "student",
-			status: 0
+			activity: 0,
+			level : 3,
+			winrate : 9.5,
+			exp : 194,
+			ranking: 1
 		},
 		{
 			id_user : 9,
@@ -89,8 +115,11 @@
 			first_name: "bernard",
 			last_name: "doe",
 			img_link: "",
-			kind : "student",
-			status: 0
+			activity: 0,
+			level : 7,
+			winrate : 89.99,
+			exp : 19597844,
+			ranking: 5
 		},
 		{
 			id_user : 10,
@@ -99,8 +128,11 @@
 			first_name: "elvis",
 			last_name: "doe",
 			img_link: "",
-			kind : "student",
-			status: 0
+			activity: 0,
+			level : 0,
+			winrate : 14,
+			exp : 194,
+			ranking: 0
 		}
 	]
 	async function handleClick() {

@@ -75,7 +75,6 @@ export class AuthController{
 			},
 			data : {
 				twoFaEnabled : false,
-				twoFaSecret : "",
 				twoFaAuth: false
 			}
 		})
@@ -87,7 +86,7 @@ export class AuthController{
 	}
 
 	@Post("2fa/login")
-	async login(@Body("code2fa") code2fa, @Body("dto") dto : AuthDto, @Body("user") user) {
+	async login(@Body("code2fa") code2fa, @Body("dto") dto : AuthDto, @Body("user") user) {		
 		const codeIsValid =  this.twoFaService.verifyTwoFaCode(code2fa, user)
 		if (!codeIsValid)
 			throw new UnauthorizedException();

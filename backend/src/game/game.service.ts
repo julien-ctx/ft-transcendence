@@ -13,7 +13,7 @@ export class GameService {
 		public prisma: PrismaService,
 	) {}
 	
-	startGame(
+	setData(
 		rightPaddle: any,
 		leftPaddle: any,
 		ball: any,
@@ -22,14 +22,18 @@ export class GameService {
 		this.rightPaddle.y = rightPaddle.y;
 		this.rightPaddle.width = rightPaddle.width;
 		this.rightPaddle.height = rightPaddle.height;
+		this.rightPaddle.score = rightPaddle.score;
 
 		this.leftPaddle.x = leftPaddle.x;
 		this.leftPaddle.y = leftPaddle.y;
 		this.leftPaddle.width = leftPaddle.width;
 		this.leftPaddle.height = leftPaddle.height;
+		this.leftPaddle.score = leftPaddle.score;
 
 		this.ball.x = ball.x;
 		this.ball.y = ball.y;
 		this.ball.size = ball.size;
+		this.ball.dirX = ball.dirX;
+		this.ball.dirY = ball.dirY;
 	}
 }

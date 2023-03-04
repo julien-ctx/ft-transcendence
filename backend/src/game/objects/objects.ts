@@ -5,6 +5,8 @@ export class Ball {
 		public x: number,
 		public y: number,
 		public size: number,
+		public dirX: number,
+		public dirY: number,
 	) {}
 }
 
@@ -13,6 +15,7 @@ export class Paddle {
 		public x: number,
 		public y: number,
 		public width: number,
-		public height: number
+		public height: number,
+		public score: number,
 	) {}
 }

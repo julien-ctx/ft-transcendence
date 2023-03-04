@@ -6,9 +6,17 @@ const config = {
 	],
   
 	theme: {
-	  extend: {},
+		colors : {
+			transparent: 'transparent',
+			current: 'currentColor',
+			"primary" : "#434343",
+			"secondary" : "#C1EFFF",
+			"third" : "#54BAB9",
+			"white" : "#F7ECDE",
+			"base" : "primary",
+			"dark" : "#000"
+		}
 	},
-  
 	plugins: [
 	  require('flowbite/plugin')
 	],

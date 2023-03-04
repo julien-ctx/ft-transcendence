@@ -4,7 +4,7 @@ export const myProfileDataStore = writable({});
 
 export const usersDataStore = writable([{}]);
 
-export const usersHimSelfDataStore = writable({});
+export const usersHimSelfDataStore = writable([{}]);
 
 export const userProfileDataStore = writable({});
 

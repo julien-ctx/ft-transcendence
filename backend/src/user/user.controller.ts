@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Req, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
+import { BadRequestException, Body, Controller, ForbiddenException, Get, Param, Post, Req, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { UserService } from "./user.service";
 import { diskStorage } from "multer";
@@ -45,7 +45,10 @@ export class UserController{
 
 	@Post("updateLogin")
 	async updateLogin(@Body("login") login : any, @UserDec() user : User) {
-		return await this.userService.updateUser({ login }, user.id);
+		const userFind = await this.userService.getOneByLogin(login);
+		if (!userFind)
+			return await this.userService.updateUser({ login }, user.id);
+		throw new ForbiddenException();
 	}
 
 	@Post("updateConnected")

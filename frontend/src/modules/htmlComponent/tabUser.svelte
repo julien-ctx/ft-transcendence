@@ -1,0 +1,125 @@
+<script lang="ts">
+	import { Accordion, AccordionItem, Avatar, Tooltip, Card, Dropdown, MenuButton, TabItem, Tabs } from "flowbite-svelte";
+    import UserCard from "../../modules/htmlComponent/userCard.svelte";
+    import HeaderUserCard from "../../modules/htmlComponent/headerUserCard.svelte";
+    import { myProfileDataStore, usersDataStore } from "$lib/store/user";
+
+	export let user : any;
+	let allUsers : any;
+	let myProfile : any;
+
+	usersDataStore.subscribe(val => allUsers = val);
+	myProfileDataStore.subscribe(val => myProfile = val);
+</script>
+
+<Tabs defaultClass="w-full flex flex-row gap-2 mt-10 !border-0 tabs-item" contentClass="w-full">
+	<TabItem title="Friend" open defaultClass="w-full"> 
+		<Accordion defaultClass="w-full mt-5 accordion">
+			<AccordionItem open={user.friend_id && user.friend_id.length > 0}>
+				<span slot="header">{user.friend_id.length}
+					{#if user.friend_id.length == 0} 
+						Friend
+					{:else}
+						Friends
+					{/if}
+				</span>
+				<div class="flex flex-col gap-5 p-5">
+				{#if user.friend_id && user.friend_id.length == 0}
+					No friend
+				{:else}
+					<HeaderUserCard />
+					{#each allUsers as user}
+						{#if user.friend_id && user.friend_id.includes(user.id)}
+							<UserCard user={user} />
+						{/if}
+					{/each}
+				{/if}
+				</div>
+			</AccordionItem>
+			{#if user.id == myProfile.id}
+				<AccordionItem>
+					<span slot="header">{user.notification.length} Pending request</span>
+					{#if user.notification && user.notification.length > 0}
+						<HeaderUserCard />
+						{#each user.notification as notif}
+							{#each allUsers as otherUser}
+								{#if notif.id_user_send == otherUser.id}
+									<UserCard user={otherUser} />
+								{/if}
+							{/each}
+						{/each}
+					{:else if user.notification && user.notification.length == 0}
+						No Data
+					{/if}
+				</AccordionItem>
+				<AccordionItem>
+					<span slot="header">{user.req_send_friend.length} Request send</span>
+					{#if user.req_send_friend && user.req_send_friend.length > 0}
+						<div class="flex flex-col gap-5 p-5">
+							<HeaderUserCard />
+						{#each user.req_send_friend as req}
+							{#each allUsers as otherUser}
+								{#if otherUser.id == req}
+									<UserCard user={otherUser} />
+								{/if}
+							{/each}
+						{/each}
+						</div>
+					{:else if user.req_send_friend && user.req_send_friend.length == 0}
+						No Data
+					{/if}
+				</AccordionItem>
+			{/if}
+		</Accordion>
+	</TabItem>
+	<TabItem title="History" defaultClass="w-full">
+		<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+			<div class="flex justify-between items-center max-w-lg shadow-md p-5 rounded">
+				<div>
+					<Avatar size="lg" src={user.img_link} class="object-cover" rounded/>
+					<p class="capitalize font-medium text-center">{user.login}</p>
+				</div>
+				<div class="flex flex-col items-center">
+					<p class="font-bold text-3xl">VS</p>
+					<p class="font-medium text-2xl"><span class="text-green-500">2</span> - <span class="text-red-500">0</span></p>
+				</div>
+				<div>
+					<Avatar size="lg" src={user.img_link} class="object-cover" rounded/>
+					<p class="capitalize font-medium text-center">{user.login}</p>
+				</div>
+			</div>
+
+			<div class="flex justify-between items-center max-w-lg shadow-md p-5 rounded">
+				<div>
+					<Avatar size="lg" src={user.img_link} class="object-cover" rounded/>
+					<p class="capitalize font-medium text-center">{user.login}</p>
+				</div>
+				<div class="flex flex-col items-center">
+					<p class="font-bold text-3xl">VS</p>
+					<p class="font-medium text-2xl"><span class="text-green-500">2</span> - <span class="text-red-500">0</span></p>
+				</div>
+				<div>
+					<Avatar size="lg" src={user.img_link} class="object-cover" rounded/>
+					<p class="capitalize font-medium text-center">{user.login}</p>
+				</div>
+			</div>
+
+			<div class="flex justify-between items-center max-w-lg shadow-md p-5 rounded">
+				<div>
+					<Avatar size="lg" src={user.img_link} class="object-cover" rounded/>
+					<p class="capitalize font-medium text-center">{user.login}</p>
+				</div>
+				<div class="flex flex-col items-center">
+					<p class="font-bold text-3xl">VS</p>
+					<p class="font-medium text-2xl"><span class="text-green-500">2</span> - <span class="text-red-500">0</span></p>
+				</div>
+				<div>
+					<Avatar size="lg" src={user.img_link} class="object-cover" rounded/>
+					<p class="capitalize font-medium text-center">{user.login}</p>
+				</div>
+			</div>
+		</div>
+	</TabItem>
+	<TabItem title="Achievement" defaultClass="w-full">
+	</TabItem>
+</Tabs>

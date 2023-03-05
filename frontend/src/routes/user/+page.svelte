@@ -11,6 +11,7 @@
     import SvgAdd from '../../modules/htmlComponent/svgAdd.svelte';
     import SvgDelete from '../../modules/htmlComponent/svgDelete.svelte';
     import UserActivity from '../../modules/htmlComponent/userActivity.svelte';
+    import TabUser from '../../modules/htmlComponent/tabUser.svelte';
 
     let allUsers : any;
     let myProfile : any;
@@ -50,28 +51,26 @@
 {#if userProfile.id}
     <div class="container mx-auto flex items-center flex-col p-5">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-20">
-            <Card padding="none" class="!bg-third !border-none">
-                <div class="flex flex-col gap-5 items-center bg-secondary p-3 rounded-tl rounded-tr px-20">
+            <Card padding="none" class="!bg-secondary !border-none !text-dark">
+                <div class="flex flex-col gap-5 items-center bg-primary p-3 rounded-tl rounded-tr px-20">
                     <div class="space-y-2">
-                        <MenuButton />
+                        <button class="button-card-user">...</button>
                         <Dropdown class="w-36">
                             {#if myProfile.block_id && myProfile.block_id.includes(userProfile.id)}
-                                <DropdownItem on:click={() => socketUser.emit("unblock_user", { id_user_send : myProfile.id, id_user_receive : userProfile.id})}>Unblock this user</DropdownItem>
+                                <DropdownItem on:click={() => socketUser.emit("unblock_user", { id_user_send : myProfile.id, id_user_receive : userProfile.id})} class="rounded p-1 !bg-primary rounded !hover:bg-primary hover:text-third transition-colors duration-300">Unblock this user</DropdownItem>
                             {:else}
-                                <DropdownItem on:click={() => socketUser.emit("block_user", { id_user_receive : userProfile.id, id_user_send : myProfile.id})}>Block this user</DropdownItem>
+                                <DropdownItem on:click={() => socketUser.emit("block_user", { id_user_receive : userProfile.id, id_user_send : myProfile.id})} class="rounded p-1 !bg-primary rounded !hover:bg-primary hover:text-third transition-colors duration-300">Block this user</DropdownItem>
                             {/if}
                         </Dropdown>
                         <Avatar size="xl" src={userProfile.img_link} class="object-cover" rounded/>
                     </div>
                     <div class="flex gap-7">
                         <UserActivity user={userProfile}/>
-                        <div>{userProfile.login}</div>
+                        <div class="font-medium capitalize">{userProfile.login}</div>
                     </div>
                 </div>
-                <div class="flex items-center justify-around gap-3 p-3">
-                    {#if userProfile.block_id && userProfile.block_id.includes(myProfile.id)}
-                        <div>This user blocked you</div>
-                    {:else if myProfile.block_id && !myProfile.block_id.includes(userProfile.id)}
+                <div class="flex items-center justify-around gap-3 p-3 h-14">
+                    {#if myProfile.block_id && !myProfile.block_id.includes(userProfile.id)}
                         {#if myProfile.req_send_friend && myProfile.req_send_friend.includes(userProfile.id)}
                             <button on:click={() => socketFriend.emit("cancel_friend", {id_user_send : myProfile.id, id_user_receive : userProfile.id})}>
                                 <SvgDelete />
@@ -97,28 +96,6 @@
             </Card>
 			<CardRank user={userProfile} />
         </div>
-
-        <Tabs defaultClass="w-full flex flex-row gap-2" contentClass="w-full">
-			<TabItem title="Friend" open defaultClass="w-full"> 
-                {#if userProfile.friend_id && userProfile.friend_id.length == 0}
-                    No friend
-                {:else if allUsers}
-                    <div class="flex flex-col gap-5 mt-5">
-                        <HeaderUserCard />
-                        {#each allUsers as user}
-                            {#if userProfile.friend_id.includes(user.id)}
-                                <UserCard user={user}/>
-                            {/if}
-                        {/each}
-                    </div>
-                {/if}
-			</TabItem>
-			<TabItem title="Match history" defaultClass="w-full">
-			</TabItem>
-			<TabItem title="Achievement" defaultClass="w-full">
-			</TabItem>
-			<TabItem title="League" defaultClass="w-full">
-			</TabItem>
-		</Tabs>
+        <TabUser user={userProfile} />
     </div>
 {/if}

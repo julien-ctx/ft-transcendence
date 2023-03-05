@@ -100,13 +100,13 @@
 		<Avatar id="avatar-menu" src={myProfile.img_link} class="object-cover" rounded/>
 		<NavHamburger on:click={toggle} class1="w-full md:flex md:w-auto md:order-1"/>
 	</div>
-	<Dropdown placement="bottom" triggeredBy="#avatar-menu">
+	<Dropdown placement="bottom" triggeredBy="#avatar-menu" frameClass="!bg-primary">
 		<DropdownHeader>
-		<span class="block text-sm">{myProfile.login}</span>
+		<span class="block capitalize">{myProfile.login}</span>
 		</DropdownHeader>
-		<DropdownItem href="/profile">Profile</DropdownItem>
+		<DropdownItem href="/profile" defaultClass="font-medium py-2 px-4 text-sm hover:text-third block transition-colors duration-300">Profile</DropdownItem>
 		<DropdownDivider />
-		<DropdownItem href="/logout">Sign out</DropdownItem>
+		<DropdownItem href="/logout" defaultClass="font-medium py-2 px-4 text-sm hover:text-red-600 block transition-colors duration-300">Sign out</DropdownItem>
 	</Dropdown>
 	<NavUl {hidden}>
 		<NavLi href="/" active={$page.url.pathname === '/'? true : false}  activeClass="text-third hover:text-black transition-colors duration-300" nonActiveClass="text-black hover:text-third transition-colors duration-300">Home</NavLi>

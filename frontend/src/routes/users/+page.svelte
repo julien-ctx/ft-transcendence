@@ -85,7 +85,7 @@
 </script>
 
 <div class="p-10 container mx-auto gap-10 max-w-screen-xl">
-	<div class="grid grid-cols-1 md:grid-cols-6 gap-10">
+	<div class="grid grid-cols-1 md:grid-cols-6 gap-10 content-search-users">
 		<div class="flex flex-col justify-between">
 			<label for="search">Search an user :</label>
 			<input class="focus:outline-none focus:ring-0" id="search" placeholder="Search by nickname" bind:value={searchInput} on:input={handleChangeSearch}/>

@@ -47,7 +47,6 @@
 </div>
 {#if myProfile.notification && myProfile.notification.length > 0}
 	<Dropdown bind:open={openDropdown} frameClass="shadow-md !bg-primary p-3">
-		<!-- <div class="shadow-md"> -->
 			{#each myProfile.notification as notif}
 				<div>
 					<Avatar src={notif.img_link} class="object-cover" rounded/>
@@ -58,21 +57,15 @@
 						</button>
 					</Dropdown>
 					{#if notif.type == 0}
-						<div>Friend request from {notif.login_send}</div>
+						<div>Friend request from <span class="capitalize">{notif.login_send}</span></div>
 						<button on:click={() => socketFriend.emit("accept_friend", { user : myProfile, notif})}>
 							<SvgAdd />
 						</button>
 						<button on:click={() => socketFriend.emit("refuse_friend", {user : myProfile, notif})}>
 							<SvgDelete />
 						</button>
-						<!-- <button on:click={() => blockUser(notif)}>
-							block
-						</button> -->
-						<!-- <Button on:click={() => socketFriend.emit("refuse_friend", {user : myProfile, notif})}>Refuser</Button> -->
-						<!-- <Button on:click={() => blockUser(notif)}>Blocker</Button> -->
 					{/if}
 				</div>
 			{/each}
-		<!-- </div> -->
 	</Dropdown>
 {/if}

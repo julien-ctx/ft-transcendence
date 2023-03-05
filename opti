@@ -1,1 +1,2 @@
 checker si quand on update le nickname import il est bien unique sinon retourner une erreur
+

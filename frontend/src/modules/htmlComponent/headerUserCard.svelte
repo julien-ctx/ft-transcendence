@@ -1,4 +1,4 @@
-<div class="gap-4 grid-cols-7 text-center hidden sm:grid">
+<div class="gap-4 grid-cols-7 text-center hidden sm:grid header-user-card">
 	<div>Picture</div>
 	<div>Nickname</div>
 	<div>Activity</div>

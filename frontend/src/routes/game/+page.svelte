@@ -5,7 +5,7 @@
     import { removeJwt } from "$lib/jwtUtils";
 	import { Button, ButtonGroup } from 'flowbite-svelte';
 	import io, { Socket } from 'socket.io-client';
-		
+
 	const TEXT_COLOR: string = "#dcd3bc";
 	const OBJ_COLOR: string = "#dcd3bc";
 	const BALL_COLOR: string = "#e36c5d";
@@ -168,12 +168,18 @@
 			dataSet = true;
 		});
 		socket.on('rightWin',  ({}) => {
+			gameRightPaddle.score++;
 			drawWinner('Right');
 			drawScores(gameLeftPaddle.score, gameRightPaddle.score);
+			gameLeftPaddle.score = 0;	
+			gameRightPaddle.score = 0;
 		});
 		socket.on('leftWin',  ({}) => {
+			gameLeftPaddle.score++;
 			drawWinner('Left');
 			drawScores(gameLeftPaddle.score, gameRightPaddle.score);
+			gameLeftPaddle.score = 0;	
+			gameRightPaddle.score = 0;
 		});
 		gameLoop();
 	}

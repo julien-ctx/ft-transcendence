@@ -5,8 +5,7 @@
     import { removeJwt } from "$lib/jwtUtils";
 	import { Button, ButtonGroup } from 'flowbite-svelte';
 	import io, { Socket } from 'socket.io-client';
-    import { dataset_dev } from "svelte/internal";
-	
+		
 	const TEXT_COLOR: string = "#dcd3bc";
 	const OBJ_COLOR: string = "#dcd3bc";
 	const BALL_COLOR: string = "#e36c5d";
@@ -66,7 +65,6 @@
 
 	function drawPaddles(leftPaddle: any, rightPaddle: any) {
 		ctx.fillStyle = OBJ_COLOR;
-		console.log(leftPaddle, rightPaddle);	
 		ctx.fillRect(
 			leftPaddle.x,
 			leftPaddle.y,
@@ -96,6 +94,7 @@
 	}
 		
 	function drawScores(leftScore: number, rightScore: number) {
+		ctx.fillStyle = OBJ_COLOR;
 		ctx.fillText(leftScore, canvas.width * 0.4, canvas.height * 0.1);
 		ctx.fillText(rightScore, canvas.width * 0.6 - ctx.measureText(rightScore).width, canvas.height * 0.1);
 	}
@@ -131,6 +130,7 @@
 
 	function drawWinner(winner: string) {
 		clearCanvas();
+		ctx.fillStyle = OBJ_COLOR;
 		let winMsg: string = winner + ' Paddle won!';
 		ctx.font = 'bold ' + canvas.width * 0.03 + 'px Courier';
 		ctx.fillText(
@@ -169,9 +169,11 @@
 		});
 		socket.on('rightWin',  ({}) => {
 			drawWinner('Right');
+			drawScores(gameLeftPaddle.score, gameRightPaddle.score);
 		});
 		socket.on('leftWin',  ({}) => {
 			drawWinner('Left');
+			drawScores(gameLeftPaddle.score, gameRightPaddle.score);
 		});
 		gameLoop();
 	}
@@ -191,7 +193,8 @@
 
 	function createCanvas(nb: number) {
 		if (playerNumber)
-		playerNumber = nb;
+			playerNumber = nb;
+		clearCanvas();
 		const WelcomeMsg = 'Click to start the game!';
 		ctx.fillText(
 			WelcomeMsg,

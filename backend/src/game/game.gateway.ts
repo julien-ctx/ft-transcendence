@@ -6,6 +6,8 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { GameService } from './game.service';
 import { Ball, Paddle, GameCanvas } from './objects/objects';
 
+let interval: any;
+
 @WebSocketGateway({cors: true})
 export class GameGateway {
 	constructor (
@@ -17,13 +19,14 @@ export class GameGateway {
 		private prisma: PrismaService,
 	) {}
 
-	private maxScore: number;
+	private maxScore: number = 2;
 	@WebSocketServer() server: Server;
 
 	gameLoop(client: any, t: any) {
 		const winner = t.game.checkBallPosition(t.ball, t.leftPaddle, t.rightPaddle, t.maxScore, t.gameCanvas);
 		if (winner === 'leftWin' || winner === 'rightWin') {
 			client.emit(winner, {});
+			clearInterval(interval);
 		}
 		client.emit('paddlesData', {leftPaddle: t.leftPaddle, rightPaddle: t.rightPaddle});
 		client.emit('ballData', {ball: t.ball});
@@ -101,6 +104,6 @@ export class GameGateway {
 		client.emit('paddlesData', {leftPaddle: this.leftPaddle, rightPaddle: this.rightPaddle});
 		client.emit('ballData', {ball: this.ball});
 		client.emit('scoresData', {leftScore: this.leftPaddle.score, rightScore: this.rightPaddle.score});
-		setInterval(this.gameLoop, 10, client, this);
+		interval = setInterval(this.gameLoop, 10, client, this);
 	}
 };

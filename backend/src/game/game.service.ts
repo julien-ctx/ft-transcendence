@@ -89,12 +89,18 @@ export class GameService {
 		if (ball.x < 0) {
 			this.resetBall(ball, -1, canvas);
 			if (++rightPaddle.score === maxScore) {
+				this.setRightPaddle(rightPaddle, canvas);
+				this.setLeftPaddle(leftPaddle, canvas);
+				this.setBall(ball, canvas);
 				return 'rightWin';
 			}
 		}
 		else if (ball.x > canvas.width - ball.size) {
 			this.resetBall(ball, 1, canvas);
 			if (++leftPaddle.score === maxScore) {
+				this.setRightPaddle(rightPaddle, canvas);
+				this.setLeftPaddle(leftPaddle, canvas);
+				this.setBall(ball, canvas);
 				return 'leftWin';
 			}
 		}

@@ -1,9 +1,8 @@
 <script lang="ts">
-    import { Avatar, Button, Dropdown, MenuButton, DropdownItem } from "flowbite-svelte";
+    import { Avatar, Dropdown } from "flowbite-svelte";
     import { myNotifLength, myProfileDataStore } from '$lib/store/user';
     import { socketFriendStore, socketUserStore } from "$lib/store/socket";
     import { GetAllUsers } from "$lib/userUtils";
-    import { inputClass, buttonClass } from '$lib/classComponent'
     import SvgAdd from "./htmlComponent/svgAdd.svelte";
     import SvgDelete from "./htmlComponent/svgDelete.svelte";
 
@@ -46,26 +45,35 @@
 	</svg>
 </div>
 {#if myProfile.notification && myProfile.notification.length > 0}
-	<Dropdown bind:open={openDropdown} frameClass="shadow-md !bg-primary p-3">
+	<Dropdown bind:open={openDropdown} frameClass="shadow-md !bg-primary !w-1/2 dropdown-notification">
 			{#each myProfile.notification as notif}
-				<div>
-					<Avatar src={notif.img_link} class="object-cover" rounded/>
-					<MenuButton />
-					<Dropdown class="w-36">
-						<button on:click={() => blockUser(notif)}>
-							Block this user
-						</button>
-					</Dropdown>
-					{#if notif.type == 0}
-						<div>Friend request from <span class="capitalize">{notif.login_send}</span></div>
-						<button on:click={() => socketFriend.emit("accept_friend", { user : myProfile, notif})}>
-							<SvgAdd />
-						</button>
-						<button on:click={() => socketFriend.emit("refuse_friend", {user : myProfile, notif})}>
-							<SvgDelete />
-						</button>
-					{/if}
-				</div>
+			<div class="notification w-full p-3">
+				{#if notif.type == 0}
+						<div class="flex gap-5">
+							<div>
+								<button class="button-card-user">...</button>
+								<Dropdown class="w-36">
+									<button on:click={() => blockUser(notif)} class="rounded p-1 !bg-primary rounded !hover:bg-primary hover:text-third transition-colors duration-300">
+										Block this user
+									</button>
+								</Dropdown>
+								<Avatar src={notif.img_link} class="object-cover" rounded/>
+							</div>
+							<div class="text-notif flex flex-col items-center justify-end">
+								<p>Friend request from</p>
+								<a href="/user?id={notif.id_user_send}" class="capitalize hover:text-third transition-colors duration-300">{notif.login_send}</a>
+							</div>
+						</div>
+						<div class="flex justify-center gap-5 mt-2">
+							<button on:click={() => socketFriend.emit("accept_friend", { user : myProfile, notif})}>
+								<SvgAdd />
+							</button>
+							<button on:click={() => socketFriend.emit("refuse_friend", {user : myProfile, notif})}>
+								<SvgDelete />
+							</button>
+						</div>
+				{/if}
+			</div>
 			{/each}
 	</Dropdown>
 {/if}

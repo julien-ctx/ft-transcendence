@@ -12,10 +12,10 @@
 			last_name: "doe",
 			img_link: "",
 			activity: 0,
-			level : 6,
+			level : 5,
 			winrate : 69.99,
-			exp : 19597844,
-			ranking: 5
+			exp : 1200,
+			ranking: 2
 		},
 		{
 			id_user : 2,
@@ -25,10 +25,10 @@
 			last_name: "doe",
 			img_link: "",
 			activity: 0,
-			level : 2,
+			level : 4,
 			winrate : 84.99,
 			exp : 1944,
-			ranking: 3
+			ranking: 2
 		},
 		{
 			id_user : 3,
@@ -38,10 +38,10 @@
 			last_name: "doe",
 			img_link: "",
 			activity: 1,
-			level : 7,
+			level : 5,
 			winrate : 89.99,
-			exp : 19597844,
-			ranking: 5
+			exp : 1200,
+			ranking: 2
 		},
 		{
 			id_user : 4,
@@ -51,10 +51,10 @@
 			last_name: "doe",
 			img_link: "",
 			activity: 2,
-			level : 5,
+			level : 4,
 			winrate : 59.5,
-			exp : 18794,
-			ranking: 4
+			exp : 900,
+			ranking: 2
 		},
 		{
 			id_user : 5,
@@ -64,9 +64,9 @@
 			last_name: "doe",
 			img_link: "",
 			activity: 1,
-			level : 3,
-			winrate : 9.5,
-			exp : 194,
+			level : 1,
+			winrate : 0,
+			exp : 300,
 			ranking: 1
 		},
 		{
@@ -77,10 +77,10 @@
 			last_name: "doe",
 			img_link: "",
 			activity: 0,
-			level : 3,
+			level : 0,
 			winrate : 9.5,
-			exp : 194,
-			ranking: 1
+			exp : 0,
+			ranking: 0
 		},
 		{
 			id_user : 7,
@@ -92,7 +92,7 @@
 			activity: 0,
 			level : 3,
 			winrate : 9.5,
-			exp : 194,
+			exp : 600,
 			ranking: 1
 		},
 		{
@@ -103,10 +103,10 @@
 			last_name: "doe",
 			img_link: "",
 			activity: 0,
-			level : 3,
+			level : 0,
 			winrate : 9.5,
-			exp : 194,
-			ranking: 1
+			exp : 100,
+			ranking: 0
 		},
 		{
 			id_user : 9,
@@ -116,10 +116,10 @@
 			last_name: "doe",
 			img_link: "",
 			activity: 0,
-			level : 7,
+			level : 5,
 			winrate : 89.99,
-			exp : 19597844,
-			ranking: 5
+			exp : 1200,
+			ranking: 2
 		},
 		{
 			id_user : 10,
@@ -131,7 +131,7 @@
 			activity: 0,
 			level : 0,
 			winrate : 14,
-			exp : 194,
+			exp : 100,
 			ranking: 0
 		}
 	]

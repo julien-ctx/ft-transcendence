@@ -21,6 +21,14 @@ export class UserService {
 		});
 	}
 
+	async getOneByLogin(login : string) {
+		return await this.prisma.user.findUnique({
+			where : {
+				login
+			}
+		});
+	}
+
 	async getOne(id : number) {
 		return await this.prisma.user.findUnique({
 			where: {

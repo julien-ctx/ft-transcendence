@@ -88,7 +88,7 @@
 	<div class="grid grid-cols-1 md:grid-cols-6 gap-10 content-search-users">
 		<div class="flex flex-col justify-between">
 			<label for="search">Search an user :</label>
-			<input class="focus:outline-none focus:ring-0" id="search" placeholder="Search by nickname" bind:value={searchInput} on:input={handleChangeSearch}/>
+			<input class="focus:outline-none focus:ring-0" id="search" placeholder="Nickname" bind:value={searchInput} on:input={handleChangeSearch}/>
 		</div>
 		<div class="flex flex-col justify-between">
 			<label for="filter">Filter :</label>

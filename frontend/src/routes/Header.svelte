@@ -69,7 +69,7 @@
 						arrId.push(data.id);
 					}
 				}
-				if (!arrId.includes(data.id)) {
+				if (arrId &&!arrId.includes(data.id)) {
 					allUsers.push(data)
 					usersDataStore.set(allUsers);
 				}

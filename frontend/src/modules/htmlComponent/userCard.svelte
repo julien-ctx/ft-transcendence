@@ -43,9 +43,9 @@
 <div class="grid grid-cols-2 gap-5 grid-flow-row sm:grid-cols-7 bg-primary p-3 rounded sm:pb-3 pb-5 div-card-user shadow-md">
     <div class="flex items-center sm:items-start justify-center sm:justify-start sm:flex-row flex-col gap-2">
         {#if myProfile.id != user.id}
-            <button class="button-block">...</button>
+            <button class="button-card-user">...</button>
             <Dropdown class="w-36 !hover:bg-primary">
-                {#if  myProfile.block_id && myProfile.block_id.includes(user.id)}
+                {#if myProfile.block_id && myProfile.block_id.includes(user.id)}
                     <DropdownItem on:click={() => socketUser.emit("unblock_user", { id_user_send : myProfile.id, id_user_receive : user.id })} class="!bg-primary rounded !hover:bg-primary hover:text-third transition-colors duration-300">Unblock this user</DropdownItem>
                 {:else}
                     <DropdownItem on:click={() => socketUser.emit("block_user", { id_user_send : myProfile.id, id_user_receive : user.id })} class="!bg-primary rounded !hover:bg-primary hover:text-third transition-colors duration-300">Block this user</DropdownItem>
@@ -94,7 +94,7 @@
     </div>
     <div class="flex items-center justify-center gap-3 col-span-2 md:col-span-1">
         {#if myProfile.id != user.id}
-            {#if !myProfile.block_id.includes(user.id) && !user.block_id.includes(myProfile.id)}
+            {#if myProfile.block_id && !myProfile.block_id.includes(user.id) && user.block_id && !user.block_id.includes(myProfile.id)}
                 {#if myProfile.req_send_friend && myProfile.req_send_friend.includes(user.id)}
                     <button on:click={() => socketFriend.emit("cancel_friend", {id_user_send : myProfile.id, id_user_receive : user.id})}>
                         <SvgDelete />

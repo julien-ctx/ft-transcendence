@@ -14,6 +14,34 @@ body {
 	font-family: 'Ubuntu', sans-serif;
 }
 
+.a-login,
+.submit-2fa {
+	display: flex;
+	gap: 10px;
+	align-items: center;
+	background-color: $third;
+	padding: 10px;
+	border-radius: 5px;
+	font-size: 18px;
+	font-weight: 500;
+	transition: 300ms all ease-in-out;
+	color: $dark;
+	&:hover {
+		color: $third;
+		background-color: $primary;
+	}
+}
+
+#inputOne {
+	padding: 4px;
+	border: none;
+	border-bottom: 1px solid $third;
+	background-color: transparent;
+	max-width: 150px;
+	font-size: 28px;
+	text-align: center;
+}
+
 #search,
 #login {
 	padding: 4px;

@@ -3,8 +3,6 @@ import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import { PrismaService } from "src/prisma/prisma.service";
 import { AuthDto } from "./dto";
-// import { toDataUrl } from "qrcode"
-import { User } from "@prisma/client";
 
 @Injectable()
 export class AuthService{

@@ -3,7 +3,6 @@ import { User } from "@prisma/client";
 import { authenticator } from "otplib";
 import { toDataURL } from 'qrcode';
 import { PrismaService } from "src/prisma/prisma.service";
-import { AuthDto } from "./dto";
 
 @Injectable()
 export class TwoFaService {

@@ -33,11 +33,11 @@ export class GameService {
 		ball.size = canvas.width * 0.02;
 		ball.x = ball.x * canvas.width / width;
 		ball.y = ball.y * canvas.height / height;
-		rightPaddle.speed = canvas.height * 0.015;
+		rightPaddle.speed = canvas.height * 0.0015;
 		leftPaddle.speed = canvas.height * 0.015;
 		ball.speed = {
-			x: canvas.width * 0.004,
-			y: canvas.height * 0.007,
+			x: canvas.width * 0.0004,
+			y: canvas.height * 0.0007,
 		};
 	}
 
@@ -52,16 +52,16 @@ export class GameService {
 
 	updateBot(ball: Ball, paddle: Paddle, canvas: GameCanvas) {
 		if (ball.y < paddle.y + paddle.height / 2) {
-			if (paddle.y - (paddle.speed / 2) < 0)
+			if (paddle.y - (paddle.speed / 1.3) < 0)
 				paddle.y = 0;
 			else
-				paddle.y -= (paddle.speed / 1.25);
+				paddle.y -= (paddle.speed / 1.3);
 		}
 		else if (ball.y > paddle.y + paddle.height / 2) {
-			if (paddle.y + paddle.height + (paddle.speed / 2) > canvas.height)
+			if (paddle.y + paddle.height + (paddle.speed / 1.3) > canvas.height)
 				paddle.y = canvas.height - paddle.height;
 			else
-				paddle.y += (paddle.speed / 1.25);
+				paddle.y += (paddle.speed / 1.3);
 		}
 	}
 
@@ -115,8 +115,8 @@ export class GameService {
 	}
 
 	updateBall(ball: Ball, canvas: GameCanvas, leftPaddle: Paddle, rightPaddle: Paddle) {
-		ball.x += ball.direction.x * ball.speed.x;
-		ball.y += ball.direction.y * ball.speed.y;
+		ball.x += ball.direction.x / 2;
+		ball.y += ball.direction.y / 2;
 		if (ball.y < 0) {
 			ball.y = 0;
 			ball.direction.y = -ball.direction.y;

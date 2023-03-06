@@ -48,7 +48,7 @@ export class GameGateway {
 			height: canvas.height * 0.15,
 			score: 0,
 			direction: 0,
-			speed: canvas.height * 0.015,
+			speed: canvas.height * 0.0015,
 		};
 		this.rightPaddle = {
 			x: canvas.width - canvas.width * 0.015 - canvas.width * 0.005,
@@ -57,7 +57,7 @@ export class GameGateway {
 			height: canvas.height * 0.15,
 			score: 0,
 			direction: 0,
-			speed: canvas.height * 0.015,
+			speed: canvas.height * 0.0015,
 		};
 		this.ball = {
 			x: canvas.width * 0.5,
@@ -108,6 +108,6 @@ export class GameGateway {
 			rightPaddle: this.rightPaddle,
 			ball: this.ball,
 		})
-		interval = setInterval(this.gameLoop, 10, client, this);
+		interval = setInterval(this.gameLoop, 1, client, this);
 	}
 };

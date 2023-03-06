@@ -35,7 +35,7 @@ export class UserDto {
 	login : string
 
 	@IsNumber()
-	status : number
+	activity : number
 
 	friend_id : number[]
 

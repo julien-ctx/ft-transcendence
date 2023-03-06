@@ -1,26 +1,20 @@
 <script lang="ts">
-	import { Search } from "flowbite-svelte";
     import { usersDataStore } from '$lib/store/user';
-    import { onMount } from "svelte";
-    import { GetAllUsers } from "$lib/userUtils";
     import UserCard from "../../modules/htmlComponent/userCard.svelte";
+    import HeaderUserCard from "../../modules/htmlComponent/headerUserCard.svelte";
 
 
 	let allUsers : any = [];
 	let usersComponent : any = [];
 	let searchInput : string = "";
+	let selectFilter : string = "activity";
+	let selectOrder : string = "desc";
 
 	usersDataStore.subscribe(val => allUsers = val);
+	usersDataStore.subscribe(val => usersComponent = val);
+	updateUserComponent();
 
-	
-	onMount(async () => {
-		await GetAllUsers()
-		.then((res) => {
-			usersComponent = res.data;
-		})
-	});
-
-	function handleChange() {
+	function handleChangeSearch() {
 		if (searchInput !== "") {
 			usersComponent = [];
 			if (allUsers) {
@@ -40,21 +34,82 @@
 			}
 		} else
 			usersComponent = allUsers;
+		if (selectOrder != "no")
+			updateUserComponent();
+		else
+			usersComponent = usersComponent;
+	}
+
+	function compare(a : any, b : any) {
+		let aObj : any;
+		let bObj : any;
+		switch(selectFilter) {
+			case "activity":
+				aObj = a.activity;
+				bObj = b.activity;
+				break;
+			case "winrate":
+				aObj = a.winrate;
+				bObj = b.winrate;
+				break;
+			case "ranking":
+				aObj = a.ranking;
+				bObj = b.ranking;
+				break;
+			case "level":
+				aObj = a.level;
+				bObj = b.level;
+				break;
+			default:
+				break;
+		}
+		if (selectOrder == "asc") {
+			if (aObj < bObj)
+				return -1;
+			else if (aObj > bObj)
+				return 1;
+		} else {
+			if (aObj > bObj)
+				return -1;
+			else if (aObj < bObj)
+				return 1;
+		}
+		return 0;
+	}
+
+	function updateUserComponent() {
+		usersComponent.sort(compare);
 		usersComponent = usersComponent;
 	}
+
 </script>
 
 <div class="p-10 container mx-auto gap-10 max-w-screen-xl">
-	<Search placeholder="Search by nickname" bind:value={searchInput} on:input={handleChange}/>
-	<div class="flex flex-col gap-5 mt-10">
-		<div class="gap-4 grid-cols-6 text-center hidden sm:grid">
-			<div>Picture</div>
-			<div>Nickname</div>
-			<div>Activity</div>
-			<div>Win rate</div>
-			<div>Ranking</div>
-			<div>Actions</div>
+	<div class="grid grid-cols-1 md:grid-cols-6 gap-10 content-search-users">
+		<div class="flex flex-col justify-between">
+			<label for="search">Search an user :</label>
+			<input class="focus:outline-none focus:ring-0" id="search" placeholder="Nickname" bind:value={searchInput} on:input={handleChangeSearch}/>
 		</div>
+		<div class="flex flex-col justify-between">
+			<label for="filter">Filter :</label>
+			<select class="focus:outline-none focus-visible:ring-transparent focus:ring-transparent" id="filter" bind:value={selectFilter} on:change={updateUserComponent}>
+				<option value="activity">Activity</option>
+				<option value="winrate">Win rate</option>
+				<option value="ranking">Ranking</option>
+				<option value="level">Level</option>
+			</select>
+		</div>
+		<div class="flex flex-col justify-between">
+			<label for="order">Order :</label>
+			<select  class="focus:outline-none focus-visible:ring-transparent focus:ring-transparent" id="order" bind:value={selectOrder} on:change={updateUserComponent}>
+				<option value="desc">Descending</option>
+				<option value="asc">Ascending</option>
+			</select>
+		</div>
+	</div>
+
+	<div class="flex flex-col gap-5 mt-10">
+		<HeaderUserCard />
 		{#each usersComponent as user}
 			{#if user.login != undefined}
 				<UserCard user={user}/>

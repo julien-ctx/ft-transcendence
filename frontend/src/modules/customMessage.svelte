@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { usersDataStore, usersHimSelfDataStore } from '$lib/store/user';
+    import { usersDataStore } from '$lib/store/user';
 	import { onMount } from 'svelte';
 	import { Avatar, Hr } from 'flowbite-svelte';
     import axios from 'axios';
@@ -11,7 +11,7 @@
 
 	let currentUser : {};
 
-	usersHimSelfDataStore.subscribe(val => allUsers = val);
+	usersDataStore.subscribe(val => allUsers = val);
 
 	onMount(async () => {
 		console.log(idUser, Message);

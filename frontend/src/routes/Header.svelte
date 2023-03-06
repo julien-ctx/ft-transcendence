@@ -2,18 +2,15 @@
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
     import { AuthGuard } from '$lib/store/AuthGuard';
-    import { myProfileDataStore, userProfileDataStore, usersDataStore, usersHimSelfDataStore } from '$lib/store/user';
-    import { UpdateProfileToStore } from '$lib/profileUtils';
-    import AvatarProfile from '../modules/headerComponent/avatarProfile.svelte';
-    import SearchUsers from '../modules/headerComponent/searchUsers.svelte';
-    import Notifications from '../modules/headerComponent/notifications.svelte';
+    import { myProfileDataStore, userProfileDataStore, usersDataStore } from '$lib/store/user';
+    import { UpdateProfileConnected, UpdateProfileToStore } from '$lib/profileUtils';
     import { goto } from '$app/navigation';
     import { getJwt, removeJwt } from '$lib/jwtUtils';
     import { socketFriendStore, socketUserStore } from '$lib/store/socket';
 	import { Navbar, NavBrand, NavLi, NavUl, NavHamburger, Avatar, Dropdown, DropdownItem, DropdownHeader, DropdownDivider } from 'flowbite-svelte'
     import { GetAllUsers } from '$lib/userUtils';
-    import axios from 'axios';
     import { io } from 'socket.io-client';
+    import Notifications from '../modules/notifications.svelte';
 	
 
 	let myProfile : any;
@@ -30,8 +27,11 @@
 
 	onMount(async () => {
 		await AuthGuard()
-		.then((res) => {
-			UpdateProfileToStore(res.data);
+		.then(async (res) => {
+			await UpdateProfileConnected(1)
+			.then((res) => {
+				UpdateProfileToStore(res.data);
+			})
 		})
 		.catch((err) => {
 			if (err.response.status == 401) {
@@ -44,16 +44,6 @@
 		.then((res) => {
 			usersDataStore.set(res.data);
 		})
-
-		await axios.get("http://localhost:4000/users/getAllHimSelf", {
-		headers : {
-			Authorization : `Bearer ${getJwt()}`
-		}
-		})
-		.then((res) => {
-			usersHimSelfDataStore.set(res.data);
-		});
-
 
 		await GetAllUsers()
 		.then((res) => {
@@ -79,13 +69,9 @@
 						arrId.push(data.id);
 					}
 				}
-				if (!arrId.includes(data.id) && data.id != myProfile.id) {
+				if (arrId &&!arrId.includes(data.id)) {
 					allUsers.push(data)
 					usersDataStore.set(allUsers);
-					usersHimSelfDataStore.set(allUsers);
-				} else if (!arrId.includes(data.id) && data.id == myProfile.id) {
-					allUsers.push(data)
-					usersHimSelfDataStore.set(allUsers);
 				}
 			}                                                                                                                              
 		})
@@ -114,20 +100,19 @@
 		<Avatar id="avatar-menu" src={myProfile.img_link} class="object-cover" rounded/>
 		<NavHamburger on:click={toggle} class1="w-full md:flex md:w-auto md:order-1"/>
 	</div>
-	<Dropdown placement="bottom" triggeredBy="#avatar-menu">
+	<Dropdown placement="bottom" triggeredBy="#avatar-menu" frameClass="!bg-primary">
 		<DropdownHeader>
-		<span class="block text-sm">{myProfile.login}</span>
-		<span class="block truncate text-sm font-medium">{myProfile.kind}</span>
+		<span class="block capitalize">{myProfile.login}</span>
 		</DropdownHeader>
-		<DropdownItem href="/profile">Profile</DropdownItem>
+		<DropdownItem href="/profile" defaultClass="font-medium py-2 px-4 text-sm hover:text-third block transition-colors duration-300">Profile</DropdownItem>
 		<DropdownDivider />
-		<DropdownItem href="/logout">Sign out</DropdownItem>
+		<DropdownItem href="/logout" defaultClass="font-medium py-2 px-4 text-sm hover:text-red-600 block transition-colors duration-300">Sign out</DropdownItem>
 	</Dropdown>
 	<NavUl {hidden}>
-		<NavLi href="/" active={$page.url.pathname === '/'? true : false}  activeClass="text-third hover:text-white transition-colors duration-300" nonActiveClass="text-white hover:text-third transition-colors duration-300">Home</NavLi>
-		<NavLi href="/users" active={$page.url.pathname === '/users'? true : false} activeClass="text-third hover:text-white transition-colors duration-300" nonActiveClass="text-white hover:text-third transition-colors duration-300">Users</NavLi>
-		<NavLi href="/game" active={$page.url.pathname === '/game'? true : false} activeClass="text-third hover:text-white transition-colors duration-300" nonActiveClass="text-white hover:text-third transition-colors duration-300">Game</NavLi>
-		<NavLi href="/chat" active={$page.url.pathname === '/chat'? true : false} activeClass="text-third hover:text-white transition-colors duration-300" nonActiveClass="text-white hover:text-third transition-colors duration-300">Chat</NavLi>
+		<NavLi href="/" active={$page.url.pathname === '/'? true : false}  activeClass="text-third hover:text-black transition-colors duration-300" nonActiveClass="text-black hover:text-third transition-colors duration-300">Home</NavLi>
+		<NavLi href="/users" active={$page.url.pathname === '/users'? true : false} activeClass="text-third hover:text-black transition-colors duration-300" nonActiveClass="text-black hover:text-third transition-colors duration-300">Users</NavLi>
+		<NavLi href="/game" active={$page.url.pathname === '/game'? true : false} activeClass="text-third hover:text-black transition-colors duration-300" nonActiveClass="text-black hover:text-third transition-colors duration-300">Game</NavLi>
+		<NavLi href="/chat" active={$page.url.pathname === '/chat'? true : false} activeClass="text-third hover:text-black transition-colors duration-300" nonActiveClass="text-black hover:text-third transition-colors duration-300">Chat</NavLi>
 	</NavUl>
 	</Navbar>
 {/if}

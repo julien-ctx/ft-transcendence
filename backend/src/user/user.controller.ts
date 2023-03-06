@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Req, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
+import { BadRequestException, Body, Controller, ForbiddenException, Get, Param, Post, Req, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { UserService } from "./user.service";
 import { diskStorage } from "multer";
@@ -23,11 +23,6 @@ export class UserController{
 		return await this.userService.getAll(user.id);
 	}
 
-	@Get("getAllHimSelf")
-	getAllHimSelf() {
-		return this.userService.getAllHimSelf();
-	}
-
 	@Get(":id")
 	async getOne(@Param("id") id : string) {
 		let idNumber : number = +id;
@@ -50,18 +45,21 @@ export class UserController{
 
 	@Post("updateLogin")
 	async updateLogin(@Body("login") login : any, @UserDec() user : User) {
-		return await this.userService.updateUser({ login }, user.id);
+		const userFind = await this.userService.getOneByLogin(login);
+		if (!userFind)
+			return await this.userService.updateUser({ login }, user.id);
+		throw new ForbiddenException();
 	}
 
 	@Post("updateConnected")
-	async updateConnected(@Body("connected") connected : any, @UserDec() user : User) {
-		if (user.twoFaEnabled && user.twoFaAuth) {
+	async updateConnected(@Body("activity") activity : any, @UserDec() user : User) {
+		if (user.twoFaEnabled && user.twoFaAuth && activity == 0) {
 			return await this.userService.updateUser({
-				connected,
+				activity,
 				twoFaAuth : false
 			}, user.id)
 		}
-		return await this.userService.updateUser({ connected }, user.id);
+		return await this.userService.updateUser({ activity }, user.id);
 	}
 
 	@Post("fakeUser")

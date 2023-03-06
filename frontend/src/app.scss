@@ -1,0 +1,170 @@
+@import "variables.scss";
+// .div-card-user {
+// 	// border: 1px solid $secondary;
+// 	box-shadow: 0 0px 3px $secondary;
+// }
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+body {
+	color: rgb(63, 63, 70);
+	font-family: 'Ubuntu', sans-serif;
+}
+
+#search,
+#login {
+	padding: 4px;
+	border: none;
+	border-bottom: 1px solid $third;
+	background-color: transparent;
+	max-width: 200px;
+}
+
+#login {
+	max-width: 100px;
+}
+
+#order,
+#filter {
+	cursor: pointer;
+	border: none;
+	padding-left: 2px;
+	padding-bottom: 4px;
+	border-bottom: 1px solid $third;
+	background-color: transparent;
+	max-width: 150px;
+}
+
+.header-user-card {
+	font-weight: 700;
+}
+
+.content-search-users {
+	label {
+		font-weight: 700;
+	}
+}
+
+.button-card-user {
+	font-weight: 700;
+	letter-spacing: 1.2px;
+	transition: all 300ms ease-in-out;
+	font-size: 18px;
+	&:hover {
+		color: $third;
+	}
+}
+
+.svg-add {
+	stroke: #0e9f6e;
+	transition: all 300ms ease-in-out;
+	&:hover {
+		stroke: #046c4e;
+	}
+}
+
+.svg-msg {
+	fill: #1c64f2;
+	transition: all 300ms ease-in-out;
+	&:hover {
+		fill: #1e429f;
+	}
+}
+
+.svg-profile {
+	fill: $third;
+	transition: all 300ms ease-in-out;
+	&:hover {
+		fill: $secondary;
+	}
+}
+
+.svg-delete {
+	stroke: #f05252;
+	transition: all 300ms ease-in-out;
+	&:hover {
+		stroke: #c81e1e;
+	}
+}
+
+.progress-label {
+	span {
+		color : $dark;
+	}
+	.rounded-full {
+		background-color: $third !important;
+	}
+}
+
+.tabs-item {
+	li {
+		button {
+			color: #000;
+			background-color: $primary;
+			transition: color 300ms ease-in-out;
+			&.active {
+				color : $third;
+				background-color: $primary;
+				border-bottom: 1px solid $third;
+			}
+			&:hover {
+				color : $third;
+				background-color: $primary;
+			}
+
+		}
+	}
+}
+
+.accordion {
+	border: none !important;
+
+	h2 {
+		border: none !important;
+		&:hover {
+			background-color: $primary !important;
+		}
+		&[aria-expanded=true] {
+			button {
+				color: $third;
+			}
+		}
+		button {
+			transition: all 300ms ease-in-out;
+			color: $dark;
+			background-color: transparent !important;
+			&:hover {
+				color: $third;
+				background-color: $primary !important;
+			}
+			&.active {
+				background-color: $primary !important;
+				color: $third;
+			}
+			&:focus,
+			&:focus-within {
+				outline: none !important;
+				box-shadow: none !important;
+			}
+		}
+	}
+}
+
+.dropdown-notification {
+	max-width: 300px;
+	.notification:not(:last-child) {
+		border-bottom: 1px solid $third;
+	}
+	ul {
+		width: 100% !important;
+	}
+	.text-notif {
+		font-weight: 300;
+		.capitalize {
+			font-weight: 400;
+		}
+	}
+}

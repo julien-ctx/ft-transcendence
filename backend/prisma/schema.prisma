@@ -16,8 +16,12 @@ model User {
 	first_name String
 	last_name String
 	img_link String
-	kind String @default("")
-	status Int @default(0)
+	activity Int @default(0)
+	exp Int @default(0)
+	level Int @default(0)
+	ranking Int @default(0)
+	winrate Float @default(0)
+	lp Int @default(0)
 	notification Notification[]
 	block_id Int[]
 	friend_id Int[]

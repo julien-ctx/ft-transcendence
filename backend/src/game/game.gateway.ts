@@ -19,7 +19,7 @@ export class GameGateway {
 		private prisma: PrismaService,
 	) {}
 
-	private maxScore: number = 2;
+	private maxScore: number = 11;
 	@WebSocketServer() server: Server;
 
 	gameLoop(client: any, t: any) {
@@ -73,10 +73,11 @@ export class GameGateway {
 			},
 		};
 		
-		client.on('resize',  ({ width, height }) => {
+		client.on('resize',  ({ width, height, winWidth, winHeight }) => {
 			this.game.handleResize(
 				this.gameCanvas,
-				new GameCanvas(width, height),
+				winWidth,
+				winHeight,
 				this.leftPaddle,
 				this.rightPaddle,
 				this.ball,

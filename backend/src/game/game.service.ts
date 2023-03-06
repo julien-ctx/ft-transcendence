@@ -11,16 +11,17 @@ export class GameService {
 	}
 
 	handleResize(
-		oldCanvas: GameCanvas,
 		canvas: GameCanvas,
+		winWidth: number,
+		winHeight: number,
 		leftPaddle: Paddle,
 		rightPaddle: Paddle,
 		ball: Ball,
 	) {
-		const width = oldCanvas.width;
-		const height = oldCanvas.height;
-		canvas.width = window.innerWidth * 0.7;
-		canvas.height = window.innerHeight * 0.8;
+		const width = canvas.width;
+		const height = canvas.height;
+		canvas.width = winWidth * 0.7;
+		canvas.height = winHeight * 0.8;
 		rightPaddle.x = canvas.width - canvas.width * 0.015 - canvas.width * 0.005;
 		rightPaddle.width =  canvas.width * 0.005;
 		rightPaddle.height = canvas.height * 0.15;

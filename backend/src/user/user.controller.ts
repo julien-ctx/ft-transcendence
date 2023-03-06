@@ -1,9 +1,6 @@
-import { BadRequestException, Body, Controller, ForbiddenException, Get, Param, Post, Req, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
+import { Body, Controller, ForbiddenException, Get, Param, Post, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { UserService } from "./user.service";
-import { diskStorage } from "multer";
-import { extname } from "path";
-import { ConfigService } from "@nestjs/config";
 import { UserDec } from "./user.decorator";
 import { JwtAuthGuard } from "src/auth/guard/jwt-auth.guard";
 import { User } from "@prisma/client";

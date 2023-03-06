@@ -6,6 +6,10 @@
     import { getJwt } from '$lib/jwtUtils';
     import { myProfileDataStore, usersDataStore } from "$lib/store/user";
     import { io } from 'socket.io-client';
+	import Channels from './roomStyle.svelte';
+	import Trash from '../../modules/htmlComponent/svgTrash.svelte';
+    import RoomEdit from "../../modules/roomEdit.svelte";
+	import Close from '../../modules/htmlComponent/svgClose.svelte';
 
     let socket : any;
     // Messagerie : //
@@ -14,7 +18,8 @@
     let rooms : any = [];
     let allUsers : any = [];
     let myProfile : any;
-
+	let openedRoom : any = '';
+	let chat : boolean = false;
 
     // Modal Create : //
     let roomName = '';
@@ -36,6 +41,10 @@
     let JoinName = '';
     let JoinPass = '';
     let needPass = '';
+
+	// Modal Admin : //
+	let modalAdmin = false;
+	let admin = '';
 
     usersDataStore.subscribe((value) => {
         allUsers = value;
@@ -77,6 +86,18 @@
         socket.on('errors', (receivedErr : any) => {
             err = {...err, ...receivedErr};
         });
+
+		socket.on("needPass", () => {
+			needPass = 'yes';
+		})
+
+		socket.on("successJoin", () => {
+			close();
+		})
+
+		socket.on('deletedRoom', (receivedRoom : string) => {
+			rooms = rooms.filter((room : any) => room.name !== receivedRoom);
+		});
     })
 
     function changeAppearC() {
@@ -105,12 +126,21 @@
         });
     }
 
+	function joinRoom() {
+		socket.emit('joinRoom', {
+			roomName: JoinName,
+			roomPass: JoinPass
+		});
+	}
+
     function close() {
         modalCreate = false;
-        // modalJoin = false;
-        // JoinName = '';
-        // JoinPass = '';
-        // needPass = '';
+        modalJoin = false;
+		modalAdmin = false;
+		admin = '';
+        JoinName = '';
+        JoinPass = '';
+        needPass = '';
         roomName = '';
         roomDesc = '';
         roomPass = '';
@@ -136,10 +166,26 @@
         needPass = '';
     }
 
+	function leaveRoom(room : string) {
+		socket.emit('leaveRoom', {
+			roomName : room,
+		});
+	}
+
 </script>
 
 <!-- <div class="relative h-1/2"> -->
     {#if show}
+		{#if openedRoom !== ''}
+			<div class="flex justify-between bg-white w-26 absolute bottom-0 right-0 w-64 mr-4 rounded-xl">
+				<button on:click={() => chat = true}>
+					<span>{openedRoom}</span> 
+				</button>
+				<button on:click={() => { openedRoom = ''}}>
+					<Close  />
+				</button>
+			</div>
+		{/if}
         <div class="absolute bottom-0 right-0 w-64 mr-4 rounded-xl h-2/3 border border-secondary">
             <div class="flex flex-row justify-center gap-4 text-2xl pl-4">
                 <button on:click={() => changeAppearC()}>
@@ -155,14 +201,12 @@
             <br>
             <div class="overflow-auto h-4/5">
                 {#if toShow === false}
-                    <div class="flex flex-col gap-4 text-left">
+                    <div class="flex flex-col gap-4">
                         {#each rooms as room}
-                            <div class="flex w-full bg-white rounded text-2xl pl-4">
-                                <div>
-                                    <h1>{room.name.length > 10 ? room.name.substring(0, 10) + "..." : room.name}</h1>
-                                </div>
-                            </div>
-                        {/each}
+							<button on:click={() => {openedRoom = room.name; chat = true}}>
+								<Channels room={room} socket={socket} bind:admin={admin} bind:modalAdmin={modalAdmin}/>
+							</button>
+						{/each}
                     </div>
                 {:else}
                     {#each allUsers as user}
@@ -183,10 +227,21 @@
         </div>
     {/if}
     {#if !show}
-    <div class="absolute bottom-0 right-0"> 
+    <div class="absolute bottom-0 right-0 flex gap-2 border rounded">
+		{#if openedRoom !== ''}
+			<div class="flex justify-between bg-white w-26 border">
+				<button on:click={() => chat = true}>
+					<span>{openedRoom}</span> 
+				</button>
+				<button on:click={() => { openedRoom = ''}}>
+					<Close  />
+				</button>
+			</div>
+		{/if}
         <button class="flex justify-center bg-white rounded w-24" on:click={() => show = true}>
             <span>Messagerie</span>
         </button>
+
     </div>
     {/if}
 <!-- </div> -->
@@ -233,7 +288,14 @@
         {/if}
     {/if}
     <div class="flex justify-center gap-8">
-        <!-- <Button style="" shadow="green" gradient color="green" on:click={() => joinRoom()}>Join</Button> -->
+        <Button style="" shadow="green" gradient color="green" on:click={() => joinRoom()}>Join</Button>
         <Button style="" shadow="green" gradient color="green" on:click={() => close()}>Close</Button>
     </div>
+</Modal>
+
+<Modal bind:open={modalAdmin} title="Admin Panel" color="third">
+	
+	<div class="flex justify-center gap-8">
+		<Button style="" gradient color="third" on:click={() => close()}>Close</Button>
+	</div>
 </Modal>

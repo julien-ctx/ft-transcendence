@@ -10,9 +10,41 @@
 	const OBJ_COLOR: string = "#dcd3bc";
 	const BALL_COLOR: string = "#e36c5d";
 
-	let isLogged = false;
+	let isLogged: boolean = false;
 	let canvas: HTMLCanvasElement;
-	let dataSet: boolean = false;
+	let dataInit: boolean = false;
+	
+	interface Paddle {
+		x: number;
+		y: number;
+		width: number;
+		height: number;
+		score: number;
+		direction: number;
+		speed: number;
+	}
+	
+	interface Ball {
+		x: number;
+		y: number;
+		size: number;
+		direction: any;
+		speed: any;
+	}
+	
+	let gameStarted: boolean = false;
+	
+	let ctx: any;
+	let mouseY: number;
+	
+	let gameLeftPaddle: Paddle;
+	let gameRightPaddle: Paddle;
+	let gameBall: Ball;
+	
+	let playerNumber: number = 0;
+	
+	let socket: Socket;
+
 	onMount(async () => {
 		AuthGuard()
 		.then((res) => {
@@ -26,43 +58,13 @@
 		canvas.width = window.innerWidth * 0.7;
 		canvas.height = window.innerHeight * 0.8;
 		ctx = canvas.getContext('2d');
+		if (!ctx) {
+			return;
+		}
 		ctx.font = canvas.width * 0.03 + 'px Courier';
 		ctx.fillStyle = TEXT_COLOR;
 	});
-
-	interface Paddle {
-		x: number;
-		y: number;
-		width: number;
-		height: number;
-		score: number;
-		direction: number;
-		speed: number;
-	}
-
-	interface Ball {
-		x: number;
-		y: number;
-		size: number;
-		direction: any;
-		speed: any;
-	}
 	
-	let gameStarted: boolean = false;
-
-	let ctx: any;
-	let mouseY: number;
-
-	let gameLeftPaddle: Paddle;
-	let gameLeftScore: number;
-	let gameRightPaddle: Paddle;
-	let gameRightScore: number;
-	let gameBall: Ball;
-
-	let playerNumber: number = 0;
-
-	const socket = io('http://localhost:4000');
-
 	function drawPaddles(leftPaddle: any, rightPaddle: any) {
 		ctx.fillStyle = OBJ_COLOR;
 		ctx.fillRect(
@@ -140,21 +142,27 @@
 		)
 		ctx.font = 'bold ' + canvas.width * 0.03 + 'px Courier';
 		gameStarted = false;
+		socket.disconnect();
 	}
 
 	function gameLoop() {
-		if (!ctx) return;
-		if (gameStarted && dataSet) {
+		if (gameStarted && dataInit) {
 			ctx.clearRect(0, 0, canvas.width, canvas.height);
 			drawPaddles(gameLeftPaddle, gameRightPaddle);
 			drawSep(gameBall);	
-			drawScores(gameLeftScore, gameRightScore);
+			drawScores(gameLeftPaddle.score, gameRightPaddle.score);
 			drawBall(gameBall);
 		}
 		requestAnimationFrame(gameLoop);
 	}
-		
+	
 	function startGame() {
+		socket.on('initData', ({leftPaddle, rightPaddle, ball}) => {
+			gameLeftPaddle = leftPaddle;
+			gameRightPaddle = rightPaddle;
+			gameBall = ball;
+			dataInit = true;
+		});
 		socket.on('paddlesData',  ({ leftPaddle, rightPaddle }) => {
 			gameLeftPaddle = leftPaddle;
 			gameRightPaddle = rightPaddle;
@@ -163,9 +171,8 @@
 			gameBall = ball;
 		});
 		socket.on('scoresData',  ({ leftScore, rightScore }) => {
-			gameLeftScore = leftScore;
-			gameRightScore = rightScore;
-			dataSet = true;
+			gameLeftPaddle.score = leftScore;
+			gameRightPaddle.score = rightScore;
 		});
 		socket.on('rightWin',  ({}) => {
 			gameRightPaddle.score++;
@@ -185,6 +192,7 @@
 	}
 	
 	function isReady() {
+		socket = io('http://localhost:4000');
 		if (!gameStarted) {
 			gameStarted = true;
 			canvas.addEventListener('mousemove', handleMouseMove);	

@@ -27,6 +27,7 @@ export class GameGateway {
 		if (winner === 'leftWin' || winner === 'rightWin') {
 			client.emit(winner, {});
 			clearInterval(interval);
+			return;
 		}
 		client.emit('paddlesData', {leftPaddle: t.leftPaddle, rightPaddle: t.rightPaddle});
 		client.emit('ballData', {ball: t.ball});
@@ -71,7 +72,7 @@ export class GameGateway {
 				y: canvas.height * 0.007,
 			},
 		};
-		this.game.setBall(this.ball, this.gameCanvas);
+		
 		client.on('resize',  ({ width, height }) => {
 			this.game.handleResize(
 				this.gameCanvas,
@@ -93,7 +94,7 @@ export class GameGateway {
 				this.leftPaddle.direction = 0;
 			}
 		});
-		client.on('mouvemove', ({ mouseY }) => {
+		client.on('mousemove', ({ mouseY }) => {
 			if (mouseY < 0) {
 				mouseY = 0;
 			} else if (mouseY > this.gameCanvas.height - (this.leftPaddle.height)) {
@@ -101,9 +102,11 @@ export class GameGateway {
 			}
 			this.leftPaddle.y = mouseY;
 		});
-		client.emit('paddlesData', {leftPaddle: this.leftPaddle, rightPaddle: this.rightPaddle});
-		client.emit('ballData', {ball: this.ball});
-		client.emit('scoresData', {leftScore: this.leftPaddle.score, rightScore: this.rightPaddle.score});
+		client.emit('initData', {
+			leftPaddle: this.leftPaddle,
+			rightPaddle: this.rightPaddle,
+			ball: this.ball,
+		})
 		interval = setInterval(this.gameLoop, 10, client, this);
 	}
 };

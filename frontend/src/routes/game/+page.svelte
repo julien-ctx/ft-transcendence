@@ -97,6 +97,7 @@
 		
 	function drawScores(leftScore: number, rightScore: number) {
 		ctx.fillStyle = OBJ_COLOR;
+		ctx.font = 'bold ' + canvas.width * 0.03 + 'px Courier';
 		ctx.fillText(leftScore, canvas.width * 0.4, canvas.height * 0.1);
 		ctx.fillText(rightScore, canvas.width * 0.6 - ctx.measureText(rightScore).width, canvas.height * 0.1);
 	}

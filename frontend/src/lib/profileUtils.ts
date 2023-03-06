@@ -18,6 +18,11 @@ export function UpdateProfileToStore(params : any) {
 				count++;
 		});
 	}
+	// if (params.picture_user) {
+	// 	console.log(params);
+		
+	// 	params.img_link = `data:${params.picture_user.mimetype};base64,${btoa(String.fromCharCode(...params.picture_user.byte.data))}`
+	// }
 	myProfileDataStore.set(params);
 	myNotifLength.set(count);
 }

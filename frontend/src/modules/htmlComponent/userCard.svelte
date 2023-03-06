@@ -54,7 +54,7 @@
         {:else}
             <div class="p-2"></div>
         {/if}
-        <Avatar size="lg" src={user.img_link} class="object-cover" rounded/>
+        <Avatar size="lg" src={user.img_link} class="object-cover bg-transparent" rounded/>
     </div>
     <div class="flex md:items-center justify-center capitalize font-medium md:flex-wrap md:flex-row flex-col gap-2">
         <span class="font-medium block md:hidden">Nickname :</span>

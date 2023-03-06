@@ -30,18 +30,19 @@ export class UserController{
 	}
 
 	@Post("updateImg")
-	@UseInterceptors(FileInterceptor('file', {
-		storage: diskStorage({
-		  destination: new ConfigService().get("UPLOAD_DIR"),
-		  filename: (req, file, cb) => {
-			const randomName = Array(32).fill(null).map(() => (Math.round(Math.random() * 16)).toString(16)).join('');
-			return cb(null, `${randomName}${extname(file.originalname)}`);
-		  },
-		}),
-	}))
-	async updateImg(@UploadedFile() file: Express.Multer.File, @UserDec() user : User) {		
-		return await this.userService.updateUser({ img_link: file.path }, user.id);
+	@UseInterceptors(FileInterceptor('file'))
+	async uploadFile(@UploadedFile() file: Express.Multer.File, @UserDec() user : User) {
+		const allowedMimeTypes = ['image/png', 'image/jpeg', 'image/bmp', 'image/gif', 'image/x-icon', 'image/svg+xml', 'image/webp']
+		const bytes = file.buffer;
+		const mimetype = file.mimetype;
+		const buffer = Buffer.from(bytes);
+		const base64 = buffer.toString('base64');
+		const img_link = `data:${mimetype};base64,${base64}`;
+		if (allowedMimeTypes.includes(mimetype))
+			return await this.userService.updateUser({img_link}, user.id);
+		throw new ForbiddenException();
 	}
+
 
 	@Post("updateLogin")
 	async updateLogin(@Body("login") login : any, @UserDec() user : User) {

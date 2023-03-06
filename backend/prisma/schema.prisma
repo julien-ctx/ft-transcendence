@@ -63,6 +63,16 @@ model Message {
 	id_user Int
 }
 
+// model DM {
+// 	id Int @id @default(autoincrement())
+// 	user1 User @relation(fields: [id_user], references: [id_user])
+// 	id_user Int
+
+// 	user2 User @relation(fields: [id_user], references: [id_user])
+// 	id_user2 Int
+// 	Message Message[]
+// }
+
 model Notification {
   id Int @id @default(autoincrement())
   user  User @relation(fields: [id_user_receive], references: [id])

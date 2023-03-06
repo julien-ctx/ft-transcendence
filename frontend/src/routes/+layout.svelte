@@ -10,7 +10,7 @@
 	{#if $page.url.pathname != "/login"}
 		<Header />
 	{/if}
-	<main class="h-full">
+	<main>
 		<slot></slot>
 	</main>
 </div>

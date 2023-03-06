@@ -91,6 +91,7 @@
 </script>
 
 {#if myProfile && myProfile.first_name}
+<div class="relative">
 	<Navbar let:hidden let:toggle navClass="!bg-primary !border-secondary border-b w-full px-2 sm:px-4 py-2.5">
 	<NavBrand href="/">
 		<img src="https://flowbite.com/docs/images/logo.svg" class="mr-3 h-6 sm:h-9" alt="Flowbite Logo"/>
@@ -115,4 +116,5 @@
 		<NavLi href="/chat" active={$page.url.pathname === '/chat'? true : false} activeClass="text-third hover:text-black transition-colors duration-300" nonActiveClass="text-black hover:text-third transition-colors duration-300">Chat</NavLi>
 	</NavUl>
 	</Navbar>
+</div>
 {/if}

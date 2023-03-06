@@ -16,20 +16,6 @@
 	let isSend : boolean = false;
 	let color : any = "base"
 
-	const imgCarousel = [
-		{
-			id: 0,
-			imgurl : "image-1.png"
-		},
-		{
-			id: 1,
-			imgurl : "image-2.png"
-		},
-		{
-			id: 2,
-			imgurl : "image-3.png"
-		}
-	]
 	onMount(async () => {		
 		const urlParams = new URLSearchParams(window.location.search);
 		const hasCode = urlParams.has("code");

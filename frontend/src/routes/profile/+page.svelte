@@ -112,7 +112,7 @@
 								<input type="file" bind:this={fileInput} on:change={submitFormImg} class="hidden" name="file" id="file">
 							</label>
 						</Dropdown>
-                        <Avatar size="xl" src={myProfile.img_link} class="object-cover" rounded/>
+                        <Avatar size="xl" src={myProfile.img_link} class="object-cover bg-transparent" rounded/>
 					</div>
                     <div class="flex gap-3 items-center">
                         <UserActivity user={myProfile}/>

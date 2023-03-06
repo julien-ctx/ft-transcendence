@@ -57,7 +57,7 @@
 										Block this user
 									</button>
 								</Dropdown>
-								<Avatar src={notif.img_link} class="object-cover" rounded/>
+								<Avatar src={notif.img_link} class="object-cover bg-transparent" rounded/>
 							</div>
 							<div class="text-notif flex flex-col items-center justify-end">
 								<p>Friend request from</p>

@@ -62,7 +62,7 @@
                                 <DropdownItem on:click={() => socketUser.emit("block_user", { id_user_receive : userProfile.id, id_user_send : myProfile.id})} class="rounded p-1 !bg-primary rounded !hover:bg-primary hover:text-third transition-colors duration-300">Block this user</DropdownItem>
                             {/if}
                         </Dropdown>
-                        <Avatar size="xl" src={userProfile.img_link} class="object-cover" rounded/>
+                        <Avatar size="xl" src={userProfile.img_link} class="object-cover bg-transparent" rounded/>
                     </div>
                     <div class="flex gap-7">
                         <UserActivity user={userProfile}/>

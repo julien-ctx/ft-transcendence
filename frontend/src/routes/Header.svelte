@@ -97,7 +97,7 @@
 	</NavBrand>
 	<div class="flex items-center md:order-2 gap-4">
 		<Notifications/>
-		<Avatar id="avatar-menu" src={myProfile.img_link} class="object-cover" rounded/>
+		<Avatar id="avatar-menu" src={myProfile.img_link} class="object-cover bg-transparent" rounded/>
 		<NavHamburger on:click={toggle} class1="w-full md:flex md:w-auto md:order-1"/>
 	</div>
 	<Dropdown placement="bottom" triggeredBy="#avatar-menu" frameClass="!bg-primary">

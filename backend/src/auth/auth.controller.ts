@@ -55,7 +55,7 @@ export class AuthController{
 	@Post("2fa/enable")
 	async enable2fa(@UserDec() user) {
 		let secret : string = user.twoFaSecret;
-		if (user.twFaSecret == "")
+		if (!user.twFaSecret)
 			secret  = this.twoFaService.generateSecret();
 		return await this.prisma.user.update({
 			where : {

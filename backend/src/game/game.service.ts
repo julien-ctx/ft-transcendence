@@ -20,21 +20,25 @@ export class GameService {
 	) {
 		const width = canvas.width;
 		const height = canvas.height;
+
 		canvas.width = winWidth * 0.7;
 		canvas.height = winHeight * 0.8;
+
 		rightPaddle.x = canvas.width - canvas.width * 0.015 - canvas.width * 0.005;
 		rightPaddle.width =  canvas.width * 0.005;
 		rightPaddle.height = canvas.height * 0.15;
 		rightPaddle.y = rightPaddle.y * canvas.height / height;
+		rightPaddle.speed = canvas.height * 0.0015;
+
 		leftPaddle.x = canvas.width * 0.015;
 		leftPaddle.width = canvas.width * 0.005;
 		leftPaddle.height = canvas.height * 0.15;
 		leftPaddle.y = leftPaddle.y * canvas.height / height;
+		leftPaddle.speed = canvas.height * 0.015;
+
 		ball.size = canvas.width * 0.02;
 		ball.x = ball.x * canvas.width / width;
 		ball.y = ball.y * canvas.height / height;
-		rightPaddle.speed = canvas.height * 0.0015;
-		leftPaddle.speed = canvas.height * 0.015;
 		ball.speed = {
 			x: canvas.width * 0.0004,
 			y: canvas.height * 0.0007,
@@ -90,18 +94,12 @@ export class GameService {
 		if (ball.x < 0) {
 			this.resetBall(ball, -1, canvas);
 			if (++rightPaddle.score === maxScore) {
-				this.setRightPaddle(rightPaddle, canvas);
-				this.setLeftPaddle(leftPaddle, canvas);
-				this.setBall(ball, canvas);
 				return 'rightWin';
 			}
 		}
 		else if (ball.x > canvas.width - ball.size) {
 			this.resetBall(ball, 1, canvas);
 			if (++leftPaddle.score === maxScore) {
-				this.setRightPaddle(rightPaddle, canvas);
-				this.setLeftPaddle(leftPaddle, canvas);
-				this.setBall(ball, canvas);
 				return 'leftWin';
 			}
 		}
@@ -134,44 +132,5 @@ export class GameService {
 			ball.direction.x = -ball.direction.x;
 			ball.x = rightPaddle.x - ball.size;
 		}
-	}
-	
-	setLeftPaddle(paddle: Paddle, canvas: GameCanvas) {
-		paddle.x = 
-		paddle.y = 
-		paddle.width = 
-		paddle.height = canvas.height * 0.15;
-		paddle.score = 0;
-		paddle.direction = 0; 
-		paddle.speed = canvas.height * 0.015;
-		return paddle;
-	}
-
-	setRightPaddle(paddle: Paddle, canvas: GameCanvas) {
-		paddle = {
-			x: canvas.width - canvas.width * 0.015 - canvas.width * 0.005,
-			y: canvas.height * 0.5 - (canvas.height * 0.15 / 2),
-			width: canvas.width * 0.005,
-			height: canvas.height * 0.15,
-			score: 0,
-			direction: 0,
-			speed: canvas.height * 0.015,
-		};
-	}
-
-	setBall(ball: Ball, canvas: GameCanvas) {
-		ball = {
-			x: canvas.width * 0.5,
-			y: canvas.height * 0.5,
-			size: canvas.width * 0.02,
-			direction: {
-				x: 2 * this.randomBallDirection(),
-				y: 2 * this.randomBallDirection(),
-			},
-			speed: {
-				x: canvas.width * 0.004,
-				y: canvas.height * 0.007,
-			},
-		};
 	}
 }

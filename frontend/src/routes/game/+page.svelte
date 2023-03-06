@@ -121,7 +121,6 @@
 		});
 		canvas.width = window.innerWidth * 0.7;
 		canvas.height = window.innerHeight * 0.8;
-
 	}
 	
 	function handleMouseMove(e: any) {
@@ -202,10 +201,10 @@
 	
 	function isReady() {
 		if (!gameStarted) {
-		socket = io('http://localhost:4000');
+			socket = io('http://localhost:4000');
 			gameStarted = true;
 			canvas.addEventListener('mousemove', handleMouseMove);	
-			socket.emit('ready', {width: canvas.width, height: canvas.height});
+			socket.emit('ready', {width: canvas.width, height: canvas.height, playerNumber});
 			startGame();
 		}
 	}
@@ -215,8 +214,9 @@
 	}
 
 	function createCanvas(nb: number) {
-		if (playerNumber)
+		if (!playerNumber) {
 			playerNumber = nb;
+		}
 		clearCanvas();
 		const WelcomeMsg = 'Click to start the game!';
 		ctx.fillText(

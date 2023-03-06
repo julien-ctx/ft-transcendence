@@ -5,8 +5,23 @@ import { Server } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { GameService } from './game.service';
 import { Ball, Paddle, GameCanvas } from './objects/objects';
+import { findLast } from 'lodash';
 
 let interval: any;
+const LEFT = 0;
+const RIGHT = 1;
+
+export class Client {
+	constructor(
+		socket: Socket,
+		gameGateway: GameGateway,
+		side: number,
+		playerNumber: number,
+		pair: Client | null,
+	) {}
+}
+
+let clients: Client[] = [];
 
 @WebSocketGateway({cors: true})
 export class GameGateway {
@@ -84,12 +99,25 @@ export class GameGateway {
 	}
 
 	@SubscribeMessage('ready')
-	startGame(client: any, canvas: {width, height}) {
-		this.gameCanvas.width = canvas.width;
-		this.gameCanvas.height = canvas.height;
+	startGame(client: any, data: {width, height, playerNumber}) {
+		this.gameCanvas.width = data.width;
+		this.gameCanvas.height = data.height;
 		this.setLeftPaddle();
 		this.setRightPaddle();
-		this.setBall();	
+		this.setBall();
+
+		if (data.playerNumber === 1) {
+			clients.push(new Client(client, this, LEFT, 1, null));
+		} else {
+			const last = findLast(clients, { playerNumber: 2 });
+			if (last && last.side === LEFT) {
+				let newClient = new Client(client, this, RIGHT, 2, last);
+				clients.push(newClient);	
+				last.pair = newClient;
+			} else {
+				clients.push(new Client(client, this, LEFT, 2, null));	
+			}
+		}
 
 		client.on('resize',  ({ width, height, winWidth, winHeight }) => {
 			this.game.handleResize(

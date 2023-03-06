@@ -5,8 +5,23 @@ import { Server } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { GameService } from './game.service';
 import { Ball, Paddle, GameCanvas } from './objects/objects';
+import { findLast } from 'lodash';
 
 let interval: any;
+const LEFT = 0;
+const RIGHT = 1;
+
+export class Client {
+	constructor(
+		socket: Socket,
+		gameGateway: GameGateway,
+		side: number,
+		playerNumber: number,
+		pair: Client | null,
+	) {}
+}
+
+let clients: Client[] = [];
 
 @WebSocketGateway({cors: true})
 export class GameGateway {
@@ -22,57 +37,88 @@ export class GameGateway {
 	private maxScore: number = 11;
 	@WebSocketServer() server: Server;
 
-	gameLoop(client: any, t: any) {
-		const winner = t.game.checkBallPosition(t.ball, t.leftPaddle, t.rightPaddle, t.maxScore, t.gameCanvas);
-		if (winner === 'leftWin' || winner === 'rightWin') {
-			client.emit(winner, {});
-			clearInterval(interval);
-			return;
-		}
-		client.emit('paddlesData', {leftPaddle: t.leftPaddle, rightPaddle: t.rightPaddle});
-		client.emit('ballData', {ball: t.ball});
-		client.emit('scoresData', {leftScore: t.leftPaddle.score, rightScore: t.rightPaddle.score});
-		t.game.updateBall(t.ball, t.gameCanvas, t.leftPaddle, t.rightPaddle);
-		t.game.movePaddles(t.leftPaddle, t.gameCanvas);
-		t.game.updateBot(t.ball, t.rightPaddle, t.gameCanvas);
+	setLeftPaddle() {
+		this.leftPaddle = {
+			x: this.gameCanvas.width * 0.015,
+			y: this.gameCanvas.height * 0.5 - (this.gameCanvas.height * 0.15 / 2),
+			width: this.gameCanvas.width * 0.005,
+			height: this.gameCanvas.height * 0.15,
+			score: 0,
+			direction: 0,
+			speed: this.gameCanvas.height * 0.0015,
+		};
 	}
 
-	@SubscribeMessage('ready')
-	startGame(client: any, canvas: {width, height}) {
-		this.gameCanvas.width = canvas.width;
-		this.gameCanvas.height = canvas.height;
-		this.leftPaddle = {
-			x: canvas.width * 0.015,
-			y: canvas.height * 0.5 - (canvas.height * 0.15 / 2),
-			width: canvas.width * 0.005,
-			height: canvas.height * 0.15,
-			score: 0,
-			direction: 0,
-			speed: canvas.height * 0.0015,
-		};
+	setRightPaddle() {
 		this.rightPaddle = {
-			x: canvas.width - canvas.width * 0.015 - canvas.width * 0.005,
-			y: canvas.height * 0.5 - (canvas.height * 0.15 / 2),
-			width: canvas.width * 0.005,
-			height: canvas.height * 0.15,
+			x: this.gameCanvas.width - this.gameCanvas.width * 0.015 - this.gameCanvas.width * 0.005,
+			y: this.gameCanvas.height * 0.5 - (this.gameCanvas.height * 0.15 / 2),
+			width: this.gameCanvas.width * 0.005,
+			height: this.gameCanvas.height * 0.15,
 			score: 0,
 			direction: 0,
-			speed: canvas.height * 0.0015,
+			speed: this.gameCanvas.height * 0.0015,
 		};
+	}
+
+	setBall() {
 		this.ball = {
-			x: canvas.width * 0.5,
-			y: canvas.height * 0.5,
-			size: canvas.width * 0.02,
+			x: this.gameCanvas.width * 0.5,
+			y: this.gameCanvas.height * 0.5,
+			size: this.gameCanvas.width * 0.02,
 			direction: {
 				x: 2 * this.game.randomBallDirection(),
 				y: 2 * this.game.randomBallDirection(),
 			},
 			speed: {
-				x: canvas.width * 0.004,
-				y: canvas.height * 0.007,
+				x: this.gameCanvas.width * 0.004,
+				y: this.gameCanvas.height * 0.007,
 			},
 		};
-		
+	}
+
+	gameLoop(client: any, instance: any) {
+		const winner = instance.game.checkBallPosition(
+			instance.ball,
+			instance.leftPaddle,
+			instance.rightPaddle,
+			instance.maxScore,
+			instance.gameCanvas
+		);
+		if (winner === 'leftWin' || winner === 'rightWin') {
+			client.emit(winner, {});
+			clearInterval(interval);
+			return;
+		}
+		client.emit('paddlesData', {leftPaddle: instance.leftPaddle, rightPaddle: instance.rightPaddle});
+		client.emit('ballData', {ball: instance.ball});
+		client.emit('scoresData', {leftScore: instance.leftPaddle.score, rightScore: instance.rightPaddle.score});
+		instance.game.updateBall(instance.ball, instance.gameCanvas, instance.leftPaddle, instance.rightPaddle);
+		instance.game.movePaddles(instance.leftPaddle, instance.gameCanvas);
+		instance.game.updateBot(instance.ball, instance.rightPaddle, instance.gameCanvas);
+	}
+
+	@SubscribeMessage('ready')
+	startGame(client: any, data: {width, height, playerNumber}) {
+		this.gameCanvas.width = data.width;
+		this.gameCanvas.height = data.height;
+		this.setLeftPaddle();
+		this.setRightPaddle();
+		this.setBall();
+
+		if (data.playerNumber === 1) {
+			clients.push(new Client(client, this, LEFT, 1, null));
+		} else {
+			const last = findLast(clients, { playerNumber: 2 });
+			if (last && last.side === LEFT) {
+				let newClient = new Client(client, this, RIGHT, 2, last);
+				clients.push(newClient);	
+				last.pair = newClient;
+			} else {
+				clients.push(new Client(client, this, LEFT, 2, null));	
+			}
+		}
+
 		client.on('resize',  ({ width, height, winWidth, winHeight }) => {
 			this.game.handleResize(
 				this.gameCanvas,
@@ -107,7 +153,8 @@ export class GameGateway {
 			leftPaddle: this.leftPaddle,
 			rightPaddle: this.rightPaddle,
 			ball: this.ball,
-		})
+		});
+
 		interval = setInterval(this.gameLoop, 1, client, this);
 	}
 };

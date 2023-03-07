@@ -13,6 +13,7 @@
     import Svg2faEnable from "../../modules/htmlComponent/svg2faEnable.svelte";
     import Svg2faDisabled from "../../modules/htmlComponent/svg2faDisabled.svelte";
     import TabUser from "../../modules/htmlComponent/tabUser.svelte";
+    import { API_URL } from "$lib/env";
 
 	let fileInput : any;
 	let isEditLogin : boolean = false;
@@ -71,7 +72,7 @@
 	}
 
 	async function enbaledTwoFA() {
-		await axios.post("http://localhost:4000/auth/2fa/enable", "" ,{
+		await axios.post(`${API_URL}/auth/2fa/enable`, "" ,{
 			headers : {
 				Authorization : `Bearer ${getJwt()}`
 			}
@@ -82,7 +83,7 @@
 	}
 
 	async function disabledTwoFA() {
-		await axios.post("http://localhost:4000/auth/2fa/disable", {user : myProfile} ,{
+		await axios.post(`${API_URL}/auth/2fa/disable`, {user : myProfile} ,{
 			headers : {
 				Authorization : `Bearer ${getJwt()}`
 			}

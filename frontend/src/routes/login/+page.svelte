@@ -7,6 +7,7 @@
     import { myProfileDataStore } from "$lib/store/user";
     import { Button, Modal, Heading, Input, Helper} from "flowbite-svelte";
     import { inputClass, buttonClass } from '$lib/classComponent'
+    import { API_URL } from "$lib/env";
 
 	let qrCode : string;
 	let userIntra : any;
@@ -43,7 +44,7 @@
 						last_name: res.data.last_name,
 						img_link: res.data.image.link,
 					};
-					await axios.post("http://localhost:4000/auth/signin", {
+					await axios.post(`${API_URL}/auth/signin`, {
 						id: res.data.id,
 						email: res.data.email,
 						login: res.data.login,
@@ -52,11 +53,11 @@
 						img_link: res.data.image.link,
 					})
 					.then(async (resAccessToken) => {
-						await axios.get(`http://localhost:4000/auth/one/${userIntra.id}`)
+						await axios.get(`${API_URL}/auth/one/${userIntra.id}`)
 						.then(async (res) => {
 							currentUser = res.data;
 							if (currentUser.twoFaEnabled) {
-								await axios.post("http://localhost:4000/auth/2fa/getQrCode", {user : currentUser})
+								await axios.post(`${API_URL}/auth/2fa/getQrCode`, {user : currentUser})
 								.then((res) => {
 									qrCode = res.data;
 									qrCodeModal = true;
@@ -64,7 +65,7 @@
 							} else {
 								isSend = true;
 								setJwt(resAccessToken.data.access_token);
-								io('http://localhost:4000', {
+								io(API_URL, {
 									path: "/event_user",
 									query : { token : getJwt()}
 								});
@@ -82,14 +83,14 @@
 	})
 
 	async function submit2fa() {
-		await axios.post("http://localhost:4000/auth/2fa/login", {
+		await axios.post(`${API_URL}/auth/2fa/login`, {
 			code2fa : code2fa,
 			dto : userIntra,
 			user : currentUser
 		})
 		.then(async (res) => {
 			setJwt(res.data.access_token);
-			io('http://localhost:4000', {
+			io(API_URL, {
 				path: "/event_user",
 				query : { token : getJwt()}
 			});

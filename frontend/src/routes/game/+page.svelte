@@ -5,6 +5,7 @@
     import { removeJwt } from "$lib/jwtUtils";
 	import { Button, ButtonGroup } from 'flowbite-svelte';
 	import io, { Socket } from 'socket.io-client';
+    import { API_URL } from "$lib/env";
 
 	const TEXT_COLOR: string = "#dcd3bc";
 	const OBJ_COLOR: string = "#dcd3bc";
@@ -201,7 +202,7 @@
 	
 	function isReady() {
 		if (!gameStarted) {
-			socket = io('http://localhost:4000');
+			socket = io(API_URL);
 			gameStarted = true;
 			canvas.addEventListener('mousemove', handleMouseMove);	
 			socket.emit('ready', {width: canvas.width, height: canvas.height, playerNumber});

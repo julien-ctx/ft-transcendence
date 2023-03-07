@@ -11,6 +11,7 @@
     import { GetAllUsers } from '$lib/userUtils';
     import { io } from 'socket.io-client';
     import Notifications from '../modules/notifications.svelte';
+    import { API_URL } from '$lib/env';
 	
 
 	let myProfile : any;
@@ -50,7 +51,7 @@
 			usersDataStore.set(res.data);
 		})
     
-		let socketUser = io('http://localhost:4000', {
+		let socketUser = io(API_URL, {
 			path: "/event_user",
 			query : { token : getJwt()}
 		});
@@ -78,7 +79,7 @@
 
 		socketUserStore.set(socketUser);
 		
-		let socketFriend = io('http://localhost:4000', {
+		let socketFriend = io(API_URL, {
 			path: "/notif_friend",
 			query : { token : getJwt()}
 		});

@@ -6,6 +6,7 @@
 	import { getJwt } from '$lib/jwtUtils';
     import { myProfileDataStore, usersDataStore } from "$lib/store/user";
 	import { io } from 'socket.io-client';
+    import { API_URL } from "$lib/env";
 
 	let socket : any;
 	// Messagerie : //
@@ -48,7 +49,7 @@
 	onMount(async () => {
 		let token : string = getJwt();
 		try {
-			await axios.get('http://localhost:4000/Chat/getRooms', {
+			await axios.get(`${API_URL}/Chat/getRooms`, {
 				headers: {
 					Authorization: `Bearer ${token}`
 				}
@@ -59,7 +60,7 @@
 		} catch (error) {
 			console.log(error);
 		}
-		socket = io('http://localhost:4000', {
+		socket = io(API_URL, {
 			path : '/chat',
 			query : {
 				token : token,

@@ -8,20 +8,6 @@ import { Ball, Paddle, GameCanvas } from './objects/objects';
 import { findLast } from 'lodash';
 
 let interval: any;
-const LEFT = 0;
-const RIGHT = 1;
-
-export class Client {
-	constructor(
-		socket: Socket,
-		gameGateway: GameGateway,
-		side: number,
-		playerNumber: number,
-		pair: Client | null,
-	) {}
-}
-
-let clients: Client[] = [];
 
 @WebSocketGateway({cors: true})
 export class GameGateway {
@@ -35,6 +21,7 @@ export class GameGateway {
 	) {}
 
 	private maxScore: number = 11;
+	
 	@WebSocketServer() server: Server;
 
 	setLeftPaddle() {
@@ -99,27 +86,14 @@ export class GameGateway {
 	}
 
 	@SubscribeMessage('ready')
-	startGame(client: any, data: {width, height, playerNumber}) {
+	startGame(socket: any, data: {width, height, playerNumber}) {
 		this.gameCanvas.width = data.width;
 		this.gameCanvas.height = data.height;
 		this.setLeftPaddle();
 		this.setRightPaddle();
 		this.setBall();
 
-		if (data.playerNumber === 1) {
-			clients.push(new Client(client, this, LEFT, 1, null));
-		} else {
-			const last = findLast(clients, { playerNumber: 2 });
-			if (last && last.side === LEFT) {
-				let newClient = new Client(client, this, RIGHT, 2, last);
-				clients.push(newClient);	
-				last.pair = newClient;
-			} else {
-				clients.push(new Client(client, this, LEFT, 2, null));	
-			}
-		}
-
-		client.on('resize',  ({ width, height }) => {
+		socket.on('resize',  ({ width, height }) => {
 			this.game.handleResize(
 				this.gameCanvas,
 				width,
@@ -129,19 +103,19 @@ export class GameGateway {
 				this.ball,
 			);
 		});
-		client.on('keydown', ({ move }) => {
+		socket.on('keydown', ({ move }) => {
 			if (move === 'ArrowUp') {
 				this.leftPaddle.direction = -1;
 			} else if (move === 'ArrowDown') {
 				this.leftPaddle.direction = 1;
 			}
 		});
-		client.on('keyup', ({ move }) => {
+		socket.on('keyup', ({ move }) => {
 			if (move === 'ArrowUp' || move === 'ArrowDown') {
 				this.leftPaddle.direction = 0;
 			}
 		});
-		client.on('mousemove', ({ mouseY }) => {
+		socket.on('mousemove', ({ mouseY }) => {
 			if (mouseY < 0) {
 				mouseY = 0;
 			} else if (mouseY > this.gameCanvas.height - (this.leftPaddle.height)) {
@@ -149,12 +123,12 @@ export class GameGateway {
 			}
 			this.leftPaddle.y = mouseY;
 		});
-		client.emit('initData', {
+		socket.emit('initData', {
 			leftPaddle: this.leftPaddle,
 			rightPaddle: this.rightPaddle,
 			ball: this.ball,
 		});
 
-		interval = setInterval(this.gameLoop, 1, client, this);
+		interval = setInterval(this.gameLoop, 1, socket, this);
 	}
 };

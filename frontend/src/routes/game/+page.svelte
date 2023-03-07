@@ -3,7 +3,6 @@
 	import { AuthGuard } from "$lib/store/AuthGuard";
     import { goto } from "$app/navigation";
     import { removeJwt } from "$lib/jwtUtils";
-	import { Button, ButtonGroup } from 'flowbite-svelte';
 	import io, { Socket } from 'socket.io-client';
     import { API_URL } from "$lib/env";
 
@@ -46,7 +45,7 @@
 	
 	let playerNumber: number = 0;
 	
-	let socket: Socket;
+	let socket: Socket = io(API_URL);
 
 	onMount(async () => {
 		AuthGuard()
@@ -147,7 +146,7 @@
 
 	function gameLoop() {
 		if (gameStarted && dataInit) {
-			ctx.clearRect(0, 0, canvas.width, canvas.height);
+			clearCanvas();
 			drawPaddles(gameLeftPaddle, gameRightPaddle);
 			drawSep(gameBall);	
 			drawScores(gameLeftPaddle.score, gameRightPaddle.score);
@@ -191,9 +190,10 @@
 		gameLoop();
 	}
 	
-	function isReady() {
+	async function isReady() {
 		if (!gameStarted) {
 			socket = io(API_URL);
+			await drawCounter();
 			gameStarted = true;
 			canvas.addEventListener('mousemove', handleMouseMove);	
 			socket.emit('ready', {width: canvas.width, height: canvas.height, playerNumber});

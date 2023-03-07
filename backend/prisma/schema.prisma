@@ -69,7 +69,7 @@ model RoomToUser {
 	owner Boolean @default(false)
 	admin Boolean @default(false)
 	Muted Boolean @default(false)
-	EndMute DateTime 
+	EndMute DateTime @default(now())
 }
 
 

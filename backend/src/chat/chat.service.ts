@@ -154,9 +154,7 @@ export class ChatService {
 		const members = relation.filter((relat) => relat.user.id_user !== id);
 		console.log(members);
 		const membersObj = members.map((member) => {
-			return {
-				member : member.user,
-			}
+			return member.user;
 		});
 		console.log(membersObj);
 		return membersObj;

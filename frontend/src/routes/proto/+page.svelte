@@ -5,30 +5,36 @@
 	import axios from 'axios';
 	import { getJwt } from '$lib/jwtUtils';
     import { myProfileDataStore, usersDataStore } from "$lib/store/user";
-	import { io } from 'socket.io-client';
+    import { io } from 'socket.io-client';
+	import Channels from './roomStyle.svelte';
+	import Trash from '../../modules/htmlComponent/svgTrash.svelte';
+    import RoomEdit from "../../modules/roomEdit.svelte";
+	import Close from '../../modules/htmlComponent/svgClose.svelte';
+    import Members from '../../modules/admin.svelte';
 
-	let socket : any;
-	// Messagerie : //
-	let show : boolean = false;
-	let toShow : boolean = false;
-	let rooms : any = [];
-	let allUsers : any = [];
-	let myProfile : any;
+    let socket : any;
+    // Messagerie : //
+    let show : boolean = false;
+    let toShow : boolean = false;
+    let rooms : any = [];
+    let allUsers : any = [];
+    let myProfile : any;
+	let openedRoom : any = '';
+	let chat : boolean = false;
 
-
-	// Modal Create : //
-	let roomName = '';
-	let roomDesc = '';
-	let roomPass = '';
-	let roomCPass = '';
-	let modalCreate = false;
-	let states = [
-		{value:"Protected", name: "Protected"},
-		{value:"Private", name: "Private"},
-		{value:"Public", name: "Public"},
-		]
-	let err : any = {name : "", desc : "", status : "", pass : "", cpass : "", already : ""};	
-	let status : string = '';
+    // Modal Create : //
+    let roomName = '';
+    let roomDesc = '';
+    let roomPass = '';
+    let roomCPass = '';
+    let modalCreate = false;
+    let states = [
+        {value:"Protected", name: "Protected"},
+        {value:"Private", name: "Private"},
+        {value:"Public", name: "Public"},
+        ]
+    let err : any = {name : "", desc : "", status : "", pass : "", cpass : "", already : ""};   
+    let status : string = '';
 
 
 	// Modal Join : //
@@ -37,6 +43,15 @@
 	let JoinPass = '';
 	let needPass = '';
 
+	// Modal Admin : //
+	let modalAdmin = false;
+	let admin = '';
+    let adminSelect = '';
+    let memberSelect = '';
+
+    usersDataStore.subscribe((value) => {
+        allUsers = value;
+    });
 	usersDataStore.subscribe((value) => {
 		allUsers = value;
 	});
@@ -45,26 +60,49 @@
 		myProfile = value;
 	});
 
-	onMount(async () => {
-		let token : string = getJwt();
-		try {
-			await axios.get('http://localhost:4000/Chat/getRooms', {
-				headers: {
-					Authorization: `Bearer ${token}`
-				}
-			}).then((res : any) => {
-				rooms = res.data;
-				console.log(rooms);
-			});
-		} catch (error) {
-			console.log(error);
-		}
-		socket = io('http://localhost:4000', {
-			path : '/chat',
-			query : {
-				token : token,
-			}
+    onMount(async () => {
+        let token : string = getJwt();
+        try {
+            await axios.get('http://localhost:4000/Chat/getRooms', {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            }).then((res : any) => {
+                rooms = res.data;
+                console.log(rooms);
+            });
+        } catch (error) {
+            console.log(error);
+        }
+
+        try {
+
+        } catch (error) {
+            console.log(error);
+        }
+
+        socket = io('http://localhost:4000', {
+            path : '/chat',
+            query : {
+                token : token,
+            }
+        });
+
+		socket.on("successCreate", () => {
+				close();
+		})
+
+		socket.on('rooms', (receivedRoom : string) => {
+			rooms = [...rooms, receivedRoom];
 		});
+
+        socket.on('errors', (receivedErr : any) => {
+            err = {...err, ...receivedErr};
+        });
+
+		socket.on("needPass", () => {
+			needPass = 'yes';
+		})
 
 		socket.on("successCreate", () => {
 				close();
@@ -107,10 +145,10 @@
 
 	function close() {
 		modalCreate = false;
-		// modalJoin = false;
-		// JoinName = '';
-		// JoinPass = '';
-		// needPass = '';
+		modalJoin = false;
+		JoinName = '';
+		JoinPass = '';
+		needPass = '';
 		roomName = '';
 		roomDesc = '';
 		roomPass = '';
@@ -119,15 +157,15 @@
 		err = {name : "", desc : "", status : "", pass : "", cpass : "", already : ""};
 	}
 
-	function openCreate() {
-		modalCreate = true;
-		err = {name : "", desc : "", status : "", pass : "", cpass : "", already : ""};
-		roomName = '';
-		status = '';
-		roomDesc = '';
-		roomPass = '';
-		roomCPass = '';
-	}
+    function openCreate() {
+        modalCreate = true;
+        err = {name : "", desc : "", status : "", pass : "", cpass : "", already : ""};
+        roomName = '';
+        status = '';
+        roomDesc = '';
+        roomPass = '';
+        roomCPass = '';
+    }
 
 	function openJoin() {
 		modalJoin = true;
@@ -136,14 +174,21 @@
 		needPass = '';
 	}
 
+    function joinRoom() {
+        socket.emit('joinRoom', {
+            roomName: JoinName,
+            roomPass: JoinPass
+        });
+    }
+
 </script>
 
 <!-- <div class="relative h-1/2"> -->
-	{#if show}
-		<div class="absolute bottom-0 right-0 w-64 mr-4 rounded-xl h-2/3 border border-secondary">
-			<div class="flex flex-row justify-center gap-4 text-2xl pl-4">
-				<button on:click={() => changeAppearC()}>
-					Channels
+    {#if show}
+		<!-- {#if openedRoom !== ''}
+			<div class="flex justify-between bg-white w-26 absolute bottom-0 right-0 w-64 mr-4 rounded-xl">
+				<button on:click={() => chat = true}>
+					<span>{openedRoom}</span> 
 				</button>
 				<button on:click={() => changeAppearU()}>
 					Friends
@@ -152,16 +197,27 @@
 					<Arrow />
 				</button>
 			</div>
-			<br>
-			<div class="overflow-auto h-4/5">
-				{#if toShow === false}
-					<div class="flex flex-col gap-4 text-left">
-						{#each rooms as room}
-							<div class="flex w-full bg-white rounded text-2xl pl-4">
-								<div>
-									<h1>{room.name.length > 10 ? room.name.substring(0, 10) + "..." : room.name}</h1>
-								</div>
-							</div>
+		{/if} -->
+        <div class="absolute bottom-0 right-0 w-64 mr-4 rounded-xl h-2/3 border border-secondary">
+            <div class="flex flex-row justify-center gap-4 text-2xl pl-4">
+                <button on:click={() => changeAppearC()}>
+                    Channels
+                </button>
+                <button on:click={() => changeAppearU()}>
+                    Friends
+                </button>
+                <button on:click={() => show = !show}>
+                    <Arrow />
+                </button>
+            </div>
+            <br>
+            <div class="overflow-auto h-4/5">
+                {#if toShow === false}
+                    <div class="flex flex-col gap-4">
+                        {#each rooms as room}
+							<button on:click={() => {openedRoom = room.name; chat = true; show = false}}>
+								<Channels room={room} socket={socket} bind:admin={admin} bind:modalAdmin={modalAdmin}/>
+							</button>
 						{/each}
 					</div>
 				{:else}
@@ -218,20 +274,28 @@
 </Modal>
 
 <Modal bind:open={modalJoin} title="Join a room" color="third">
-	<FloatingLabelInput style="filled" id="floating_filled" name="Room Name" type="text" label="Room Name" bind:value={JoinName}/>
-	{#if err.already !== ''}
-		<p class="text-red-500 text-xs">{err.already}</p>
-	{:else if err.name !== ''}
-		<!-- {#if err.name !== ''} -->
-			<p class="text-red-500 text-xs">{err.name}</p>
-		<!-- {/if} -->
-	{/if}
-	{#if needPass === "yes"}
-		<FloatingLabelInput style="filled" id="floating_filled" name="Room Name" type="password" label="Password" bind:value={JoinPass}/>
-		{#if err.pass !== ''}
-			<p class="text-red-500 text-xs">{err.pass}</p>
-		{/if}
-	{/if}
+    <FloatingLabelInput style="filled" id="floating_filled" name="Room Name" type="text" label="Room Name" bind:value={JoinName}/>
+    {#if err.already !== ''}
+        <p class="text-red-500 text-xs">{err.already}</p>
+    {:else if err.name !== ''}
+        <!-- {#if err.name !== ''} -->
+            <p class="text-red-500 text-xs">{err.name}</p>
+        <!-- {/if} -->
+    {/if}
+    {#if needPass === "yes"}
+        <FloatingLabelInput style="filled" id="floating_filled" name="Room Name" type="password" label="Password" bind:value={JoinPass}/>
+        {#if err.pass !== ''}
+            <p class="text-red-500 text-xs">{err.pass}</p>
+        {/if}
+    {/if}
+    <div class="flex justify-center gap-8">
+        <Button style="" shadow="green" gradient color="green" on:click={() => joinRoom()}>Join</Button>
+        <Button style="" shadow="green" gradient color="green" on:click={() => close()}>Close</Button>
+    </div>
+</Modal>
+
+<Modal bind:open={modalAdmin} title="Admin Panel" color="third">
+    <Members room={admin} socket={socket} />
 	<div class="flex justify-center gap-8">
 		<!-- <Button style="" shadow="green" gradient color="green" on:click={() => joinRoom()}>Join</Button> -->
 		<Button style="" shadow="green" gradient color="green" on:click={() => close()}>Close</Button>

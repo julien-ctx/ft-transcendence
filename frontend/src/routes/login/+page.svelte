@@ -7,6 +7,7 @@
     import { myProfileDataStore } from "$lib/store/user";
     import { Button, Modal, Heading, Input, Helper} from "flowbite-svelte";
     import { inputClass, buttonClass } from '$lib/classComponent'
+    import { API_URL } from "$lib/env";
 
 	let qrCode : string;
 	let userIntra : any;
@@ -16,20 +17,6 @@
 	let isSend : boolean = false;
 	let color : any = "base"
 
-	const imgCarousel = [
-		{
-			id: 0,
-			imgurl : "image-1.png"
-		},
-		{
-			id: 1,
-			imgurl : "image-2.png"
-		},
-		{
-			id: 2,
-			imgurl : "image-3.png"
-		}
-	]
 	onMount(async () => {		
 		const urlParams = new URLSearchParams(window.location.search);
 		const hasCode = urlParams.has("code");
@@ -57,7 +44,7 @@
 						last_name: res.data.last_name,
 						img_link: res.data.image.link,
 					};
-					await axios.post("http://localhost:4000/auth/signin", {
+					await axios.post(`${API_URL}/auth/signin`, {
 						id: res.data.id,
 						email: res.data.email,
 						login: res.data.login,
@@ -66,11 +53,11 @@
 						img_link: res.data.image.link,
 					})
 					.then(async (resAccessToken) => {
-						await axios.get(`http://localhost:4000/auth/one/${userIntra.id}`)
+						await axios.get(`${API_URL}/auth/one/${userIntra.id}`)
 						.then(async (res) => {
 							currentUser = res.data;
 							if (currentUser.twoFaEnabled) {
-								await axios.post("http://localhost:4000/auth/2fa/getQrCode", {user : currentUser})
+								await axios.post(`${API_URL}/auth/2fa/getQrCode`, {user : currentUser})
 								.then((res) => {
 									qrCode = res.data;
 									qrCodeModal = true;
@@ -78,11 +65,10 @@
 							} else {
 								isSend = true;
 								setJwt(resAccessToken.data.access_token);
-								io('http://localhost:4000', {
+								io(API_URL, {
 									path: "/event_user",
 									query : { token : getJwt()}
 								});
-								console.log("curent", currentUser);
 								myProfileDataStore.set(currentUser);
 								goto("/");
 							}
@@ -97,14 +83,14 @@
 	})
 
 	async function submit2fa() {
-		await axios.post("http://localhost:4000/auth/2fa/login", {
+		await axios.post(`${API_URL}/auth/2fa/login`, {
 			code2fa : code2fa,
 			dto : userIntra,
 			user : currentUser
 		})
 		.then(async (res) => {
 			setJwt(res.data.access_token);
-			io('http://localhost:4000', {
+			io(API_URL, {
 				path: "/event_user",
 				query : { token : getJwt()}
 			});
@@ -113,38 +99,45 @@
 			goto("/");
 		})
 		.catch((err) => {
-			console.log(err);
+			setTimeout(() => {
+				code2fa = "";
+			}, 1000)
 			color = "red";
 		})
+	}
+
+	function handleChangeInput2fa() {
+		if (code2fa.length == 6)
+			submit2fa();
 	}
 </script>
 <div class="h-full flex flex-col justify-center items-center gap-40">
 	{#if !qrCodeModal && !isSend}
 		<Heading tag="h1" color="text-third" class="text-center">TRANSCENDENCE</Heading>
-		<Button class={buttonClass} href="https://api.intra.42.fr/oauth/authorize?client_id=u-s4t2ud-30852b8b9a7314be3ebf1c95396eaf181b1395e1320bd92b2dc092f4ffbb8aa6&redirect_uri=http%3A%2F%2Flocalhost%3A5173%2Flogin&response_type=code">
-		<span>Login</span>
-		<svg aria-hidden="true" class="ml-3 w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
-		</Button>
+		<a class="a-login" href="https://api.intra.42.fr/oauth/authorize?client_id=u-s4t2ud-30852b8b9a7314be3ebf1c95396eaf181b1395e1320bd92b2dc092f4ffbb8aa6&redirect_uri=http%3A%2F%2Flocalhost%3A5173%2Flogin&response_type=code">
+			<span>Login</span>
+			<svg aria-hidden="true" class="ml-3 w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+		</a>
 	{/if}
-	<Modal bind:open={qrCodeModal} size="xs" autoclose={false} class="w-full !bg-third" permanent={true} backdropClasses="bg-primary">
-		<div class="flex flex-col justify-center gap-5">
-			<div>
-				<img src={qrCode} alt="" class="mx-auto">
-			</div>	
-			<div class="flex flex-col justify-center items-center gap-5">
-				<div>
-					<Helper helperClass="mb-2 font-medium h-6" color="red">
-					{#if color == "red"}
-							Invalid code !
-					{/if}
-					</Helper>
-					<Input type="text" id="inputOne" bind:value={code2fa} defaultClass={inputClass} color={color}/>
-				</div>
-				<Button on:click={submit2fa} class={buttonClass}>
-					<span>Login</span>
-					<svg aria-hidden="true" class="ml-3 w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
-				</Button>
-			</div>
-		</div>
-	  </Modal>
 </div>
+<Modal bind:open={qrCodeModal} size="xs" autoclose={false} class="w-full !bg-primary modal-2fa" permanent={true} backdropClasses="bg-primary">
+	<div class="flex flex-col justify-center gap-5">
+		<div>
+			<img src={qrCode} alt="" class="mx-auto">
+		</div>	
+		<div class="flex flex-col justify-center items-center gap-5">
+			<div>
+				<Helper helperClass="mb-2 font-medium h-6 text-center" color="red">
+				{#if color == "red"}
+						Invalid code !
+				{/if}
+				</Helper>
+				<input type="text" id="inputOne" class="focus:outline-none focus:ring-0" bind:value={code2fa} on:input={handleChangeInput2fa}/>
+			</div>
+			<!-- <button on:click={submit2fa} class="submit-2fa">
+				<span>Login</span>
+				<svg aria-hidden="true" class="ml-3 w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+			</button> -->
+		</div>
+	</div>
+</Modal>

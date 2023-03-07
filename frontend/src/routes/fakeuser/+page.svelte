@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { API_URL } from "$lib/env";
     import { getJwt } from "$lib/jwtUtils";
     import axios from "axios";
     import { Button } from "flowbite-svelte";
@@ -137,7 +138,7 @@
 	]
 	async function handleClick() {
 		console.log(fakeUser);
-		await axios.post("http://localhost:4000/users/fakeUser", fakeUser, {headers : { Authorization : `Bearer ${getJwt()}` }})
+		await axios.post(`${API_URL}/users/fakeUser`, fakeUser, {headers : { Authorization : `Bearer ${getJwt()}` }})
 		.then((res) => {
 			console.log(res);
 			

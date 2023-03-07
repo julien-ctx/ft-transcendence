@@ -12,6 +12,7 @@
 	import Edit from '../../modules/roomEdit.svelte';
 	// import { socketRoomStore } from '$lib/store/socket';
 	import Admin  from '../../modules/admin.svelte';
+    import { API_URL } from '$lib/env';
 
 	let isLogged = false;
 	let socket : any;
@@ -43,7 +44,7 @@
 
 		let token : string = getJwt();
 
-		socket = io('http://localhost:4000', {
+		socket = io(API_URL, {
 			path : '/chat',
 			query : {
 				token : token,
@@ -51,7 +52,7 @@
 		});
 
 		try {
-			await axios.get('http://localhost:4000/Chat/getRooms', {
+			await axios.get(`${API_URL}/Chat/getRooms`, {
 				headers: {
 					Authorization: `Bearer ${token}`
 				}
@@ -63,7 +64,7 @@
 			console.log(error);
 		}
 		try {
-			await axios.get('http://localhost:4000/Chat/getAll', {
+			await axios.get(`${API_URL}/Chat/getAll`, {
 				headers : {
 					Authorization: `Bearer ${token}`
 				}

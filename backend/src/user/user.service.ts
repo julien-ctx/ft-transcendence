@@ -16,7 +16,7 @@ export class UserService {
 			},
 			include : {
 				notification: true,
-				RoomToUser: true,
+				RoomToUser: true
 			}
 		});
 	}
@@ -25,6 +25,10 @@ export class UserService {
 		return await this.prisma.user.findUnique({
 			where : {
 				login
+			},
+			include : {
+				notification: true,
+				RoomToUser: true
 			}
 		});
 	}
@@ -36,7 +40,7 @@ export class UserService {
 			},
 			include : {
 				notification: true,
-				RoomToUser: true,
+				RoomToUser: true
 			}
 		});
 	}
@@ -69,7 +73,7 @@ export class UserService {
 		return await this.prisma.user.findMany({
 			include : {
 				notification: true,
-				RoomToUser: true,
+				RoomToUser: true
 			}
 		});
 	}

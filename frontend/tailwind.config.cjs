@@ -22,5 +22,4 @@ const config = {
 	],
 	darkMode: 'class',
   };
-  
   module.exports = config;

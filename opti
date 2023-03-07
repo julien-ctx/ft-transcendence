@@ -8,4 +8,5 @@ palier exp
 5 = 4800
 
 	
-game: fix resize
+game:	fix resize speed
+		text resize

@@ -3,6 +3,7 @@
 	import axios from "axios";
 	import { Modal, Select, Button, Chevron, Dropdown, DropdownItem } from 'flowbite-svelte';
 	import { getJwt } from "$lib/jwtUtils";
+	import { API_URL } from "$lib/env";
 
 	export let socket;
 	// export let open : boolean;
@@ -12,7 +13,7 @@
 	onMount(async () => {
 		try {
 			console.log(room);
-			await axios.get(`http://localhost:4000/Chat/getMembers/${room}`, {
+			await axios.get(`${API_URL}/Chat/getMembers/${room}`, {
 				headers: {
 					Authorization: `Bearer ${getJwt()}`,
 				},

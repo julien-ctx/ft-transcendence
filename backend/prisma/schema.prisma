@@ -32,6 +32,7 @@ model User {
 	twoFaSecret String @default("")
 	twoFaEnabled Boolean @default(false)
 	twoFaAuth Boolean @default(false)
+	banned Banned[]
 }
 
 model Room {
@@ -41,8 +42,21 @@ model Room {
 	status      String
 	password    String @default("")
 
+	// banned_id Int[]
+	banned Banned[]
+
 	RoomToUser RoomToUser[]
 	Message Message[]
+}
+
+model Banned {
+	id Int @id @default(autoincrement())
+	room Room @relation(fields: [id_room], references: [id])
+	id_room Int
+	user User @relation(fields: [id_user], references: [id_user])
+	id_user Int
+
+	endBan DateTime
 }
 
 model RoomToUser {
@@ -54,6 +68,8 @@ model RoomToUser {
 
 	owner Boolean @default(false)
 	admin Boolean @default(false)
+	Muted Boolean @default(false)
+	EndMute DateTime 
 }
 
 

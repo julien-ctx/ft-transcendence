@@ -6,7 +6,7 @@
 
 </script> 
 
-<div class="mx-auto h-full">
+<div class="mx-auto">
 	{#if $page.url.pathname != "/login"}
 		<Header />
 	{/if}

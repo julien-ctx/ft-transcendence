@@ -52,7 +52,7 @@
 	}
 </script>
 
-<Modal title={title} bind:open={modalEdit} {color}>
+<!-- <Modal title={title} bind:open={modalEdit} {color}> -->
 	<div>
 		{#if succesFirst === false}
 			<div class="flex justify-center">
@@ -105,4 +105,4 @@
 			</div>
 		{/if}
 	</div>
-</Modal>
+<!-- </Modal> -->

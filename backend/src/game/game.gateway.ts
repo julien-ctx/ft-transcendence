@@ -119,11 +119,11 @@ export class GameGateway {
 			}
 		}
 
-		client.on('resize',  ({ width, height, winWidth, winHeight }) => {
+		client.on('resize',  ({ width, height }) => {
 			this.game.handleResize(
 				this.gameCanvas,
-				winWidth,
-				winHeight,
+				width,
+				height,
 				this.leftPaddle,
 				this.rightPaddle,
 				this.ball,

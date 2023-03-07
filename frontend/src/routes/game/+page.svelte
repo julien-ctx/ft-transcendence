@@ -108,10 +108,8 @@
 
 	function handleResize() {
 		socket.emit('resize', {
-			width: canvas.width,
-			height: canvas.height,
-			winWidth: window.innerWidth,
-			winHeight: window.innerHeight,
+			width: window.innerWidth,
+			height: window.innerHeight,
 		});
 		canvas.width = window.innerWidth * 0.7;
 		canvas.height = window.innerHeight * 0.8;

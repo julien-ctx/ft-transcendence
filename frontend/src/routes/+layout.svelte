@@ -6,11 +6,11 @@
 
 </script> 
 
-<div class="mx-auto h-full">
+<div class="mx-auto">
 	{#if $page.url.pathname != "/login"}
 		<Header />
 	{/if}
-	<main>
+	<main class="h-full">
 		<slot></slot>
 	</main>
 </div>

@@ -11,6 +11,7 @@
     import { GetAllUsers } from '$lib/userUtils';
     import { io } from 'socket.io-client';
     import Notifications from '../modules/notifications.svelte';
+    import { API_URL } from '$lib/env';
 	
 
 	let myProfile : any;
@@ -50,7 +51,7 @@
 			usersDataStore.set(res.data);
 		})
     
-		let socketUser = io('http://localhost:4000', {
+		let socketUser = io(API_URL, {
 			path: "/event_user",
 			query : { token : getJwt()}
 		});
@@ -69,7 +70,7 @@
 						arrId.push(data.id);
 					}
 				}
-				if (arrId &&!arrId.includes(data.id)) {
+				if (arrId && !arrId.includes(data.id)) {
 					allUsers.push(data)
 					usersDataStore.set(allUsers);
 				}
@@ -78,7 +79,7 @@
 
 		socketUserStore.set(socketUser);
 		
-		let socketFriend = io('http://localhost:4000', {
+		let socketFriend = io(API_URL, {
 			path: "/notif_friend",
 			query : { token : getJwt()}
 		});
@@ -98,8 +99,8 @@
 	</NavBrand>
 	<div class="flex items-center md:order-2 gap-4">
 		<Notifications/>
-		<Avatar id="avatar-menu" src={myProfile.img_link} class="object-cover" rounded/>
-		<NavHamburger on:click={toggle} class1="w-full md:flex md:w-auto md:order-1"/>
+		<Avatar id="avatar-menu" src={myProfile.img_link} class="object-cover bg-transparent" rounded/>
+		<NavHamburger on:click={toggle} class1="button-ham w-full md:flex md:w-auto md:order-1 bg-primary"/>
 	</div>
 	<Dropdown placement="bottom" triggeredBy="#avatar-menu" frameClass="!bg-primary">
 		<DropdownHeader>
@@ -109,7 +110,7 @@
 		<DropdownDivider />
 		<DropdownItem href="/logout" defaultClass="font-medium py-2 px-4 text-sm hover:text-red-600 block transition-colors duration-300">Sign out</DropdownItem>
 	</Dropdown>
-	<NavUl {hidden}>
+	<NavUl {hidden} ulClass="bg-primary flex gap-5 flex-col sm:flex-row items-center !border-none nav-ul">
 		<NavLi href="/" active={$page.url.pathname === '/'? true : false}  activeClass="text-third hover:text-black transition-colors duration-300" nonActiveClass="text-black hover:text-third transition-colors duration-300">Home</NavLi>
 		<NavLi href="/users" active={$page.url.pathname === '/users'? true : false} activeClass="text-third hover:text-black transition-colors duration-300" nonActiveClass="text-black hover:text-third transition-colors duration-300">Users</NavLi>
 		<NavLi href="/game" active={$page.url.pathname === '/game'? true : false} activeClass="text-third hover:text-black transition-colors duration-300" nonActiveClass="text-black hover:text-third transition-colors duration-300">Game</NavLi>

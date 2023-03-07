@@ -13,6 +13,7 @@
     import Svg2faEnable from "../../modules/htmlComponent/svg2faEnable.svelte";
     import Svg2faDisabled from "../../modules/htmlComponent/svg2faDisabled.svelte";
     import TabUser from "../../modules/htmlComponent/tabUser.svelte";
+    import { API_URL } from "$lib/env";
 
 	let fileInput : any;
 	let isEditLogin : boolean = false;
@@ -22,7 +23,7 @@
 	let socketFriend : any;
 	let socketUser : any;
 	let errorLogin : boolean = false;
-
+	let errorImage : boolean = false;
 	myProfileDataStore.subscribe(val => {
 		myProfile = val;
 		loginTmp = myProfile.login;
@@ -39,7 +40,11 @@
 		.then((res) => {
 			UpdateProfileToStore(res.data);
 			socketUser.emit("update_user", res.data);
-		});
+			errorImage = false;
+		})
+		.catch((err) => {
+			errorImage = true;
+		})
 	}
 
 	async function submitFormLogin() {
@@ -67,7 +72,7 @@
 	}
 
 	async function enbaledTwoFA() {
-		await axios.post("http://localhost:4000/auth/2fa/enable", "" ,{
+		await axios.post(`${API_URL}/auth/2fa/enable`, "" ,{
 			headers : {
 				Authorization : `Bearer ${getJwt()}`
 			}
@@ -78,7 +83,7 @@
 	}
 
 	async function disabledTwoFA() {
-		await axios.post("http://localhost:4000/auth/2fa/disable", {user : myProfile} ,{
+		await axios.post(`${API_URL}/auth/2fa/disable`, {user : myProfile} ,{
 			headers : {
 				Authorization : `Bearer ${getJwt()}`
 			}
@@ -96,6 +101,11 @@
 			<Card padding="none" class="!bg-secondary !border-none">
                 <div class="flex flex-col gap-5 items-center bg-primary p-3 rounded-tl rounded-tr px-20">
                     <div class="space-y-2">
+						<p class="text-red-500">
+							{#if errorImage}
+								Unsupported mimetype
+							{/if}
+						</p>
 						<button class="button-card-user">...</button>
 						<Dropdown class="w-36 !hover:bg-primary bg-primary rounded">
 							<label for="file" class="w-full cursor-pointer p-1 hover:text-third transition-colors duration-300 block w-full">
@@ -103,8 +113,8 @@
 								<input type="file" bind:this={fileInput} on:change={submitFormImg} class="hidden" name="file" id="file">
 							</label>
 						</Dropdown>
-                        <Avatar size="xl" src={myProfile.img_link} class="object-cover" rounded/>
-                    </div>
+                        <Avatar size="xl" src={myProfile.img_link} class="object-cover bg-transparent" rounded/>
+					</div>
                     <div class="flex gap-3 items-center">
                         <UserActivity user={myProfile}/>
 						{#if !isEditLogin}

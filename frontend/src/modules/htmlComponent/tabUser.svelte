@@ -38,7 +38,7 @@
 			</AccordionItem>
 			{#if user.id == myProfile.id}
 				<AccordionItem>
-					<span slot="header">{user.notification.length} Pending request</span>
+					<span slot="header">{(user.notification) ? user.notification.length : '0'} Pending request</span>
 					{#if user.notification && user.notification.length > 0}
 						<HeaderUserCard />
 						{#each user.notification as notif}
@@ -53,7 +53,7 @@
 					{/if}
 				</AccordionItem>
 				<AccordionItem>
-					<span slot="header">{user.req_send_friend.length} Request send</span>
+					<span slot="header">{(user.req_send_friend) ? user.req_send_friend.length : '0'} Request send</span>
 					{#if user.req_send_friend && user.req_send_friend.length > 0}
 						<div class="flex flex-col gap-5 p-5">
 							<HeaderUserCard />
@@ -76,7 +76,7 @@
 		<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
 			<div class="flex justify-between items-center max-w-lg shadow-md p-5 rounded">
 				<div>
-					<Avatar size="lg" src={user.img_link} class="object-cover" rounded/>
+					<Avatar size="lg" src={user.img_link} class="object-cover bg-transparent" rounded/>
 					<p class="capitalize font-medium text-center">{user.login}</p>
 				</div>
 				<div class="flex flex-col items-center">
@@ -84,14 +84,14 @@
 					<p class="font-medium text-2xl"><span class="text-green-500">2</span> - <span class="text-red-500">0</span></p>
 				</div>
 				<div>
-					<Avatar size="lg" src={user.img_link} class="object-cover" rounded/>
+					<Avatar size="lg" src={user.img_link} class="object-cover bg-transparent" rounded/>
 					<p class="capitalize font-medium text-center">{user.login}</p>
 				</div>
 			</div>
 
 			<div class="flex justify-between items-center max-w-lg shadow-md p-5 rounded">
 				<div>
-					<Avatar size="lg" src={user.img_link} class="object-cover" rounded/>
+					<Avatar size="lg" src={user.img_link} class="object-cover bg-transparent" rounded/>
 					<p class="capitalize font-medium text-center">{user.login}</p>
 				</div>
 				<div class="flex flex-col items-center">
@@ -99,14 +99,14 @@
 					<p class="font-medium text-2xl"><span class="text-green-500">2</span> - <span class="text-red-500">0</span></p>
 				</div>
 				<div>
-					<Avatar size="lg" src={user.img_link} class="object-cover" rounded/>
+					<Avatar size="lg" src={user.img_link} class="object-cover bg-transparent" rounded/>
 					<p class="capitalize font-medium text-center">{user.login}</p>
 				</div>
 			</div>
 
 			<div class="flex justify-between items-center max-w-lg shadow-md p-5 rounded">
 				<div>
-					<Avatar size="lg" src={user.img_link} class="object-cover" rounded/>
+					<Avatar size="lg" src={user.img_link} class="object-cover bg-transparent" rounded/>
 					<p class="capitalize font-medium text-center">{user.login}</p>
 				</div>
 				<div class="flex flex-col items-center">
@@ -114,7 +114,7 @@
 					<p class="font-medium text-2xl"><span class="text-green-500">2</span> - <span class="text-red-500">0</span></p>
 				</div>
 				<div>
-					<Avatar size="lg" src={user.img_link} class="object-cover" rounded/>
+					<Avatar size="lg" src={user.img_link} class="object-cover bg-transparent" rounded/>
 					<p class="capitalize font-medium text-center">{user.login}</p>
 				</div>
 			</div>

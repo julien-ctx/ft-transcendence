@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Request, UseGuards, Get, Req, Res, UnauthorizedException, Param } from "@nestjs/common";
+import { Body, Controller, Post, Request, UseGuards, Get, UnauthorizedException, Param } from "@nestjs/common";
 import { PrismaService } from "src/prisma/prisma.service";
 import { AuthService } from "./auth.service";
 import { AuthDto } from "./dto";
@@ -54,25 +54,33 @@ export class AuthController{
 	@UseGuards(JwtAuthGuard)
 	@Post("2fa/enable")
 	async enable2fa(@UserDec() user) {
-		let secret : string = user.twoFaSecret;
-		if (user.twFaSecret == "")
-			secret  = this.twoFaService.generateSecret();
-		return await this.prisma.user.update({
-			where : {
-				id : user.id
-			},
-			data : {
-				twoFaEnabled : true,
-				twoFaSecret : secret,
-				twoFaAuth : true
-			}
-		})
+		try {
+			const currentUser = await this.prisma.user.findUnique({
+				where : {
+					id : user.id
+				}
+			})
+			let secret : string = currentUser.twoFaSecret;		
+			if (!secret)
+				secret  = this.twoFaService.generateSecret();
+			return await this.prisma.user.update({
+				where : {
+					id : user.id
+				},
+				data : {
+					twoFaEnabled : true,
+					twoFaSecret : secret,
+					twoFaAuth : true
+				}
+			})
+		} catch (error) {
+			throw new error;
+		}
 	}
 
 	@UseGuards(JwtAuthGuard)
 	@Post("2fa/disable")
 	async disable2fa(@UserDec() user) {
-		console.log(user);
 		return await this.prisma.user.update({
 			where : {
 				id : user.id

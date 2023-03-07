@@ -28,7 +28,7 @@
 
 {#if currentUser !== undefined}
 	<div class="flex gap-4">
-		<Avatar src={currentUser.img_link} class="object-cover"></Avatar>
+		<Avatar src={currentUser.img_link} class="object-cover bg-transparent" alt=""></Avatar>
 		<div>{Message}</div>
 		
 	</div>

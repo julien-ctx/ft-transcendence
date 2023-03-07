@@ -5,6 +5,7 @@
     import { removeJwt } from "$lib/jwtUtils";
 	import { Button, ButtonGroup } from 'flowbite-svelte';
 	import io, { Socket } from 'socket.io-client';
+    import { API_URL } from "$lib/env";
 
 	const TEXT_COLOR: string = "#dcd3bc";
 	const OBJ_COLOR: string = "#dcd3bc";
@@ -13,7 +14,8 @@
 	let isLogged: boolean = false;
 	let canvas: HTMLCanvasElement;
 	let dataInit: boolean = false;
-	
+	let containerCanvas : any;
+
 	interface Paddle {
 		x: number;
 		y: number;
@@ -33,7 +35,8 @@
 	}
 	
 	let gameStarted: boolean = false;
-	
+	let waitingUser : boolean = false;
+	let clickMode : boolean = false;
 	let ctx: any;
 	let mouseY: number;
 	
@@ -54,15 +57,6 @@
 			removeJwt();
 			goto("/login")
 		})
-		canvas = document.getElementById('main-game-canvas') as HTMLCanvasElement;
-		canvas.width = window.innerWidth * 0.7;
-		canvas.height = window.innerHeight * 0.8;
-		ctx = canvas.getContext('2d');
-		if (!ctx) {
-			return;
-		}
-		ctx.font = canvas.width * 0.03 + 'px Courier';
-		ctx.fillStyle = TEXT_COLOR;
 	});
 	
 	function drawPaddles(leftPaddle: any, rightPaddle: any) {
@@ -97,6 +91,7 @@
 		
 	function drawScores(leftScore: number, rightScore: number) {
 		ctx.fillStyle = OBJ_COLOR;
+		ctx.font = 'bold ' + canvas.width * 0.03 + 'px Courier';
 		ctx.fillText(leftScore, canvas.width * 0.4, canvas.height * 0.1);
 		ctx.fillText(rightScore, canvas.width * 0.6 - ctx.measureText(rightScore).width, canvas.height * 0.1);
 	}
@@ -120,7 +115,6 @@
 		});
 		canvas.width = window.innerWidth * 0.7;
 		canvas.height = window.innerHeight * 0.8;
-
 	}
 	
 	function handleMouseMove(e: any) {
@@ -201,10 +195,10 @@
 	
 	function isReady() {
 		if (!gameStarted) {
-		socket = io('http://localhost:4000');
+			socket = io(API_URL);
 			gameStarted = true;
 			canvas.addEventListener('mousemove', handleMouseMove);	
-			socket.emit('ready', {width: canvas.width, height: canvas.height});
+			socket.emit('ready', {width: canvas.width, height: canvas.height, playerNumber});
 			startGame();
 		}
 	}
@@ -214,8 +208,25 @@
 	}
 
 	function createCanvas(nb: number) {
-		if (playerNumber)
+		clickMode = true;
+		canvas = document.createElement("canvas");
+		canvas.setAttribute("id", "main-game-canvas");
+		canvas.setAttribute("class", "game-canvas")
+		canvas.width = window.innerWidth * 0.7;
+		canvas.height = window.innerHeight * 0.8;
+
+		ctx = canvas.getContext('2d');
+		if (!ctx) {
+			return;
+		}
+		ctx.font = canvas.width * 0.03 + 'px Courier';
+		ctx.fillStyle = TEXT_COLOR;
+
+		if (!playerNumber) {
 			playerNumber = nb;
+		}
+		containerCanvas.appendChild(canvas)
+
 		clearCanvas();
 		const WelcomeMsg = 'Click to start the game!';
 		ctx.fillText(
@@ -228,34 +239,29 @@
 
 </script>
 
-<style>
-	canvas:hover {
-		cursor: none;
-	}
+{#if !gameStarted && !clickMode}
+	<div class="game-mode mt-20">
+		<h3 class="mb-10">Choose a game mode</h3>
+		<div class="space-x-5 mb-10">
+			<button class="button-mode" on:click={() => {createCanvas(1);}}>
+				Solo
+			</button>
+			<button class="button-mode" on:click={() => waitingUser = true}>
+				Multiplayer
+			</button>
+		</div>
+		{#if waitingUser}
+			<div class="mb-5">
+				You are place in a waiting line !
+			</div>
 
-	canvas {
-		background-color: "#dcd3bc";
-		border-radius: 10px;
-		padding-left: 0;
-		padding-right: 0;
-		margin-left: auto;
-		margin-right: auto;
-		display: block;
-		outline: #dcd3bc 0.35vw solid;
-		display: flex;
-		margin-top: 5vh;
-		margin-bottom: 5vh;
-		width: 70vw;
-		height: 70vh;
-	}
-</style>
+			<!-- Need implements -->
+			<button class="button-mode" on:click={() => {createCanvas(2);}}>Start game multiplayer</button>
+		{/if}
+	</div>
+{/if}
+<div bind:this={containerCanvas} />
 
-<ButtonGroup>
-	<Button outline color="dark" on:click={() => {createCanvas(1);}}>Solo</Button>
-	<Button outline color="dark" on:click={() => {createCanvas(2);}}>Multiplayer</Button>
-</ButtonGroup>
-<canvas id="main-game-canvas" class="game-canvas">
-</canvas>
 <svelte:window
 	on:keydown|preventDefault={handleKeyDown}
 	on:keyup|preventDefault={handleKeyUp}

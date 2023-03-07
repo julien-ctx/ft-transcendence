@@ -174,13 +174,6 @@
 		needPass = '';
 	}
 
-    function joinRoom() {
-        socket.emit('joinRoom', {
-            roomName: JoinName,
-            roomPass: JoinPass
-        });
-    }
-
 </script>
 
 <!-- <div class="relative h-1/2"> -->

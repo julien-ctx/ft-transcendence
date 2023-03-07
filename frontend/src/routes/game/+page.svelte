@@ -2,7 +2,7 @@
 	import { onMount } from "svelte";
 	import { AuthGuard } from "$lib/store/AuthGuard";
     import { goto } from "$app/navigation";
-    import { removeJwt } from "$lib/jwtUtils";
+    import { getJwt, removeJwt } from "$lib/jwtUtils";
 	import io, { Socket } from 'socket.io-client';
     import { API_URL } from "$lib/env";
 
@@ -45,7 +45,6 @@
 	
 	let playerNumber: number = 0;
 	
-	let socket: Socket = io(API_URL + '/game');
 
 	onMount(async () => {
 		AuthGuard()
@@ -56,6 +55,10 @@
 			removeJwt();
 			goto("/login")
 		})
+		let socket: Socket = io(API_URL, {
+			path: '/pong',
+			query: { token: getJwt()}
+		});
 	});
 	
 	function drawPaddles(leftPaddle: any, rightPaddle: any) {
@@ -192,7 +195,6 @@
 	
 	async function isReady() {
 		if (!gameStarted) {
-			socket = io(API_URL + '/game');
 			await drawCounter();
 			gameStarted = true;
 			canvas.addEventListener('mousemove', handleMouseMove);	

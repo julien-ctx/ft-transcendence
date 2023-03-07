@@ -11,7 +11,7 @@ let interval: any;
 
 @WebSocketGateway({
 	cors: true,
-	path: '/game'
+	path: '/pong'
 })
 export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
 	constructor (
@@ -29,11 +29,15 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	afterInit() {}
 
 	async handleConnection(socket : Socket) {
-		console.log('test')
 		const token = socket.handshake.query.token as string;
-		const user = await this.jwt.decode(token);
+		const user = this.jwt.decode(token);
 		if (user == undefined) return;
-		this.queue.push(new WaitingClient(socket, user))
+		const fullUserData = await this.prisma.user.findUnique({
+			where : {
+				id_user : user['id'],
+			}
+		})
+		this.queue.push(new WaitingClient(socket, fullUserData))
 	}
 
 	async handleDisconnect(@ConnectedSocket() socket: Socket) {
@@ -70,7 +74,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	}
 
 	@SubscribeMessage('ready')
-	startGame(@ConnectedSocket() socket: Socket, data: {width, height, playerNumber}) {
+	startGame(socket: Socket, data: {width, height, playerNumber}) {
 		let waitingClient = this.queue.find(waitingClient => waitingClient.socket === socket);
 		if (socket === waitingClient.socket) {
 			this.removeClient(socket);

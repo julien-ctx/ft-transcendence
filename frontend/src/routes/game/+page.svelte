@@ -36,6 +36,7 @@
 	
 	let gameStarted: boolean = false;
 	let waitingUser : boolean = false;
+	let clickMode : boolean = false;
 	let ctx: any;
 	let mouseY: number;
 	
@@ -207,7 +208,7 @@
 	}
 
 	function createCanvas(nb: number) {
-
+		clickMode = true;
 		canvas = document.createElement("canvas");
 		canvas.setAttribute("id", "main-game-canvas");
 		canvas.setAttribute("class", "game-canvas")
@@ -238,7 +239,7 @@
 
 </script>
 
-{#if !gameStarted}
+{#if !gameStarted && !clickMode}
 	<div class="game-mode mt-20">
 		<h3 class="mb-10">Choose a game mode</h3>
 		<div class="space-x-5 mb-10">

@@ -37,6 +37,15 @@ canvas {
 	}
 }
 
+.nav-ul {
+	li {
+		a {
+			font-family: 'Audiowide' !important;
+
+		}
+	}
+}
+
 button,
 .a-login,
 .button-mode {
@@ -119,11 +128,13 @@ button,
 }
 
 .header-user-card {
+	font-family: "Audiowide";
 	font-weight: 700;
 }
 
 .content-search-users {
 	label {
+		font-family: "Audiowide";
 		font-weight: 700;
 	}
 }
@@ -184,6 +195,7 @@ button,
 		button {
 			color: #000;
 			background-color: $primary;
+			border-radius: 0;
 			transition: color 300ms ease-in-out;
 			&.active {
 				color : $third;

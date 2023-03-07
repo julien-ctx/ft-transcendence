@@ -14,7 +14,8 @@
 	let isLogged: boolean = false;
 	let canvas: HTMLCanvasElement;
 	let dataInit: boolean = false;
-	
+	let containerCanvas : any;
+
 	interface Paddle {
 		x: number;
 		y: number;
@@ -34,7 +35,7 @@
 	}
 	
 	let gameStarted: boolean = false;
-	
+	let waitingUser : boolean = false;
 	let ctx: any;
 	let mouseY: number;
 	
@@ -55,15 +56,6 @@
 			removeJwt();
 			goto("/login")
 		})
-		canvas = document.getElementById('main-game-canvas') as HTMLCanvasElement;
-		canvas.width = window.innerWidth * 0.7;
-		canvas.height = window.innerHeight * 0.8;
-		ctx = canvas.getContext('2d');
-		if (!ctx) {
-			return;
-		}
-		ctx.font = canvas.width * 0.03 + 'px Courier';
-		ctx.fillStyle = TEXT_COLOR;
 	});
 	
 	function drawPaddles(leftPaddle: any, rightPaddle: any) {
@@ -215,9 +207,25 @@
 	}
 
 	function createCanvas(nb: number) {
+
+		canvas = document.createElement("canvas");
+		canvas.setAttribute("id", "main-game-canvas");
+		canvas.setAttribute("class", "game-canvas")
+		canvas.width = window.innerWidth * 0.7;
+		canvas.height = window.innerHeight * 0.8;
+
+		ctx = canvas.getContext('2d');
+		if (!ctx) {
+			return;
+		}
+		ctx.font = canvas.width * 0.03 + 'px Courier';
+		ctx.fillStyle = TEXT_COLOR;
+
 		if (!playerNumber) {
 			playerNumber = nb;
 		}
+		containerCanvas.appendChild(canvas)
+
 		clearCanvas();
 		const WelcomeMsg = 'Click to start the game!';
 		ctx.fillText(
@@ -230,34 +238,29 @@
 
 </script>
 
-<style>
-	canvas:hover {
-		cursor: none;
-	}
+{#if !gameStarted}
+	<div class="game-mode mt-20">
+		<h3 class="mb-10">Choose a game mode</h3>
+		<div class="space-x-5 mb-10">
+			<button class="button-mode" on:click={() => {createCanvas(1);}}>
+				Solo
+			</button>
+			<button class="button-mode" on:click={() => waitingUser = true}>
+				Multiplayer
+			</button>
+		</div>
+		{#if waitingUser}
+			<div class="mb-5">
+				You are place in a waiting line !
+			</div>
 
-	canvas {
-		background-color: "#dcd3bc";
-		border-radius: 10px;
-		padding-left: 0;
-		padding-right: 0;
-		margin-left: auto;
-		margin-right: auto;
-		display: block;
-		outline: #dcd3bc 0.35vw solid;
-		display: flex;
-		margin-top: 5vh;
-		margin-bottom: 5vh;
-		width: 70vw;
-		height: 70vh;
-	}
-</style>
+			<!-- Need implements -->
+			<button class="button-mode" on:click={() => {createCanvas(2);}}>Start game multiplayer</button>
+		{/if}
+	</div>
+{/if}
+<div bind:this={containerCanvas} />
 
-<ButtonGroup>
-	<Button outline color="dark" on:click={() => {createCanvas(1);}}>Solo</Button>
-	<Button outline color="dark" on:click={() => {createCanvas(2);}}>Multiplayer</Button>
-</ButtonGroup>
-<canvas id="main-game-canvas" class="game-canvas">
-</canvas>
 <svelte:window
 	on:keydown|preventDefault={handleKeyDown}
 	on:keyup|preventDefault={handleKeyUp}

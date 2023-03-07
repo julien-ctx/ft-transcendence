@@ -100,7 +100,7 @@
 	<div class="flex items-center md:order-2 gap-4">
 		<Notifications/>
 		<Avatar id="avatar-menu" src={myProfile.img_link} class="object-cover bg-transparent" rounded/>
-		<NavHamburger on:click={toggle} class1="w-full md:flex md:w-auto md:order-1"/>
+		<NavHamburger on:click={toggle} btnClass="!focus:outline-none !focus:ring-0" class1="button-ham w-full md:flex md:w-auto md:order-1 bg-primary !focus:outiline-none !focus:ring-0" class2="!focus:outline-none !focus:ring-0"/>
 	</div>
 	<Dropdown placement="bottom" triggeredBy="#avatar-menu" frameClass="!bg-primary">
 		<DropdownHeader>
@@ -110,7 +110,7 @@
 		<DropdownDivider />
 		<DropdownItem href="/logout" defaultClass="font-medium py-2 px-4 text-sm hover:text-red-600 block transition-colors duration-300">Sign out</DropdownItem>
 	</Dropdown>
-	<NavUl {hidden}>
+	<NavUl {hidden} ulClass="bg-primary flex gap-5 flex-col sm:flex-row items-center !border-none">
 		<NavLi href="/" active={$page.url.pathname === '/'? true : false}  activeClass="text-third hover:text-black transition-colors duration-300" nonActiveClass="text-black hover:text-third transition-colors duration-300">Home</NavLi>
 		<NavLi href="/users" active={$page.url.pathname === '/users'? true : false} activeClass="text-third hover:text-black transition-colors duration-300" nonActiveClass="text-black hover:text-third transition-colors duration-300">Users</NavLi>
 		<NavLi href="/game" active={$page.url.pathname === '/game'? true : false} activeClass="text-third hover:text-black transition-colors duration-300" nonActiveClass="text-black hover:text-third transition-colors duration-300">Game</NavLi>

@@ -84,7 +84,11 @@
 			query : { token : getJwt()}
 		});
 		socketFriend.on('event_friend', (data : any) => {
-			UpdateProfileToStore(data);			
+			console.log("event friend", data);
+			if (data.id && userProfile.id && data.id == userProfile.id)
+				userProfileDataStore.set(data);
+			else if (data.id && myProfile.id == data.id)
+				UpdateProfileToStore(data);			
 		});
 		socketFriendStore.set(socketFriend);
 	})

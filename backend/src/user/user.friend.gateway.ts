@@ -61,6 +61,7 @@ export class UserFriendGateway implements OnGatewayInit, OnGatewayConnection, On
 		}, userSend.id)
 		.then((userUpdate : User) => {
 			this.emitToClient(userUpdate);
+			this.server.emit("event_friend", userUpdate)
 		});
 	}
 
@@ -130,6 +131,7 @@ export class UserFriendGateway implements OnGatewayInit, OnGatewayConnection, On
 			}, user.id)
 			.then((userUpdate : User) => {
 				this.emitToClient(userUpdate);
+				this.server.emit("event_friend", userUpdate)
 			})
 		})
 
@@ -147,6 +149,7 @@ export class UserFriendGateway implements OnGatewayInit, OnGatewayConnection, On
 			}, user.id)
 			.then((userUpdate : User) => {
 				this.emitToClient(userUpdate);
+				this.server.emit("event_friend", userUpdate)
 			})			
 		})
 	}
@@ -202,6 +205,7 @@ export class UserFriendGateway implements OnGatewayInit, OnGatewayConnection, On
 			}, user.id)
 			.then((userUpdate : User) => {
 				this.emitToClient(userUpdate);
+				this.server.emit("event_friend", userUpdate)
 			})
 		})
 
@@ -215,6 +219,7 @@ export class UserFriendGateway implements OnGatewayInit, OnGatewayConnection, On
 			}, user.id)
 			.then((userUpdate : User) => {
 				this.emitToClient(userUpdate);
+				this.server.emit("event_friend", userUpdate)
 			})
 		})
 	}

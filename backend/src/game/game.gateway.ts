@@ -1,134 +1,137 @@
-import { SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
-import { Socket } from 'dgram';
-import { request } from 'http';
-import { Server } from 'socket.io';
-import { PrismaService } from 'src/prisma/prisma.service';
 import { GameService } from './game.service';
-import { Ball, Paddle, GameCanvas } from './objects/objects';
+import { Ball, Paddle, GameCanvas, Game, Client, WaitingClient } from './objects/objects';
 import { findLast } from 'lodash';
+import { JwtService } from "@nestjs/jwt";
+import { WebSocketGateway, WebSocketServer, OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, MessageBody, ConnectedSocket } from "@nestjs/websockets";
+import { User } from "@prisma/client";
+import { Server, Socket } from "socket.io";
+import { PrismaService } from "src/prisma/prisma.service";
 
 let interval: any;
 
-@WebSocketGateway({cors: true})
-export class GameGateway {
+@WebSocketGateway({
+	cors: true,
+	path: '/game'
+})
+export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
 	constructor (
-		private gameCanvas: GameCanvas,
-		private leftPaddle: Paddle,
-		private rightPaddle: Paddle,
-		private ball: Ball,
-		private game: GameService,
-		private prisma: PrismaService,
+		private gameService : GameService,
+		private jwt : JwtService,
+		private prisma : PrismaService
 	) {}
 
+	private queue: WaitingClient[] = [];
+	private games: Game[] = [];
 	private maxScore: number = 11;
-	
+
 	@WebSocketServer() server: Server;
 
-	setLeftPaddle() {
-		this.leftPaddle = {
-			x: this.gameCanvas.width * 0.015,
-			y: this.gameCanvas.height * 0.5 - (this.gameCanvas.height * 0.15 / 2),
-			width: this.gameCanvas.width * 0.005,
-			height: this.gameCanvas.height * 0.15,
-			score: 0,
-			direction: 0,
-			speed: this.gameCanvas.height * 0.0015,
-		};
+	afterInit() {}
+
+	async handleConnection(socket : Socket) {
+		console.log('test')
+		const token = socket.handshake.query.token as string;
+		const user = await this.jwt.decode(token);
+		if (user == undefined) return;
+		this.queue.push(new WaitingClient(socket, user))
 	}
 
-	setRightPaddle() {
-		this.rightPaddle = {
-			x: this.gameCanvas.width - this.gameCanvas.width * 0.015 - this.gameCanvas.width * 0.005,
-			y: this.gameCanvas.height * 0.5 - (this.gameCanvas.height * 0.15 / 2),
-			width: this.gameCanvas.width * 0.005,
-			height: this.gameCanvas.height * 0.15,
-			score: 0,
-			direction: 0,
-			speed: this.gameCanvas.height * 0.0015,
-		};
+	async handleDisconnect(@ConnectedSocket() socket: Socket) {
+		this.removeClient(socket);
 	}
 
-	setBall() {
-		this.ball = {
-			x: this.gameCanvas.width * 0.5,
-			y: this.gameCanvas.height * 0.5,
-			size: this.gameCanvas.width * 0.02,
-			direction: {
-				x: 2 * this.game.randomBallDirection(),
-				y: 2 * this.game.randomBallDirection(),
-			},
-			speed: {
-				x: this.gameCanvas.width * 0.004,
-				y: this.gameCanvas.height * 0.007,
-			},
-		};
+	removeClient(socket: Socket) {
+		for (let i = 0; i < this.queue.length; i++) {
+			if (this.queue[i].socket == socket) {
+				this.queue.splice(i, 1);
+			}
+		}
 	}
-
-	gameLoop(client: any, instance: any) {
-		const winner = instance.game.checkBallPosition(
-			instance.ball,
-			instance.leftPaddle,
-			instance.rightPaddle,
-			instance.maxScore,
-			instance.gameCanvas
+	
+	gameLoop(client: Client) {
+		const winner = this.gameService.checkBallPosition(
+			client.ball,
+			client.leftPaddle,
+			client.rightPaddle,
+			this.maxScore,
+			client.canvas
 		);
 		if (winner === 'leftWin' || winner === 'rightWin') {
-			client.emit(winner, {});
+			this.server.emit(winner, {});
 			clearInterval(interval);
 			return;
 		}
-		client.emit('paddlesData', {leftPaddle: instance.leftPaddle, rightPaddle: instance.rightPaddle});
-		client.emit('ballData', {ball: instance.ball});
-		client.emit('scoresData', {leftScore: instance.leftPaddle.score, rightScore: instance.rightPaddle.score});
-		instance.game.updateBall(instance.ball, instance.gameCanvas, instance.leftPaddle, instance.rightPaddle);
-		instance.game.movePaddles(instance.leftPaddle, instance.gameCanvas);
-		instance.game.updateBot(instance.ball, instance.rightPaddle, instance.gameCanvas);
+		this.server.emit('paddlesData', {leftPaddle: client.leftPaddle, rightPaddle: client.rightPaddle});
+		this.server.emit('ballData', {ball: client.ball});
+		this.server.emit('scoresData', {leftScore: client.leftPaddle.score, rightScore: client.rightPaddle.score});
+		this.gameService.updateBall(client.ball, client.canvas, client.leftPaddle, client.rightPaddle);
+		this.gameService.movePaddles(client.leftPaddle, client.canvas);
+		this.gameService.updateBot(client.ball, client.rightPaddle, client.canvas);
 	}
 
 	@SubscribeMessage('ready')
-	startGame(socket: any, data: {width, height, playerNumber}) {
-		this.gameCanvas.width = data.width;
-		this.gameCanvas.height = data.height;
-		this.setLeftPaddle();
-		this.setRightPaddle();
-		this.setBall();
+	startGame(@ConnectedSocket() socket: Socket, data: {width, height, playerNumber}) {
+		let waitingClient = this.queue.find(waitingClient => waitingClient.socket === socket);
+		if (socket === waitingClient.socket) {
+			this.removeClient(socket);
+		} else {
+			console.log("error");
+		}
+		let canvas = this.gameService.createCanvas(data.width, data.height);
+		let client = new Client(
+			waitingClient.socket,
+			waitingClient.user,
+			canvas,
+			this.gameService.createLeftPaddle(canvas),
+			this.gameService.createRightPaddle(canvas),
+			this.gameService.createBall(canvas),
+			0,
+		)
+		if (data.playerNumber === 1) {
+			client.side = -1;
+			this.games.push(new Game(client, null, 1));
+		}//else if () {
+
+		// } else {
+
+		// }
 
 		socket.on('resize',  ({ width, height }) => {
-			this.game.handleResize(
-				this.gameCanvas,
+			this.gameService.handleResize(
+				client,
 				width,
 				height,
-				this.leftPaddle,
-				this.rightPaddle,
-				this.ball,
 			);
 		});
 		socket.on('keydown', ({ move }) => {
+			let paddle = client.side < 0 ? client.leftPaddle : client.rightPaddle;
 			if (move === 'ArrowUp') {
-				this.leftPaddle.direction = -1;
+				paddle.direction = -1;
 			} else if (move === 'ArrowDown') {
-				this.leftPaddle.direction = 1;
+				paddle.direction = 1;
 			}
 		});
 		socket.on('keyup', ({ move }) => {
+			let paddle = client.side < 0 ? client.leftPaddle : client.rightPaddle;
 			if (move === 'ArrowUp' || move === 'ArrowDown') {
-				this.leftPaddle.direction = 0;
+				paddle.direction = 0;
 			}
 		});
 		socket.on('mousemove', ({ mouseY }) => {
+			let paddle = client.side < 0 ? client.leftPaddle : client.rightPaddle;
 			if (mouseY < 0) {
 				mouseY = 0;
-			} else if (mouseY > this.gameCanvas.height - (this.leftPaddle.height)) {
-				mouseY = this.gameCanvas.height - (this.leftPaddle.height);
+			} else if (mouseY > client.canvas.height - (client.canvas.height)) {
+				mouseY = client.canvas.height - (client.canvas.height);
 			}
-			this.leftPaddle.y = mouseY;
+			paddle.y = mouseY;
 		});
 		socket.emit('initData', {
-			leftPaddle: this.leftPaddle,
-			rightPaddle: this.rightPaddle,
-			ball: this.ball,
+			leftPaddle: client.leftPaddle,
+			rightPaddle: client.rightPaddle,
+			ball: client.ball,
 		});
 
-		interval = setInterval(this.gameLoop, 1, socket, this);
+		interval = setInterval(this.gameLoop, 1, client);
 	}
 };

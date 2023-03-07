@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Socket } from 'dgram';
-import { Ball, Paddle, GameCanvas } from './objects/objects';
+import { Ball, Paddle, GameCanvas, Client } from './objects/objects';
 
 @Injectable()
 export class GameService {
@@ -10,38 +10,86 @@ export class GameService {
 		return Math.round(Math.random()) * 2 - 1;
 	}
 
+	createLeftPaddle(canvas: GameCanvas) {
+		let paddle = new Paddle(
+			canvas.width * 0.015,
+			canvas.height * 0.5 - (canvas.height * 0.15 / 2),
+			canvas.width * 0.005,
+			canvas.height * 0.15,
+			0,
+			0,
+			canvas.height * 0.0015,
+		);
+		return paddle;
+	}
+
+	createRightPaddle(canvas: GameCanvas) {
+		let paddle = new Paddle(
+			canvas.width - canvas.width * 0.015 - canvas.width * 0.005,
+			canvas.height * 0.5 - (canvas.height * 0.15 / 2),
+			canvas.width * 0.005,
+			canvas.height * 0.15,
+			0,
+			0,
+			canvas.height * 0.0015,
+		);
+		return paddle;	
+	}
+
+	createBall(canvas: GameCanvas) {
+		let ball = new Ball(
+			canvas.width * 0.5,
+			canvas.height * 0.5,
+			canvas.width * 0.02,
+			{
+				x: 2 * this.randomBallDirection(),
+				y: 2 * this.randomBallDirection(),
+			},
+			{
+				x: canvas.width * 0.004,
+				y: canvas.height * 0.007,
+			},
+		);
+		return ball;
+	}
+
+	createCanvas(width: number, height: number) {
+		let canvas = new GameCanvas(
+			width,
+			height,
+		);
+		return canvas;
+	}
+
 	handleResize(
-		canvas: GameCanvas,
+		client: Client,
 		winWidth: number,
 		winHeight: number,
-		leftPaddle: Paddle,
-		rightPaddle: Paddle,
-		ball: Ball,
 	) {
-		const width = canvas.width;
-		const height = canvas.height;
+		const width = client.canvas.width;
+		const height = client.canvas.height;
 
-		canvas.width = winWidth * 0.7;
-		canvas.height = winHeight * 0.8;
+		client.canvas.width = winWidth * 0.7;
+		client.canvas.height = winHeight * 0.8;
 
-		rightPaddle.x = canvas.width - canvas.width * 0.015 - canvas.width * 0.005;
-		rightPaddle.width =  canvas.width * 0.005;
-		rightPaddle.height = canvas.height * 0.15;
-		rightPaddle.y = rightPaddle.y * canvas.height / height;
-		rightPaddle.speed = canvas.height * 0.0015;
+		client.rightPaddle.x = client.canvas.width - client.canvas.width * 0.015 - client.canvas.width * 0.005;
+		client.rightPaddle.width =  client.canvas.width * 0.005;
+		client.rightPaddle.height = client.canvas.height * 0.15;
+		client.rightPaddle.y = client.rightPaddle.y * client.canvas.height / height;
+		client.rightPaddle.speed = client.canvas.height * 0.0015;
 
-		leftPaddle.x = canvas.width * 0.015;
-		leftPaddle.width = canvas.width * 0.005;
-		leftPaddle.height = canvas.height * 0.15;
-		leftPaddle.y = leftPaddle.y * canvas.height / height;
-		leftPaddle.speed = canvas.height * 0.015;
+		client.leftPaddle.x = client.canvas.width * 0.015;
+		client.leftPaddle.width = client.canvas.width * 0.005;
+		client.leftPaddle.height = client.canvas.height * 0.15;
+		client.leftPaddle.y = client.leftPaddle.y * client.canvas.height / height;
+		client.leftPaddle.speed = client.canvas.height * 0.015;
 
-		ball.size = canvas.width * 0.02;
-		ball.x = ball.x * canvas.width / width;
-		ball.y = ball.y * canvas.height / height;
-		ball.speed = {
-			x: canvas.width * 0.0004,
-			y: canvas.height * 0.0007,
+		client.ball.size = client.canvas.width * 0.02;
+		client.ball.x = client.ball.x * client.canvas.width / width;
+		client.ball.y = client.ball.y * client.canvas.height / height;
+		client.ball.speed = {
+			x: client.canvas.width * 0.0004,
+			y: client.canvas.height * 0.0007,
 		};
 	}
 

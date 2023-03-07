@@ -45,7 +45,7 @@
 	
 	let playerNumber: number = 0;
 	
-	let socket: Socket = io(API_URL);
+	let socket: Socket = io(API_URL + '/game');
 
 	onMount(async () => {
 		AuthGuard()
@@ -192,7 +192,7 @@
 	
 	async function isReady() {
 		if (!gameStarted) {
-			socket = io(API_URL);
+			socket = io(API_URL + '/game');
 			await drawCounter();
 			gameStarted = true;
 			canvas.addEventListener('mousemove', handleMouseMove);	

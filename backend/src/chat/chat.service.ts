@@ -123,7 +123,7 @@ export class ChatService {
 	}
 
 	async createMessage(id_user : number, id_room : number, content : string) {
-		const message = await this.prisma.message.create({
+		const message = await this.prisma.messageRoom.create({
 			data: {
 				content: content,
 				room: {

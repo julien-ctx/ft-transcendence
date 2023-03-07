@@ -28,7 +28,7 @@ model User {
 	req_received_friend Int[]
 	req_send_friend Int[]
 	RoomToUser RoomToUser[]
-	Message Message[]
+	Message MessageRoom[]
 	twoFaSecret String @default("")
 	twoFaEnabled Boolean @default(false)
 	twoFaAuth Boolean @default(false)
@@ -46,7 +46,7 @@ model Room {
 	banned Banned[]
 
 	RoomToUser RoomToUser[]
-	Message Message[]
+	Message MessageRoom[]
 }
 
 model Banned {
@@ -69,11 +69,11 @@ model RoomToUser {
 	owner Boolean @default(false)
 	admin Boolean @default(false)
 	Muted Boolean @default(false)
-	EndMute DateTime 
+	EndMute DateTime @default(now())
 }
 
 
-model Message {
+model MessageRoom {
 	id Int @id @default(autoincrement())
 	content String
 	createdAt DateTime @default(now())

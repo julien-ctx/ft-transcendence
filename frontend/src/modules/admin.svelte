@@ -5,8 +5,7 @@
 	import { getJwt } from "$lib/jwtUtils";
 	import { API_URL } from "$lib/env";
 
-	export let socket;
-	// export let open : boolean;
+	export let socket : any;
 	export let room : string;
 	let members : any = [];
 
@@ -17,13 +16,10 @@
 				headers: {
 					Authorization: `Bearer ${getJwt()}`,
 				},
-				// body :  {
-				// 	room : room
-				// },
 			})
 			.then((res) => {
 				members = res.data;
-				console.log(members);
+				console.log(res);
 			});
 		} catch (error) {
 			console.log(error);
@@ -31,37 +27,43 @@
 		console.log(members)
 	});
 
-	let choice = [    
-		{value:"BAN", name: "BAN"},
-		{value:"MUTE", name: "MUTE"},
-		{value:"OP", name: "OP"},
-		{value:"KICK", name: "KICK"},
-	];
+	function admin() {
+		socket.emit('sanction', {
+			roomName: room,
+			sanction: sanction,
+			member: selected,
+			time: time,
+			duration: duration,
+		})
+	}
+
 	let selected = '';
-	let selectedMember = '';
+	let sanction = '';
+	let time = '';
+	let duration = '';
 </script>
 
-<!-- <Modal title="Admin Gestion" bind:open={open} size="xl">
-	<div class="flex">
-		<Select items={choice} bind:value={selected}></Select>
-		<Select bind:value={selectedMember}>
-			{#each members as member}
-				<option>{member.email}</option>
-			{/each}
-		</Select>
-	</div>
-</Modal> -->
-
-<Dropdown class="w-36">
-	{#each members as member}
-	<DropdownItem>
-		<DropdownItem class="flex items-center justify-between"><Chevron placement="right">Dropdown</Chevron></DropdownItem>
-		<Dropdown placement="right-start">
-			<DropdownItem>Ban</DropdownItem>
-			<DropdownItem>Kick</DropdownItem>
-			<DropdownItem>Mute</DropdownItem>
-		</Dropdown>
-	</DropdownItem>
-	{/each}
-</Dropdown>
-
+{#if members.length > 0}
+	<select bind:value={sanction}>
+		<option value="kick">Kick</option>
+		<option value="ban">Ban</option>
+		<!-- <option value="unban">Unban</option> -->
+		<option value="mute">Mute</option>
+		<!-- <option value="unmute">Unmute</option> -->
+	</select>
+	<select bind:value={selected}>
+	<option>Choose a member</option>
+		{#each members as member}
+			<option>{member.login}</option>
+		{/each}
+	</select>
+	{#if sanction == 'ban' || sanction == 'mute'}
+		<input type="number" id="tentacles" name="tentacles" min="1" max="60" bind:value={time}>
+		<select bind:value={duration}>
+			<option>Second</option>
+			<option>Day</option>
+			<option>Month</option>
+		</select>
+	{/if}
+	<button on:click={() => admin()}>Apply</button>
+{/if}

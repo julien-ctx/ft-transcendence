@@ -26,6 +26,6 @@
         {/if}
         <button class="rounded justify-center" on:click={() => leaveRoom()}>
             <Trash  />
-        </button>      
+        </button>
     </div>
 </div>

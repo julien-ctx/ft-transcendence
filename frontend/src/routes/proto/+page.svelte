@@ -10,6 +10,7 @@
 	import Trash from '../../modules/htmlComponent/svgTrash.svelte';
     import RoomEdit from "../../modules/roomEdit.svelte";
 	import Close from '../../modules/htmlComponent/svgClose.svelte';
+    import Members from '../../modules/admin.svelte';
 
     let socket : any;
     // Messagerie : //
@@ -294,7 +295,7 @@
 </Modal>
 
 <Modal bind:open={modalAdmin} title="Admin Panel" color="third">
-	
+    <Members room={admin} socket={socket} />
 	<div class="flex justify-center gap-8">
 		<Button style="" gradient color="third" on:click={() => close()}>Close</Button>
 	</div>

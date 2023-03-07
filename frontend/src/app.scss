@@ -14,6 +14,67 @@ body {
 	font-family: 'Ubuntu', sans-serif;
 }
 
+h1 {
+	font-family: 'Audiowide' !important;
+}
+
+canvas {
+	background-color: "#dcd3bc";
+	border-radius: 10px;
+	padding-left: 0;
+	padding-right: 0;
+	margin-left: auto;
+	margin-right: auto;
+	display: block;
+	outline: #dcd3bc 0.35vw solid;
+	display: flex;
+	margin-top: 5vh;
+	margin-bottom: 5vh;
+	width: 70vw;
+	height: 70vh;
+	&:hover {
+		cursor: none;
+	}
+}
+
+.nav-ul {
+	li {
+		a {
+			font-family: 'Audiowide' !important;
+
+		}
+	}
+}
+
+button,
+.a-login,
+.button-mode {
+	font-family: 'Audiowide' !important;
+	background-color: $third;
+	padding: 5px 10px;
+	font-size: 18px;
+	border-radius: 7px;
+	transition: 300ms all ease-in-out;
+	&:hover {
+		color: $third;
+		background-color: $primary;
+	}
+}
+
+.game-mode {
+	display: flex;
+	justify-content: center;
+	flex-direction: column;
+	align-items: center;
+	h3 {
+		font-size: 42px;
+		font-weight: 700;
+		font-family: 'Audiowide';
+	}
+	div {
+	}
+}
+
 .a-login,
 .submit-2fa {
 	display: flex;
@@ -67,11 +128,13 @@ body {
 }
 
 .header-user-card {
+	font-family: "Audiowide";
 	font-weight: 700;
 }
 
 .content-search-users {
 	label {
+		font-family: "Audiowide";
 		font-weight: 700;
 	}
 }
@@ -132,6 +195,7 @@ body {
 		button {
 			color: #000;
 			background-color: $primary;
+			border-radius: 0;
 			transition: color 300ms ease-in-out;
 			&.active {
 				color : $third;

@@ -17,6 +17,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from 'src/user/user.service';
 import { RoomClass } from './room.interface';
 import { Socket } from 'dgram';
+import { Sanction } from './sanction.class';
 
 @WebSocketGateway({
 	path : '/chat',
@@ -335,6 +336,19 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 			},
 		});
 		client.emit('successEdit');
+	}
+
+	@SubscribeMessage('sanction')
+	async handleAdmin(@ConnectedSocket() client, @MessageBody() data: any) {
+		const token = client.handshake.query.token as string;
+		const user = this.jwt.decode(token);
+		if (user === undefined) return;
+
+		const User = await this.Service.getOneById(user['id']);
+		const Room = await this.chatService.getRoomByName(data.roomName);
+
+		const t = new Sanction(data, this.prisma);
+		t.setEndOfSanction();
 	}
 
 	handleDisconnect(client: any) {

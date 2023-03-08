@@ -75,8 +75,8 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 			this.gameService.updateBall(game.rightClient.ball, game.rightClient.canvas, game.rightClient.leftPaddle, game.rightClient.rightPaddle);
 			this.gameService.movePaddles(game.rightClient.leftPaddle, game.rightClient.canvas);
 		}
-		// if (game.playerNumber == 1)
-		// 	this.gameService.updateBot(game.leftClient.ball, game.leftClient.rightPaddle, game.leftClient.canvas);
+		if (game.playerNumber == 1)
+			this.gameService.updateBot(game.leftClient.ball, game.leftClient.rightPaddle, game.leftClient.canvas);
 	}
 
 	@SubscribeMessage('ready')
@@ -136,8 +136,8 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 			let paddle = client.side < 0 ? client.leftPaddle : client.rightPaddle;
 			if (mouseY < 0) {
 				mouseY = 0;
-			} else if (mouseY > client.canvas.height - (client.canvas.height)) {
-				mouseY = client.canvas.height - (client.canvas.height);
+			} else if (mouseY > client.canvas.height - (paddle.height)) {
+				mouseY = client.canvas.height - (paddle.height);
 			}
 			paddle.y = mouseY;
 		});

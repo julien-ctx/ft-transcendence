@@ -103,7 +103,7 @@
 		for (let i = 3; i > 0; i--) {
 			ctx.font = 'bold ' + canvas.width * 0.1 + 'px Courier';
 			ctx.fillText(i, canvas.width * 0.5 - ctx.measureText(i).width / 2, canvas.height * 0.5);
-			await new Promise(r => setTimeout(r, 500));
+			await new Promise(r => setTimeout(r, 800));
 			clearCanvas();
 		}
 	}
@@ -158,13 +158,8 @@
 		requestAnimationFrame(gameLoop);
 	}
 	
-	function startGame() {
-		socket.on('initData', ({leftPaddle, rightPaddle, ball}) => {
-			gameLeftPaddle = leftPaddle;
-			gameRightPaddle = rightPaddle;
-			gameBall = ball;
-			dataInit = true;
-		});
+	async function startGame() {
+		
 		socket.on('paddlesData',  ({ leftPaddle, rightPaddle }) => {
 			gameLeftPaddle = leftPaddle;
 			gameRightPaddle = rightPaddle;
@@ -187,18 +182,45 @@
 			gameLeftPaddle.score = 0;	
 			gameRightPaddle.score = 0;
 		});
+		
 		gameLoop();
 	}
 	
+	async function drawOpponent(login: string) {
+		clearCanvas();
+		let msg: string = 'Your opponent is ' + login;
+		ctx.fillText(msg, canvas.width * 0.5 - ctx.measureText(msg).width / 2, canvas.height * 0.5);	
+		await new Promise(r => setTimeout(r, 1000));
+	}
+
 	async function isReady() {
 		if (!gameStarted) {
-			await drawCounter();
+			socket.emit('ready', { width: canvas.width, height: canvas.height, playerNumber });
 			gameStarted = true;
-			canvas.addEventListener('mousemove', handleMouseMove);	
-			socket.emit('ready', {width: canvas.width, height: canvas.height, playerNumber});
+			canvas.addEventListener('mousemove', handleMouseMove);
+			ctx.font = canvas.width * 0.03 + 'px Courier';
+			await new Promise<void>((resolve) => {
+				socket.on('initData', async ({leftPaddle, rightPaddle, ball}) => {
+					gameLeftPaddle = leftPaddle;
+					gameRightPaddle = rightPaddle;
+					gameBall = ball;
+					dataInit = true;
+					resolve();
+				});
+			});
+			await new Promise<void>((resolve) => {
+				socket.on('foundOpponent', async ({ login }) => {
+					await drawOpponent(login);
+					resolve();
+				});
+			});
+			await drawCounter();
+			clearCanvas();
 			startGame();
 		}
 	}
+  
+  
 
 	function clearCanvas() {
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -211,27 +233,18 @@
 		canvas.setAttribute("class", "game-canvas")
 		canvas.width = window.innerWidth * 0.7;
 		canvas.height = window.innerHeight * 0.8;
-
+		
 		ctx = canvas.getContext('2d');
-		if (!ctx) {
-			return;
-		}
+		if (!ctx) return;
 		ctx.font = canvas.width * 0.03 + 'px Courier';
 		ctx.fillStyle = TEXT_COLOR;
-
+	
+		containerCanvas.appendChild(canvas)
+		
 		if (!playerNumber) {
 			playerNumber = nb;
 		}
-		containerCanvas.appendChild(canvas)
-
-		clearCanvas();
-		const WelcomeMsg = 'Click to start the game!';
-		ctx.fillText(
-			WelcomeMsg,
-			canvas.width * 0.5 - ctx.measureText(WelcomeMsg).width / 2,
-			canvas.height * 0.5,
-		);
-		canvas.onclick = isReady;
+		isReady();
 	}
 
 </script>
@@ -249,11 +262,8 @@
 		</div>
 		{#if waitingUser}
 			<div class="mb-5">
-				You are place in a waiting line !
+				Waiting for opponent...
 			</div>
-
-			<!-- Need implements -->
-			<button class="button-mode" on:click={() => {createCanvas(2);}}>Start game multiplayer</button>
 		{/if}
 	</div>
 {/if}

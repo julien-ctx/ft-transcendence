@@ -6,6 +6,7 @@ import { WebSocketGateway, WebSocketServer, OnGatewayInit, OnGatewayConnection, 
 import { User } from "@prisma/client";
 import { Server, Socket } from "socket.io";
 import { PrismaService } from "src/prisma/prisma.service";
+import e from 'express';
 
 let interval: any;
 
@@ -141,13 +142,20 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 			}
 			paddle.y = mouseY;
 		});
+		
 		socket.emit('initData', {
 			leftPaddle: client.leftPaddle,
 			rightPaddle: client.rightPaddle,
 			ball: client.ball,
 		});
 		
-		if (gameReady)
+		if (gameReady) {
+			if (data.playerNumber == 2) {
+				socket.emit('foundOpponent', {login: client.user['login']});
+			} else if (data.playerNumber === 1) {
+				socket.emit('foundOpponent', {login: 'the bot'});
+			}
 			interval = setInterval(this.gameLoop, 1, this.games[this.games.length - 1]);
+		}
 	}
 };

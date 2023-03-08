@@ -142,7 +142,6 @@
 			canvas.width / 2 - ctx.measureText(winMsg).width / 2,
 			canvas.height / 2 
 		)
-		ctx.font = 'bold ' + canvas.width * 0.03 + 'px Courier';
 		gameStarted = false;
 		socket.disconnect();
 	}
@@ -198,7 +197,6 @@
 			socket.emit('ready', { width: canvas.width, height: canvas.height, playerNumber });
 			gameStarted = true;
 			canvas.addEventListener('mousemove', handleMouseMove);
-			ctx.font = canvas.width * 0.03 + 'px Courier';
 			await new Promise<void>((resolve) => {
 				socket.on('initData', async ({leftPaddle, rightPaddle, ball}) => {
 					gameLeftPaddle = leftPaddle;
@@ -220,8 +218,6 @@
 		}
 	}
   
-  
-
 	function clearCanvas() {
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
 	}
@@ -241,9 +237,7 @@
 	
 		containerCanvas.appendChild(canvas)
 		
-		if (!playerNumber) {
-			playerNumber = nb;
-		}
+		playerNumber = nb;
 		isReady();
 	}
 

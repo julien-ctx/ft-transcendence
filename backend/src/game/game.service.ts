@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Socket } from 'dgram';
+import { GameModule } from './game.module';
 import { Ball, Paddle, GameCanvas, Client, Game } from './objects/objects';
 
 @Injectable()
@@ -93,13 +94,13 @@ export class GameService {
 		};
 	}
 
-	resetBall(ball: Ball, side: number, canvas: GameCanvas) {
-		ball.x = canvas.width * 0.5;
-		ball.y = canvas.height * 0.5;
-		if ((side < 0 && ball.direction.x > 0) ||
-			(side > 0 && ball.direction.x < 0))
-			ball.direction.x = -ball.direction.x;
-		ball.direction.y = this.randomBallDirection() < 0 ? ball.direction.y : -ball.direction.y;
+	resetBall(client: Client, side: number) {
+		client.ball.x = client.canvas.width * 0.5;
+		client.ball.y = client.canvas.height * 0.5;
+		if ((side < 0 && client.ball.direction.x > 0) ||
+			(side > 0 && client.ball.direction.x < 0))
+			client.ball.direction.x = -client.ball.direction.x;
+		client.ball.direction.y = this.randomBallDirection() < 0 ? client.ball.direction.y : -client.ball.direction.y;
 	}
 
 	updateBot(ball: Ball, paddle: Paddle, canvas: GameCanvas) {
@@ -134,17 +135,31 @@ export class GameService {
 		}
 	}
 
-	checkBallPosition(game: Game) {
+	checkBallPosition(game: Game): string {
 		if (game.leftClient.ball.x < 0) {
-			this.resetBall(game.leftClient.ball, -1, game.leftClient.canvas);
-			if (++game.leftClient.rightPaddle.score === game.maxScore) {
-				return game.playerNumber === 1 ? 'Bot' : game.rightClient.user['name'];
+			this.resetBall(game.leftClient, -1);
+			if (game.playerNumber == 2) {
+				this.resetBall(game.rightClient, 1);
+			}
+			game.leftClient.rightPaddle.score++;
+			if (game.playerNumber == 2) {
+				game.rightClient.rightPaddle.score++;
+			}
+			if (game.leftClient.rightPaddle.score === game.maxScore) {
+				return game.playerNumber === 1 ? 'Bot' : game.rightClient.user['id'];
 			}
 		}
 		else if (game.leftClient.ball.x > game.leftClient.canvas.width - game.leftClient.ball.size) {
-			this.resetBall(game.leftClient.ball, 1, game.leftClient.canvas);
-			if (++game.leftClient.leftPaddle.score === game.maxScore) {
-				return game.leftClient.user['name'];
+			this.resetBall(game.leftClient, 1);
+			if (game.playerNumber == 2) {
+				this.resetBall(game.rightClient, -1);
+			}
+			game.leftClient.leftPaddle.score++;
+			if (game.playerNumber == 2) {
+				game.rightClient.leftPaddle.score++;
+			}
+			if (game.leftClient.leftPaddle.score === game.maxScore) {
+				return game.leftClient.user['first_name'];
 			}
 		}
 		return 'NoWinner';

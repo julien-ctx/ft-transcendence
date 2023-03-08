@@ -135,7 +135,7 @@
 	function drawWinner(winner: string) {
 		clearCanvas();
 		ctx.fillStyle = OBJ_COLOR;
-		let winMsg: string = winner + ' Paddle won!';
+		let winMsg: string = winner + ' won the game!';
 		ctx.font = 'bold ' + canvas.width * 0.03 + 'px Courier';
 		ctx.fillText(
 			winMsg,

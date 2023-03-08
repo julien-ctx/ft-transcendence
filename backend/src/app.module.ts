@@ -5,6 +5,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { UserModule } from './user/user.module';
 import { ChatModule } from './chat/chat.module';
 import { GameModule } from './game/game.module';
+import { PrivateMessageModule } from './private-message/private-message.module';
 
 @Module({
   imports: [
@@ -15,7 +16,8 @@ import { GameModule } from './game/game.module';
     UserModule,
     PrismaModule,
     ChatModule,
-    GameModule
+    GameModule,
+    PrivateMessageModule
   ],
 })
 export class AppModule {}

@@ -38,6 +38,63 @@ canvas {
 	}
 }
 
+.mp-modal {
+	border: 1px solid $third;
+	border-radius: 7px;
+	background-color: $primary;
+	font-family: 'Audiowide' !important;
+	.header {
+		border-bottom: 1px solid $third;
+	}
+	.body {
+		overflow-y: scroll;
+		max-height: 350px;
+		padding: 10px 0;
+		&::-webkit-scrollbar{
+			display: none;
+		}
+		.my-msg {
+			background-color: $third;
+			display: flex;
+			flex-direction: row-reverse;
+			gap: 10px;
+			max-width: 90%;
+			padding: 5px 10px 5px 0px;
+			margin: 0 5px 0px auto;
+			&.solo {
+				border-radius: 3px 20px 3px 20px;
+				margin-bottom: 5px;
+			}
+			&.start {
+				border-radius: 3px 20px 0 0;
+			}
+			&.end {
+				border-radius: 0px 0px 3px 20px;
+				margin-bottom: 5px;
+			}
+		}
+		.other-msg {
+			display: flex;
+			gap: 10px;
+			max-width: 90%;
+			background-color: $secondary;
+			padding: 5px 0px 5px 10px;
+			margin: 0 auto 0px 5px;
+			&.solo {
+				border-radius: 20px 3px 20px 3px;
+				margin-bottom: 5px;
+			}
+			&.start {
+				border-radius: 20px 3px 0 0;
+			}
+			&.end {
+				border-radius: 0px 0px 20px 0px;
+				margin-bottom: 5px;
+			}
+		}
+	}
+}
+
 .nav-ul {
 	li {
 		a {
@@ -71,8 +128,6 @@ button,
 		font-size: 42px;
 		font-weight: 700;
 		font-family: 'Audiowide';
-	}
-	div {
 	}
 }
 

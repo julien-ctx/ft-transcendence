@@ -2,13 +2,13 @@
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
     import { AuthGuard } from '$lib/store/AuthGuard';
-    import { myProfileDataStore, userProfileDataStore, usersDataStore } from '$lib/store/user';
+    import { myProfileDataStore, myRoomMpStore, userProfileDataStore, usersDataStore } from '$lib/store/user';
     import { UpdateProfileConnected, UpdateProfileToStore } from '$lib/profileUtils';
     import { goto } from '$app/navigation';
     import { getJwt, removeJwt } from '$lib/jwtUtils';
-    import { socketFriendStore, socketUserStore } from '$lib/store/socket';
+    import { socketFriendStore, socketMpStore, socketUserStore } from '$lib/store/socket';
 	import { Navbar, NavBrand, NavLi, NavUl, NavHamburger, Avatar, Dropdown, DropdownItem, DropdownHeader, DropdownDivider } from 'flowbite-svelte'
-    import { GetAllUsers } from '$lib/userUtils';
+    import { GetAllMyRoom, GetAllUsers } from '$lib/userUtils';
     import { io } from 'socket.io-client';
     import Notifications from '../modules/notifications.svelte';
     import { API_URL } from '$lib/env';
@@ -19,12 +19,14 @@
 	let allUsers : any;
 	let socketUser : any;
 	let socketFriend : any;
+	let myRoomMp : any;
 
 	myProfileDataStore.subscribe(val => myProfile = val);
 	usersDataStore.subscribe(val => allUsers = val);
 	userProfileDataStore.subscribe(val => userProfile = val);
 	socketUserStore.subscribe(val => socketUser = val);
 	socketFriendStore.subscribe(val => socketFriend = val);
+	myRoomMpStore.subscribe(val => myRoomMp = val);
 
 	onMount(async () => {
 		await AuthGuard()
@@ -51,6 +53,11 @@
 			usersDataStore.set(res.data);
 		})
     
+		await GetAllMyRoom()
+		.then((res) => {
+			myRoomMpStore.set(res.data);
+		})
+
 		let socketUser = io(API_URL, {
 			path: "/event_user",
 			query : { token : getJwt()}

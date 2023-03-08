@@ -16,7 +16,8 @@ export class UserService {
 			},
 			include : {
 				notification: true,
-				RoomToUser: true
+				RoomToUser: true,
+				roomMp : true
 			}
 		});
 	}
@@ -28,7 +29,8 @@ export class UserService {
 			},
 			include : {
 				notification: true,
-				RoomToUser: true
+				RoomToUser: true,
+				roomMp : true
 			}
 		});
 	}
@@ -40,7 +42,8 @@ export class UserService {
 			},
 			include : {
 				notification: true,
-				RoomToUser: true
+				RoomToUser: true,
+				roomMp : true
 			}
 		});
 	}
@@ -53,6 +56,7 @@ export class UserService {
 			include : {
 				notification: true,
 				RoomToUser: true,
+				roomMp : true
 			}
 		});
 	}
@@ -63,8 +67,9 @@ export class UserService {
 				id_user
 			},
 			include : {
-				notification : true,
-				RoomToUser : true
+				notification: true,
+				RoomToUser: true,
+				roomMp : true,
 			}
 		})
 	}
@@ -73,7 +78,8 @@ export class UserService {
 		return await this.prisma.user.findMany({
 			include : {
 				notification: true,
-				RoomToUser: true
+				RoomToUser: true,
+				roomMp : true
 			}
 		});
 	}

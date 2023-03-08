@@ -17,3 +17,11 @@ export async function GetOneUser(id : string) {
 		}
 	});
 }
+
+export async function GetAllMyRoom() {
+	return await axios.get(`${API_URL}/mp/getAllMyRoom`, {
+		headers: {
+			Authorization : `Bearer ${getJwt()}`
+		}
+	});
+}

@@ -40,16 +40,25 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		this.queue.push(new WaitingClient(socket, fullUserData))
 	}
 
-	async handleDisconnect(@ConnectedSocket() socket: Socket) {
-		this.removeClient(socket);
+	handleDisconnect(@ConnectedSocket() socket: Socket) {
+		this.removeFromGame(socket);
+		this.removeFromQueue(socket);
 	}
 
-	removeClient(socket: Socket) {
+	removeFromQueue(socket: Socket) {
 		for (let i = 0; i < this.queue.length; i++) {
 			if (this.queue[i].socket == socket) {
 				this.queue.splice(i, 1);
 			}
 		}
+	}
+
+	removeFromGame(socket: Socket) {
+		this.games.forEach((element, index) => {
+			if ((element.leftClient.socket === socket) || (element.rightClient.socket === socket)) {
+				this.games.splice(index, 1);
+			}
+		});
 	}
 	
 	gameLoop(game: Game) {
@@ -80,11 +89,33 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 			this.gameService.updateBot(game.leftClient.ball, game.leftClient.rightPaddle, game.leftClient.canvas);
 	}
 
+	// @SubscribeMessage('playAgain')
+	// playAgain(socket: Socket) {
+	// 	let client: Client | null = null;
+	// 	this.games.forEach(element => {
+	// 		if (element.leftClient.socket === socket) {
+	// 			client = element.leftClient;
+	// 		} else if (element.rightClient.socket === socket) {
+	// 			client = element.rightClient;
+	// 		}
+	// 	});
+	// 	client.leftPaddle = this.gameService.createLeftPaddle(client.canvas);
+	// 	client.rightPaddle = this.gameService.createRightPaddle(client.canvas);
+	// 	client.ball = this.gameService.createBall(client.canvas);
+	// 	client.socket.emit('initData', {
+	// 		leftPaddle: client.leftPaddle,
+	// 		rightPaddle: client.rightPaddle,
+	// 		ball: client.ball,
+	// 	});
+	// 	socket.emit('')
+	// }
+
 	@SubscribeMessage('ready')
 	startGame(socket: Socket, data: {width, height, playerNumber}) {
 		let waitingClient = this.queue.find(waitingClient => waitingClient.socket === socket);
+		if (!waitingClient) return;
 		if (socket === waitingClient.socket) {
-			this.removeClient(socket);
+			this.removeFromQueue(socket);
 		}
 		let canvas = this.gameService.createCanvas(data.width, data.height);
 		let client = new Client(
@@ -157,7 +188,6 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 			}
 			socket.on('gameLoop', ({}) => {
 				interval = setInterval(this.gameLoop, 1, this.games[this.games.length - 1]);
-
 			});
 		}
 	}

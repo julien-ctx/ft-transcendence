@@ -44,7 +44,7 @@
 	let gameBall: Ball;
 	
 	let playerNumber: number = 0;
-	
+	let socket: Socket;	
 
 	onMount(async () => {
 		AuthGuard()
@@ -55,7 +55,7 @@
 			removeJwt();
 			goto("/login")
 		})
-		let socket: Socket = io(API_URL, {
+		socket = io(API_URL, {
 			path: '/pong',
 			query: { token: getJwt()}
 		});

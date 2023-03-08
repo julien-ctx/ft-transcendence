@@ -18,7 +18,9 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		private gameService : GameService,
 		private jwt : JwtService,
 		private prisma : PrismaService
-	) {}
+	) {
+		this.gameLoop = this.gameLoop.bind(this);
+	}
 
 	private queue: WaitingClient[] = [];
 	private games: Game[] = [];

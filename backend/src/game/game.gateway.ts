@@ -18,13 +18,10 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		private gameService : GameService,
 		private jwt : JwtService,
 		private prisma : PrismaService
-	) {
-		this.gameLoop = this.gameLoop.bind(this);
-	}
+	) {this.gameLoop = this.gameLoop.bind(this);}
 
 	private queue: WaitingClient[] = [];
 	private games: Game[] = [];
-	private maxScore: number = 11;
 
 	@WebSocketServer() server: Server;
 
@@ -54,25 +51,32 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		}
 	}
 	
-	gameLoop(client: Client) {
-		const winner = this.gameService.checkBallPosition(
-			client.ball,
-			client.leftPaddle,
-			client.rightPaddle,
-			this.maxScore,
-			client.canvas
-		);
-		if (winner === 'leftWin' || winner === 'rightWin') {
-			this.server.emit(winner, {});
-			clearInterval(interval);
-			return;
+	gameLoop(game: Game) {
+		const winner = this.gameService.checkBallPosition(game);
+		if (winner !== 'NoWinner') {
+			if (winner === 'Bot') {
+				this.server.emit('winner', {winner: winner, side: 1});
+			} else if (winner === game.leftClient.user['name']) {
+				this.server.emit('winner', {winner: winner, side: -1});
+			} else {
+				this.server.emit('winner', {winner: winner, side: 1});
+			}
+			return clearInterval(interval);
 		}
-		this.server.emit('paddlesData', {leftPaddle: client.leftPaddle, rightPaddle: client.rightPaddle});
-		this.server.emit('ballData', {ball: client.ball});
-		this.server.emit('scoresData', {leftScore: client.leftPaddle.score, rightScore: client.rightPaddle.score});
-		this.gameService.updateBall(client.ball, client.canvas, client.leftPaddle, client.rightPaddle);
-		this.gameService.movePaddles(client.leftPaddle, client.canvas);
-		this.gameService.updateBot(client.ball, client.rightPaddle, client.canvas);
+		game.leftClient.socket.emit('paddlesData', {leftPaddle: game.leftClient.leftPaddle, rightPaddle: game.leftClient.rightPaddle});
+		game.leftClient.socket.emit('ballData', {ball: game.leftClient.ball});
+		game.leftClient.socket.emit('scoresData', {leftScore: game.leftClient.leftPaddle.score, rightScore: game.leftClient.rightPaddle.score});
+		this.gameService.updateBall(game.leftClient.ball, game.leftClient.canvas, game.leftClient.leftPaddle, game.leftClient.rightPaddle);
+		this.gameService.movePaddles(game.leftClient.leftPaddle, game.leftClient.canvas);
+		if (game.playerNumber === 2) {
+			game.rightClient.socket.emit('paddlesData', {leftPaddle: game.rightClient.leftPaddle, rightPaddle: game.rightClient.rightPaddle});
+			game.rightClient.socket.emit('ballData', {ball: game.rightClient.ball});
+			game.rightClient.socket.emit('scoresData', {leftScore: game.rightClient.leftPaddle.score, rightScore: game.rightClient.rightPaddle.score});
+			this.gameService.updateBall(game.rightClient.ball, game.rightClient.canvas, game.rightClient.leftPaddle, game.rightClient.rightPaddle);
+			this.gameService.movePaddles(game.rightClient.leftPaddle, game.rightClient.canvas);
+		}
+		if (game.playerNumber == 1)
+			this.gameService.updateBot(game.leftClient.ball, game.leftClient.rightPaddle, game.leftClient.canvas);
 	}
 
 	@SubscribeMessage('ready')
@@ -80,8 +84,6 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		let waitingClient = this.queue.find(waitingClient => waitingClient.socket === socket);
 		if (socket === waitingClient.socket) {
 			this.removeClient(socket);
-		} else {
-			console.log("error");
 		}
 		let canvas = this.gameService.createCanvas(data.width, data.height);
 		let client = new Client(
@@ -93,14 +95,21 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 			this.gameService.createBall(canvas),
 			0,
 		)
+
+		let gameReady = false; 
 		if (data.playerNumber === 1) {
 			client.side = -1;
-			this.games.push(new Game(client, null, 1));
-		}//else if () {
-
-		// } else {
-
-		// }
+			this.games.push(new Game(client, null, 1, 11));
+			gameReady = true;
+		} else if (this.games.find(game => game.playerNumber === 2 && game.rightClient === null)) {
+			let game = this.games.find(game => game.playerNumber === 2 && game.rightClient === null);
+			client.side = 1;
+			game.rightClient = client;
+			gameReady = true;
+		} else {
+			client.side = -1;
+			this.games.push(new Game(client, null, 2, 11));
+		}
 
 		socket.on('resize',  ({ width, height }) => {
 			this.gameService.handleResize(
@@ -137,7 +146,8 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 			rightPaddle: client.rightPaddle,
 			ball: client.ball,
 		});
-
-		interval = setInterval(this.gameLoop, 1, client);
+		
+		if (gameReady)
+			interval = setInterval(this.gameLoop, 1, this.games[this.games.length - 1]);
 	}
 };

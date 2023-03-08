@@ -176,16 +176,13 @@
 			gameLeftPaddle.score = leftScore;
 			gameRightPaddle.score = rightScore;
 		});
-		socket.on('rightWin',  ({}) => {
-			gameRightPaddle.score++;
-			drawWinner('Right');
-			drawScores(gameLeftPaddle.score, gameRightPaddle.score);
-			gameLeftPaddle.score = 0;	
-			gameRightPaddle.score = 0;
-		});
-		socket.on('leftWin',  ({}) => {
-			gameLeftPaddle.score++;
-			drawWinner('Left');
+		socket.on('winner',  ({winner, side}) => {
+			if (side === 1) {
+				gameRightPaddle.score++;
+			} else {
+				gameLeftPaddle.score++;
+			}
+			drawWinner(winner);
 			drawScores(gameLeftPaddle.score, gameRightPaddle.score);
 			gameLeftPaddle.score = 0;	
 			gameRightPaddle.score = 0;

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Socket } from 'dgram';
-import { Ball, Paddle, GameCanvas, Client } from './objects/objects';
+import { Ball, Paddle, GameCanvas, Client, Game } from './objects/objects';
 
 @Injectable()
 export class GameService {
@@ -134,21 +134,17 @@ export class GameService {
 		}
 	}
 
-	checkBallPosition(ball: Ball,
-		leftPaddle: Paddle,
-		rightPaddle: Paddle,
-		maxScore: number,
-		canvas: GameCanvas) {
-		if (ball.x < 0) {
-			this.resetBall(ball, -1, canvas);
-			if (++rightPaddle.score === maxScore) {
-				return 'rightWin';
+	checkBallPosition(game: Game) {
+		if (game.leftClient.ball.x < 0) {
+			this.resetBall(game.leftClient.ball, -1, game.leftClient.canvas);
+			if (++game.leftClient.rightPaddle.score === game.maxScore) {
+				return game.playerNumber === 1 ? 'Bot' : game.rightClient.user['name'];
 			}
 		}
-		else if (ball.x > canvas.width - ball.size) {
-			this.resetBall(ball, 1, canvas);
-			if (++leftPaddle.score === maxScore) {
-				return 'leftWin';
+		else if (game.leftClient.ball.x > game.leftClient.canvas.width - game.leftClient.ball.size) {
+			this.resetBall(game.leftClient.ball, 1, game.leftClient.canvas);
+			if (++game.leftClient.leftPaddle.score === game.maxScore) {
+				return game.leftClient.user['name'];
 			}
 		}
 		return 'NoWinner';

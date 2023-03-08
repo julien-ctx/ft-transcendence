@@ -23,8 +23,9 @@ export class Client {
 export class Game {
 	constructor(
 		public leftClient: Client,
-		public rightClient: Client,
+		public rightClient: Client | null,
 		public playerNumber: number,
+		public maxScore: number,
 	) {}
 };
 

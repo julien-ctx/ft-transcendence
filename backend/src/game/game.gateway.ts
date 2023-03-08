@@ -148,14 +148,17 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 			rightPaddle: client.rightPaddle,
 			ball: client.ball,
 		});
-		
+
 		if (gameReady) {
 			if (data.playerNumber == 2) {
 				socket.emit('foundOpponent', {login: client.user['login']});
 			} else if (data.playerNumber === 1) {
 				socket.emit('foundOpponent', {login: 'the bot'});
 			}
-			interval = setInterval(this.gameLoop, 1, this.games[this.games.length - 1]);
+			socket.on('gameLoop', ({}) => {
+				interval = setInterval(this.gameLoop, 1, this.games[this.games.length - 1]);
+
+			});
 		}
 	}
 };

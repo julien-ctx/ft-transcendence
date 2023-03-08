@@ -143,7 +143,7 @@
 			canvas.height / 2 
 		)
 		gameStarted = false;
-		socket.disconnect();
+		// socket.disconnect();
 	}
 
 	function gameLoop() {
@@ -213,6 +213,7 @@
 				});
 			});
 			await drawCounter();
+			socket.emit('gameLoop', {});
 			clearCanvas();
 			startGame();
 		}

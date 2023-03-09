@@ -11,9 +11,9 @@ export class Sanction {
     db : PrismaService;
     Clients : any;
     Rooms : any;
+    By : any;
 
-
-    constructor (Rooms : any, Client : any, obg : any, private prisma : PrismaService) {
+    constructor (Rooms : any, Client : any, obg : any, private prisma : PrismaService, client : any) {
         this.sanction = obg.sanction;
         this.time = obg.time;
         this.duration = obg.duration;
@@ -22,6 +22,7 @@ export class Sanction {
         this.db = prisma;
         this.Clients = Client;
         this.Rooms = Rooms;
+        this.By = client;
     }
 
     setEndOfSanction() {
@@ -32,15 +33,17 @@ export class Sanction {
             return null;
         switch (this.duration) {
             case 'Second':
-                now.setSeconds(now.getSeconds() + +parseInt(this.time));
+                now.setSeconds(now.getSeconds() + parseInt(this.time)); break;
             case 'Minutes':
-                now.setMinutes(now.getMinutes() + +parseInt(this.time));
+                now.setMinutes(now.getMinutes() + parseInt(this.time)); break;
             case 'Hour':
-                now.setHours(now.getHours() + +parseInt(this.time));
+                now.setHours(now.getHours() + parseInt(this.time)); break;
             case 'Day':
-                now.setDate(now.getDate() + +parseInt(this.time));
+                now.setDate(now.getDate() + parseInt(this.time)); break;
             case 'Month':
-                now.setMonth(now.getMonth() + +parseInt(this.time));
+                now.setMonth(now.getMonth() + parseInt(this.time)); break;
+            default: 
+                break;
         }
         this.endOfSanction = now;
         console.log(now);
@@ -51,11 +54,13 @@ export class Sanction {
         // console.log(this.sanction);
         switch (this.sanction) {
             case 'ban': 
-                await this.ban();
+                await this.ban(); break;
             case 'mute':
-                await this.mute();
+                await this.mute(); break;
             case 'kick':
-                await this.kick();
+                await this.kick(); break;
+            default:
+                break;
         }
     }
 
@@ -78,6 +83,8 @@ export class Sanction {
 				id_room: Room.id,
 			}
 		});
+        if (relation === undefined) // user is not in the channel
+            return ;
         await this.prisma.roomToUser.delete({
             where: {
                 id: relation[0].id,
@@ -85,20 +92,21 @@ export class Sanction {
         });
         // Create Ban model
         console.log(this.endOfSanction);
-        // await this.prisma.banned.create({
-        //     data : {
-        //         id_user: User.id_user,
-        //         id_room: Room.id,
-        //         endBan : this.endOfSanction,
-        //     }
-        // });
-        // console.log(this.Clients)
-        // for (let i = 0; i < this.Clients.length; i++) {
-        //     console.log(this.Clients[i].user);
-        //     if (this.Clients[i].user.login === User.login) {
-        //         this.Clients[i].client.emit('deletedRoom', Room.name);
-        //     }
-        // }
+        await this.prisma.banned.create({
+            data : {
+                id_user: User.id_user,
+                id_room: Room.id,
+                endBan : this.endOfSanction,
+            }
+        });
+        console.log(this.Clients)
+        for (let i = 0; i < this.Clients.length; i++) {
+            // console.log(this.Clients[i].user);
+            if (this.Clients[i].user.login === User.login) {
+                this.Clients[i].client.emit('deletedRoom', Room.name);
+            }
+        }
+        this.By.emit('deletedMember', this.member);
     }
 
     async mute() {
@@ -107,30 +115,40 @@ export class Sanction {
         // Set the endMutetime
     }
 
+    // Same as ban but without the creation of the ban model
     async kick() {
-        // Delete relation
-        // const User = await this.db.user.findUnique({
-        //     where: {
-        //         login: this.member
-        //     }
-        // });
-        // const Room  = await this.db.room.findUnique({
-        //     where: {
-        //         name: this.room
-        //     }
-        // });
-        // const relation = await this.prisma.roomToUser.findMany({
-		// 	where: {
-		// 		id_user: User.id_user,
-		// 		id_room: Room.id,
-		// 	}
-		// });
-        // await this.prisma.roomToUser.delete({
-        //     where: {
-        //         id: relation[0].id,
-        //     }
-        // });
-        // 
+        console.log('Kick');
+        const User = await this.db.user.findUnique({
+            where: {
+                id_user : this.member.id_user
+            }
+        });
+        const Room  = await this.db.room.findUnique({
+            where: {
+                name: this.room
+            }
+        });
+        const relation = await this.prisma.roomToUser.findMany({
+			where: {
+				id_user: User.id_user,
+				id_room: Room.id,
+			}
+		});
+        if (relation[0] === undefined) // user is not in the channel
+            return ;
+        await this.prisma.roomToUser.delete({
+            where: {
+                id: relation[0].id,
+            }
+        });
+        console.log(this.Clients)
+        for (let i = 0; i < this.Clients.length; i++) {
+            console.log(this.Clients[i].user);
+            if (this.Clients[i].user.login === User.login) {
+                this.Clients[i].client.emit('deletedRoom', Room.name);
+            }
+        }
+        this.By.emit('deletedMember', this.member);
     }
 
     findRoom(roomName : string) {

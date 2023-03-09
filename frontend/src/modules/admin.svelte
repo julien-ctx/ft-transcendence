@@ -32,7 +32,13 @@
 		} catch (error) {
 			console.log(error);
 		}
-		console.log(members)
+		console.log('Members ->', members)
+
+		socket.on('deletedMember', (data : any) => {
+			console.log('Data ->', data);
+			members.filter((mem : any) => mem.user.id_user === data.id_user);
+			console.log('New members ->', members);
+		});
 	});
 
 	function admin(sanction : string, Punished : any) {
@@ -47,14 +53,21 @@
 		})
 	}
 
-	function Kick() {
+	function Kick(Punished : any) {
 		socket.emit('sanction', {
 			roomName: room,
-			sanction: 'Kick',
-			member: selected,
+			sanction: 'kick',
+			member: Punished,
 			time: '',
 			duration: '',
 		})
+	}
+
+	function OP(Punished : any) {
+		socket.emit('OP', {
+			roomName: room,
+			member: Punished,
+		});
 	}
 
 	let selected = '';
@@ -88,7 +101,9 @@
 						<Dropdown class="w-full">
 							<DropdownItem>
 								<div class="flex justify-center">
-									<div>OP {member.user.login}</div> 
+									<button on:click={() => OP(member.user)}>
+										<div>OP {member.user.login}</div>
+									</button>
 								</div>
 							</DropdownItem>
 						</Dropdown>
@@ -97,7 +112,9 @@
 					<Dropdown class="w-full">
 						<DropdownItem>
 							<div class="flex justify-center">
-								<div>Kick {member.user.login}</div> 
+								<button on:click={() => Kick(member.user)}>
+									<div>Kick {member.user.login}</div> 
+								</button>
 							</div>
 						</DropdownItem>
 					</Dropdown>
@@ -150,7 +167,9 @@
 					<Dropdown class="w-full">
 						<DropdownItem>
 							<div class="flex justify-center">
-								<div>Kick {member.user.login}</div> 
+								<button on:click={() => Kick(member.user)}>
+									<div>Kick {member.user.login}</div> 
+								</button>
 							</div>
 						</DropdownItem>
 					</Dropdown>
@@ -185,7 +204,7 @@
 									<option value="Month">Month</option>
 								</select>
 								<div class="justify-center">
-									<Door on:click={() => admin('ban')}/>
+									<Door on:click={() => admin('ban', member.user)}/>
 								</div>
 							</div>
 						</DropdownItem>

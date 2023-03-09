@@ -107,6 +107,7 @@ export class ChatService {
 			},
 			include: {
 				Message : true,
+				banned : true,
 			}
 		});
 		return room;

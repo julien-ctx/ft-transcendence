@@ -7,9 +7,9 @@
     import UserCard from '../../modules/htmlComponent/userCard.svelte';
     import HeaderUserCard from '../../modules/htmlComponent/headerUserCard.svelte';
     import CardRank from '../../modules/htmlComponent/cardRank.svelte';
-    import SvgMsg from '../../modules/htmlComponent/svgMsg.svelte';
-    import SvgAdd from '../../modules/htmlComponent/svgAdd.svelte';
-    import SvgDelete from '../../modules/htmlComponent/svgDelete.svelte';
+    import SvgMsg from '../../modules/htmlComponent/svgComponent/svgMsg.svelte';
+    import SvgAdd from '../../modules/htmlComponent/svgComponent/svgAdd.svelte';
+    import SvgDelete from '../../modules/htmlComponent/svgComponent/svgDelete.svelte';
     import UserActivity from '../../modules/htmlComponent/userActivity.svelte';
     import TabUser from '../../modules/htmlComponent/tabUser.svelte';
 

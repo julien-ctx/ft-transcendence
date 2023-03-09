@@ -10,6 +10,7 @@
 	let myProfile : any;
 	let myRoomMp : any;
 	let socketMp : any;
+	let divMp : any;
 
 	myRoomMpStore.subscribe(val => myRoomMp = val);
 	myProfileDataStore.subscribe(val => myProfile = val);
@@ -50,10 +51,11 @@
 			}
 		})
 		socketMpStore.set(socketMp);
+
 	})
 
 </script>
-<div class="div-mp">
+<div class="div-mp" bind:this={divMp}>
 	{#each myRoomMp as room}
 		<MpModal room={room} myProfile={myProfile} socketMp={socketMp}/>
 	{/each}

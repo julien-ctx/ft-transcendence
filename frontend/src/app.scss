@@ -39,21 +39,32 @@ canvas {
 }
 
 .div-mp {
-	display: flex;
-	position: absolute;
-	right: 10px;
+	position: fixed;
 	bottom: 0;
+	right: 0;
+	right: 0;
+	overflow: hidden;
+	display: flex;
 	align-items: flex-end;
+	gap: 2px;
 	transition: all 300ms ease-in-out;
 	.mp-modal {
 		border: 1px solid $third;
 		border-radius: 7px;
 		background-color: $primary;
 		font-family: 'Audiowide' !important;
+		min-width: 300px;
+		overflow: hidden;
 		.header {
 			border: none;
 			cursor: pointer;
 			user-select: none;
+			display: flex;
+			gap: 5px;
+			flex-wrap: nowrap;
+			align-items: center;
+			justify-content: space-between;
+			padding: 5px;
 			&.active {
 				border-bottom: 1px solid $third;
 			}

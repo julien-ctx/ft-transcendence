@@ -1,12 +1,23 @@
 <script lang="ts">
     import { Indicator } from 'flowbite-svelte';
-    import Trash from '../../modules/htmlComponent/svgTrash.svelte';
-    import Edit from '../../modules/htmlComponent/svgParams.svelte';
+    import Trash from '../../modules/htmlComponent/svgComponent/svgTrash.svelte';
+    import Edit from '../../modules/htmlComponent/svgComponent/svgParams.svelte';
 
     export let room : any;
     export let socket : any;
     export let admin : string;
     export let modalAdmin : boolean;
+
+    socket.on('newRight', (data : any) => {
+        console.log(room);
+        room.map((room : any) => {
+            if (room.name === data) {
+                room.admin = true;
+            }
+        });
+        room = room;
+        console.log(room);
+    });
 
     function leaveRoom() {
         socket.emit('leaveRoom', {

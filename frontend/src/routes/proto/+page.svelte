@@ -1,15 +1,15 @@
 <script lang="ts">
     import { Button, Modal, FloatingLabelInput, Select } from "flowbite-svelte";
     import { onMount } from "svelte";
-    import Arrow from '../../modules/htmlComponent/svgArrow.svelte';
+    import Arrow from '../../modules/htmlComponent/svgComponent/svgArrow.svelte';
     import axios from 'axios';
     import { getJwt } from '$lib/jwtUtils';
     import { myProfileDataStore, usersDataStore } from "$lib/store/user";
     import { io } from 'socket.io-client';
 	import Channels from './roomStyle.svelte';
-	import Trash from '../../modules/htmlComponent/svgTrash.svelte';
+	import Trash from '../../modules/htmlComponent/svgComponent/svgTrash.svelte';
     import RoomEdit from "../../modules/roomEdit.svelte";
-	import Close from '../../modules/htmlComponent/svgClose.svelte';
+	import Close from '../../modules/htmlComponent/svgComponent/svgClose.svelte';
     import Members from '../../modules/admin.svelte';
 
     let socket : any;
@@ -162,6 +162,7 @@
 
     function openJoin() {
         modalJoin = true;
+        err = {name : "", desc : "", status : "", pass : "", cpass : "", already : ""};
         JoinName = '';
         JoinPass = '';
         needPass = '';
@@ -188,7 +189,7 @@
 			</div>
 		{/if}
         <div class="absolute bottom-0 right-0 w-64 mr-4 rounded-xl h-2/3 border border-secondary">
-            <div class="flex flex-row justify-center gap-4 text-2xl pl-4">
+            <div class="flex flex-row justify-center gap-4 text-1xl pl-4">
                 <button on:click={() => changeAppearC()}>
                     Channels
                 </button>
@@ -239,7 +240,7 @@
 				</button>
 			</div>
 		{/if}
-        <button class="flex justify-center bg-white rounded w-24" on:click={() => show = true}>
+        <button class="flex justify-center bg-white rounded w-28" on:click={() => show = true}>
             <span>Messagerie</span>
         </button>
 
@@ -295,7 +296,7 @@
 </Modal>
 
 <Modal bind:open={modalAdmin} title="Admin Panel" color="third">
-    <Members room={admin} socket={socket} />
+    <Members room={admin} socket={socket} infoChannel={rooms}/>
 	<div class="flex justify-center gap-8">
 		<Button style="" gradient color="third" on:click={() => close()}>Close</Button>
 	</div>

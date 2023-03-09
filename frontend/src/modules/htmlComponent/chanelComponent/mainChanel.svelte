@@ -10,6 +10,10 @@
     import SvgEdit from "../svgComponent/svgEdit.svelte";
     import SvgTrash from "../svgComponent/svgTrash.svelte";
     import SvgClose from "../svgComponent/svgClose.svelte";
+    import { socketMpStore } from "$lib/store/socket";
+    import SvgMsg from "../svgComponent/svgMsg.svelte";
+    import MpModal from "../mpComponent/mpModal.svelte";
+    import ChanModal from "./chanModal.svelte";
 
     let socket : any;
     // Messagerie : //
@@ -20,6 +24,9 @@
     let myProfile : any;
 	let openedRoom : any = '';
 	let chat : boolean = false;
+    let socketMp : any;
+    let active : string = "";
+    let currentRoom : any;
 
     // Modal Create : //
     let roomName = '';
@@ -53,6 +60,8 @@
     myProfileDataStore.subscribe((value) => {
         myProfile = value;
     });
+
+    socketMpStore.subscribe(val => socketMp = val);
 
     onMount(async () => {
         let token : string = getJwt();
@@ -159,85 +168,65 @@
 
 </script>
 <div class="div-chan flex items-end">
-    {#if show}
-        {#if openedRoom !== ''}
-            <div class="flex justify-between bg-white w-26 w-64 mr-4 rounded-xl">
-                <button on:click={() => chat = true}>
-                    <span>{openedRoom}</span> 
-                </button>
-                <button on:click={() => { openedRoom = ''}}>
-                    <SvgClose />
-                </button>
-            </div>
-        {/if}
-        <div class="w-full mr-4 rounded-xl h-full border border-secondary">
-            <div class="flex flex-row justify-center gap-4 text-1xl pl-4">
-                <button on:click={() => toShow = false}>
-                    Channels
-                </button>
-                <button on:click={() => toShow = true}>
-                    Friends
-                </button>
-                <button on:click={() => show = !show}>
-                    <Arrow />
-                </button>
-            </div>
-            <br>
-            <div class="overflow-auto">
-                {#if toShow === false}
-                    <div class="flex flex-col gap-4">
-                        {#each rooms as room}
-                                <div class="flex flex-row justify-between w-full bg-white rounded text-2xl pl-4 ">
-                                    <button on:click={() => {openedRoom = room.name; chat = true}}>
-                                        {room.name.length > 10 ? room.name.substring(0, 10) + "..." : room.name}
-                                    </button>
-                                    <div>
-                                        {#if room.admin === true}
-                                            <button on:click={() => {admin = room.name; modalAdmin = true}}>
-                                                <SvgEdit />
-                                            </button>
-                                        {/if}
-                                        <button class="rounded justify-center" on:click={() => leaveRoom(room)}>
-                                            <SvgTrash />
-                                        </button>
-                                    </div>
-                                </div>
-                        {/each}
-                    </div>
-                {:else}
-                    {#each allUsers as user}
-                        {#if myProfile.friend_id && myProfile.friend_id.includes(user.id)}
-                            {user.login}
-                        {/if}
-                    {/each}
-                {/if}
-            </div>
-            <div class="container-action">
-                <button class="button-action" on:click={() => openCreate()}>
-                    Create
-                </button>
-                <button class="button-action" on:click={() => openJoin()}>
-                    Join
-                </button>
-            </div>
-        </div>
-    {:else}
-        <div>
-            {#if openedRoom !== ''}
-                <div class="flex justify-between bg-white w-26 border">
-                    <button on:click={() => chat = true}>
-                        <span>{openedRoom}</span> 
-                    </button>
-                    <button on:click={() => { openedRoom = ''}}>
-                        <SvgClose />
-                    </button>
-                </div>
-            {/if}
-            <button class="button-messagerie" on:click={() => show = true}>
-                Messagerie
+    {#if currentRoom}
+        <ChanModal myProfile={myProfile} room={currentRoom} socketRoom={socket}/>
+    {/if}
+    <div class="content-chan {active}">
+        <div class="header">
+            <button on:click={() => toShow = false}>
+                Channels
+            </button>
+            <button on:click={() => toShow = true}>
+                Friends
+            </button>
+            <button on:click={() => active = ""}>
+                <Arrow />
             </button>
         </div>
-    {/if}
+        <div class="body">
+            {#if toShow === false}
+                <div class="flex flex-col gap-4">
+                    {#each rooms as room}
+                        <div class="flex flex-row justify-between w-full bg-white rounded text-2xl pl-4 ">
+                            <button on:click={() => {currentRoom = room; chat = true}}>
+                                {room.name.length > 10 ? room.name.substring(0, 10) + "..." : room.name}
+                            </button>
+                            <div>
+                                {#if room.admin === true}
+                                    <button on:click={() => {admin = room.name; modalAdmin = true}}>
+                                        <SvgEdit />
+                                    </button>
+                                {/if}
+                                <button class="rounded justify-center" on:click={() => leaveRoom(room)}>
+                                    <SvgTrash />
+                                </button>
+                            </div>
+                        </div>
+                    {/each}
+                </div>
+            {:else}
+                {#each allUsers as user}
+                    {#if myProfile.friend_id && myProfile.friend_id.includes(user.id)}
+                        {user.login} 
+                        <button on:click={() => {socketMp.emit("create-room", {user_send : myProfile, user_receive : user})}}>
+                            <SvgMsg />
+                        </button>
+                    {/if}
+                {/each}
+            {/if}
+        </div>
+        <div class="container-action">
+            <button class="button-action" on:click={() => openCreate()}>
+                Create
+            </button>
+            <button class="button-action" on:click={() => openJoin()}>
+                Join
+            </button>
+        </div>
+    </div>
+    <button class="button-messagerie {active}" on:click={() => active = "active"}>
+        Messagerie
+    </button>
 </div>
     
 

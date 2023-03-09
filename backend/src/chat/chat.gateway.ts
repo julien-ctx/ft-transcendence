@@ -18,6 +18,9 @@ import { UserService } from 'src/user/user.service';
 import { RoomClass } from './room.interface';
 import { Socket } from 'dgram';
 import { Sanction } from './sanction.class';
+import { UseGuards } from '@nestjs/common';
+import { UserGuardGateway } from 'src/user/guard/user.guard.gateway';
+import { User } from '@prisma/client';
 
 @WebSocketGateway({
 	path : '/chat',
@@ -410,6 +413,47 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 				elem.client.emit('OP', data.roomName);
 			}
 		});
+	}
+
+	@UseGuards(UserGuardGateway)
+	@SubscribeMessage("write")
+	async write(@MessageBody() body : {user_receive : User [], room : any, login : string}) {
+		let room = body.room;
+		if (room.write && !room.write.includes(body.login))
+			room.write.push(body.login);
+		else if (!room.write)
+			room.write = [body.login]
+		// console.log("write", room.write, body.user_receive);
+		this.Client.forEach((elem : any) => {
+			// console.log(elem);
+			
+			for (let i = 0; i < body.user_receive.length; i++) {
+				if (elem.user.id == body.user_receive[i].id_user) {
+					console.log(room);
+					
+					elem.client.emit('event-write', room);
+				}
+			}
+		})
+	}
+
+	@UseGuards(UserGuardGateway)
+	@SubscribeMessage("unwrite")
+	async unwrite(@MessageBody() body : {user_receive : User [], room : any, login : string}) {
+		let room = body.room;
+		if (room.write) {
+			room.write = room.write.filter(elem => elem != body.login);
+		}
+		// console.log("unwrite", room.write, body.user_receive);
+		this.Client.forEach((elem : any) => {
+			for (let i = 0; i < body.user_receive.length; i++) {
+				if (elem.user.id == body.user_receive[i].id_user) {
+					console.log(room);
+					
+					elem.client.emit('event-write', room);
+				}
+			}
+		})
 	}
 
 	handleDisconnect(client: any) {

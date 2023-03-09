@@ -24,6 +24,11 @@ export class ChatController {
 		return await this.Chatservice.getAll(userReq.id_user);
 	}
 
+	@Get('Users/:room')
+	async getUserRoom(@UserDec() userReq: User, @Param('room') room: string) {
+		return await this.Chatservice.getUsersRooms(userReq, room);
+	}
+
 	@Get('getMembers/:room')
 	async getRoom(@UserDec() userReq: User, @Param('room') room: string) {
 		return await this.Chatservice.getMembers(room, userReq.id_user);

@@ -39,6 +39,21 @@ export class UserEventGateway implements OnGatewayInit, OnGatewayConnection, OnG
 				this.server.emit("event_user", user)
 			})
 		})
+		
+		// await this.userService.getAll()
+		// .then(async (allUsers : User []) => {
+		// 	allUsers.forEach(async (elem : User) => {
+		// 		if (this.usersArr.some((e) => e.user.id != elem.id) && elem.activity != 0) {
+		// 			await this.userService.updateUser({
+		// 				activity : 0,
+		// 				twoFaAuth : false
+		// 			}, elem.id)
+		// 			.then((userUpdate) => {
+		// 				this.server.emit("event_user", userUpdate)
+		// 			})
+		// 		}
+		// 	})
+		// })
 	}
 
 	async handleDisconnect(@ConnectedSocket() client: Socket) {
@@ -60,7 +75,6 @@ export class UserEventGateway implements OnGatewayInit, OnGatewayConnection, OnG
 	async disconnectUser(@MessageBody() user : User) {
 		await this.userService.updateUser({
 			activity : 0,
-			// twoFaAuth : false
 		}, user.id)
 		.then((userUpdate : User) => {
 			this.server.emit("event_user", userUpdate);
@@ -154,7 +168,30 @@ export class UserEventGateway implements OnGatewayInit, OnGatewayConnection, OnG
 	@UseGuards(UserGuardGateway)
 	@SubscribeMessage("unblock_user")
 	async unblockUser(@MessageBody() body : {id_user_send : number, id_user_receive : number}) {
-		try {			
+		try {
+			const user1 = await this.userService.getOne(body.id_user_send);
+			const user2 = await this.userService.getOne(body.id_user_receive);
+			let idRoom : number = 0;
+			for (let i = 0; i < user2.roomMp.length && i < user1.roomMp.length; i++) {
+				if (user1.roomMp[i].id == user2.roomMp[i].id) {
+					idRoom = user1.roomMp[i].id;
+				}
+			}
+			if(idRoom != 0) {
+				await this.prisma.roomMessagePrivate.update({
+					where : {
+						id : idRoom
+					},
+					data : {
+						open_id : {
+							set : []
+						}
+					}
+				})
+				.then((roomUpdated) => {
+					this.server.emit("room-unblock", roomUpdated);
+				})
+			}
 			await this.userService.getOne(body.id_user_send)
 			.then(async (user : User) => {
 				const blockId = this.userService.filterId(user.block_id, body.id_user_receive);

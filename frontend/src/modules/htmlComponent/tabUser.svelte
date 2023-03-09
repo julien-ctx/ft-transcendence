@@ -2,7 +2,7 @@
 	import { Accordion, AccordionItem, Avatar, Tooltip, Card, Dropdown, MenuButton, TabItem, Tabs } from "flowbite-svelte";
     import UserCard from "../../modules/htmlComponent/userCard.svelte";
     import HeaderUserCard from "../../modules/htmlComponent/headerUserCard.svelte";
-    import { myProfileDataStore, usersDataStore } from "$lib/store/user";
+    import { myProfileDataStore, userProfileDataStore, usersDataStore } from "$lib/store/user";
 
 	export let user : any;
 	let allUsers : any;
@@ -28,9 +28,9 @@
 					No friend
 				{:else}
 					<HeaderUserCard />
-					{#each allUsers as user}
-						{#if user.friend_id && user.friend_id.includes(user.id)}
-							<UserCard user={user} />
+					{#each allUsers as friend}
+						{#if user.friend_id && user.friend_id.includes(friend.id)}
+							<UserCard user={friend} />
 						{/if}
 					{/each}
 				{/if}

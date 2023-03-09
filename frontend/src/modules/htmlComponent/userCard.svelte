@@ -1,17 +1,18 @@
 <script lang="ts">
 	import { Avatar, Dropdown, DropdownItem, MenuButton, Indicator } from "flowbite-svelte";
     import { myProfileDataStore, userProfileDataStore, usersDataStore } from '$lib/store/user';
-    import { socketFriendStore, socketUserStore } from '$lib/store/socket';
-    import SvgAdd from "../../modules/htmlComponent/svgAdd.svelte";
-    import SvgDelete from "../../modules/htmlComponent/svgDelete.svelte";
-    import SvgProfile from "../../modules/htmlComponent/svgProfile.svelte";
-    import SvgMsg from "../../modules/htmlComponent/svgMsg.svelte";
+    import { socketFriendStore, socketUserStore, socketMpStore } from '$lib/store/socket';
+    import SvgAdd from "../../modules/htmlComponent/svgComponent/svgAdd.svelte";
+    import SvgDelete from "../../modules/htmlComponent/svgComponent/svgDelete.svelte";
+    import SvgProfile from "../../modules/htmlComponent/svgComponent/svgProfile.svelte";
+    import SvgMsg from "../../modules/htmlComponent/svgComponent/svgMsg.svelte";
     import { goto } from "$app/navigation";
     import { GetOneUser } from "$lib/userUtils";
     import UserActivity from './userActivity.svelte';
 
 	let socketFriend : any;
 	let socketUser : any;
+    let socketMp : any;
 	let myProfile : any;
 	let allUsers : any = [];
     export let user : any;
@@ -20,6 +21,7 @@
 	usersDataStore.subscribe(val => allUsers = val);
 	socketFriendStore.subscribe(val => socketFriend = val);
 	socketUserStore.subscribe(val => socketUser = val);
+    socketMpStore.subscribe(val => socketMp = val);
 
 	function handleClickAcceptFriend(user : any) {
 		let notif : any;
@@ -112,7 +114,7 @@
                         <SvgAdd/>
                     </button>
                 {/if}
-                <button>
+                <button on:click={() => {socketMp.emit("create-room", {user_send : myProfile, user_receive : user})}}>
                     <SvgMsg />
                 </button>
             {/if}

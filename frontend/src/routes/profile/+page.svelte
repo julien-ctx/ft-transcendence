@@ -7,11 +7,11 @@
     import { getJwt } from "$lib/jwtUtils";
     import CardRank from "../../modules/htmlComponent/cardRank.svelte";
     import UserActivity from "../../modules/htmlComponent/userActivity.svelte";
-    import SvgCancel from "../../modules/htmlComponent/svgCancel.svelte";
-    import SvgConfirm from "../../modules/htmlComponent/svgConfirm.svelte";
-    import SvgEdit from "../../modules/htmlComponent/svgEdit.svelte";
-    import Svg2faEnable from "../../modules/htmlComponent/svg2faEnable.svelte";
-    import Svg2faDisabled from "../../modules/htmlComponent/svg2faDisabled.svelte";
+    import SvgCancel from "../../modules/htmlComponent/svgComponent/svgCancel.svelte";
+    import SvgConfirm from "../../modules/htmlComponent/svgComponent/svgConfirm.svelte";
+    import SvgEdit from "../../modules/htmlComponent/svgComponent/svgEdit.svelte";
+    import Svg2faEnable from "../../modules/htmlComponent/svgComponent/svg2faEnable.svelte";
+    import Svg2faDisabled from "../../modules/htmlComponent/svgComponent/svg2faDisabled.svelte";
     import TabUser from "../../modules/htmlComponent/tabUser.svelte";
     import { API_URL } from "$lib/env";
 

@@ -4,11 +4,11 @@
 	import { Modal, Select, Button, Chevron, Dropdown, DropdownItem } from 'flowbite-svelte';
 	import { getJwt } from "$lib/jwtUtils";
 	import { API_URL } from "$lib/env";
-	import Hammer from './htmlComponent/svgHammer.svelte';
-	import Mute from './htmlComponent/svgMute.svelte';
+	import Hammer from './htmlComponent/svgComponent/svgHammer.svelte';
+	import Mute from './htmlComponent/svgComponent/svgMute.svelte';
 	import Close from './htmlComponent/svgComponent/svgClose.svelte';
-	import Door from './htmlComponent/svgDoor.svelte';
-	import Upgrade from './htmlComponent/svgUpgrade.svelte';
+	import Door from './htmlComponent/svgComponent/svgDoor.svelte';
+	import Upgrade from './htmlComponent/svgComponent/svgUpgrade.svelte';
 	export let socket : any;
 	export let room : string;
 	export let infoChannel : any;

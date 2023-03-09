@@ -7,7 +7,6 @@ import { User } from "@prisma/client";
 import { Server, Socket } from "socket.io";
 import { PrismaService } from "src/prisma/prisma.service";
 
-let interval: any;
 const MAX_SCORE = 3;
 
 @WebSocketGateway({
@@ -16,13 +15,14 @@ const MAX_SCORE = 3;
 })
 export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
 	constructor (
-		private gameService : GameService,
-		private jwt : JwtService,
-		private prisma : PrismaService
+	private gameService : GameService,
+	private jwt : JwtService,
+	private prisma : PrismaService
 	) {this.gameLoop = this.gameLoop.bind(this);}
-
+	
 	private queue: WaitingClient[] = [];
 	private games: Game[] = [];
+	private interval: any = null;
 
 	@WebSocketServer() server: Server;
 
@@ -40,7 +40,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		this.queue.push(new WaitingClient(socket, fullUserData))
 	}
 
-	handleDisconnect(@ConnectedSocket() socket: Socket) {
+	handleDisconnect(socket: Socket) {
 		this.removeFromGame(socket);
 		this.removeFromQueue(socket);
 	}
@@ -79,7 +79,10 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 					game.rightClient.socket.emit('winner', {winner: winner, side: 1});
 				}
 			}
-			return clearInterval(interval);
+			if (this.interval) {
+				clearInterval(this.interval);
+				return;
+			}
 		}
 		game.leftClient.socket.emit('paddlesData', {leftPaddle: game.leftClient.leftPaddle, rightPaddle: game.leftClient.rightPaddle});
 		game.leftClient.socket.emit('ballData', {ball: game.leftClient.ball});
@@ -100,10 +103,23 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	@SubscribeMessage('ready')
 	startGame(socket: Socket, data: {width, height, playerNumber}) {
 		let waitingClient = this.queue.find(waitingClient => waitingClient.socket === socket);
-		if (!waitingClient) return;
+		// if (!waitingClient) {
+		// 	this.games.forEach((element, index) => {
+		// 		if ((element.leftClient.socket === socket)) {
+		// 			waitingClient = new WaitingClient(element.leftClient.socket, element.leftClient.user);
+		// 			this.removeFromGame(socket);
+		// 		} else if (element.rightClient && element.rightClient.socket === socket) {
+		// 			waitingClient = new WaitingClient(element.rightClient.socket, element.rightClient.user);
+		// 			this.removeFromGame(socket);
+		// 		}
+		// 	});
+		// 	console.log('waitingClient null');
+		// 	return;
+		// } else if () {
 		if (socket === waitingClient.socket) {
 			this.removeFromQueue(socket);
 		}
+		// }
 		let canvas = this.gameService.createCanvas(data.width, data.height);
 		let client = new Client(
 			waitingClient.socket,
@@ -176,8 +192,9 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 				});
 			}
 			socket.on('gameLoop', ({}) => {
-				interval = setInterval(this.gameLoop, 1, this.games[this.games.length - 1]);
+				this.interval = setInterval(this.gameLoop, 1, this.games[this.games.length - 1]);
 			});
+			
 		}
 	}
 };

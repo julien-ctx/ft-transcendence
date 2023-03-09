@@ -41,4 +41,13 @@ export class RoomClass {
 				client.Client = Client;
 		});
 	}
+
+	findClient(User : any) {
+		let client = null;
+		this.ClientUser.forEach((client) => {
+			if (client.User.id_user === User.id_user)
+				client = client.Client;
+		});
+		return client;
+	}
 }

@@ -107,6 +107,7 @@ export class ChatService {
 			},
 			include: {
 				Message : true,
+				banned : true,
 			}
 		});
 		return room;
@@ -157,6 +158,6 @@ export class ChatService {
 			return member.user;
 		});
 		console.log(membersObj);
-		return membersObj;
+		return members;
 	}
 }

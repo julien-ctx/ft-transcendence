@@ -8,6 +8,17 @@
     export let admin : string;
     export let modalAdmin : boolean;
 
+    socket.on('newRight', (data : any) => {
+        console.log(room);
+        room.map((room : any) => {
+            if (room.name === data) {
+                room.admin = true;
+            }
+        });
+        room = room;
+        console.log(room);
+    });
+
     function leaveRoom() {
         socket.emit('leaveRoom', {
             roomName : room.name,

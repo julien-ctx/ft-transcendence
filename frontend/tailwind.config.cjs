@@ -14,7 +14,10 @@ const config = {
 			"third" : "#AB9158",
 			"white" : "#F7ECDE",
 			"base" : "primary",
-			"dark" : "#282828"
+			"dark" : "#282828",
+			"light_blue" : "#8171E3",
+			"light_green" : "#64D989",
+			"light_yellow" : "#AED250",
 		}
 	},
 	plugins: [

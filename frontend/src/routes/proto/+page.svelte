@@ -162,6 +162,7 @@
 
     function openJoin() {
         modalJoin = true;
+        err = {name : "", desc : "", status : "", pass : "", cpass : "", already : ""};
         JoinName = '';
         JoinPass = '';
         needPass = '';
@@ -188,7 +189,7 @@
 			</div>
 		{/if}
         <div class="absolute bottom-0 right-0 w-64 mr-4 rounded-xl h-2/3 border border-secondary">
-            <div class="flex flex-row justify-center gap-4 text-2xl pl-4">
+            <div class="flex flex-row justify-center gap-4 text-1xl pl-4">
                 <button on:click={() => changeAppearC()}>
                     Channels
                 </button>
@@ -239,7 +240,7 @@
 				</button>
 			</div>
 		{/if}
-        <button class="flex justify-center bg-white rounded w-24" on:click={() => show = true}>
+        <button class="flex justify-center bg-white rounded w-28" on:click={() => show = true}>
             <span>Messagerie</span>
         </button>
 
@@ -295,7 +296,7 @@
 </Modal>
 
 <Modal bind:open={modalAdmin} title="Admin Panel" color="third">
-    <Members room={admin} socket={socket} />
+    <Members room={admin} socket={socket} infoChannel={rooms}/>
 	<div class="flex justify-center gap-8">
 		<Button style="" gradient color="third" on:click={() => close()}>Close</Button>
 	</div>

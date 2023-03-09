@@ -6,7 +6,7 @@
 	import { API_URL } from "$lib/env";
 	import Hammer from './htmlComponent/svgHammer.svelte';
 	import Mute from './htmlComponent/svgMute.svelte';
-	import Close from './htmlComponent/svgClose.svelte';
+	import Close from './htmlComponent/svgComponent/svgClose.svelte';
 	import Door from './htmlComponent/svgDoor.svelte';
 	import Upgrade from './htmlComponent/svgUpgrade.svelte';
 	export let socket : any;

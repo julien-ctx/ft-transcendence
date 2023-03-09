@@ -1,7 +1,7 @@
 <script lang="ts">
     import { Button, Modal, FloatingLabelInput, Select } from "flowbite-svelte";
     import { onMount } from "svelte";
-    import Arrow from '../../modules/htmlComponent/svgArrow.svelte';
+    import Arrow from '../../modules/htmlComponent/svgComponent/svgArrow.svelte';
     import axios from 'axios';
     import { getJwt } from '$lib/jwtUtils';
     import { myProfileDataStore, usersDataStore } from "$lib/store/user";

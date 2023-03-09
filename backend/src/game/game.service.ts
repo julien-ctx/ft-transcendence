@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Socket } from 'dgram';
-import { Ball, Paddle, GameCanvas } from './objects/objects';
+import { GameModule } from './game.module';
+import { Ball, Paddle, GameCanvas, Client, Game } from './objects/objects';
 
 @Injectable()
 export class GameService {
@@ -10,48 +11,96 @@ export class GameService {
 		return Math.round(Math.random()) * 2 - 1;
 	}
 
+	createLeftPaddle(canvas: GameCanvas) {
+		let paddle = new Paddle (
+			canvas.width * 0.015,
+			canvas.height * 0.5 - ((canvas.height * 0.15) / 2),
+			canvas.width * 0.005,
+			canvas.height * 0.15,
+			0,
+			0,
+			canvas.height * 0.0015,
+		);
+		return paddle;
+	}
+
+	createRightPaddle(canvas: GameCanvas) {
+		let paddle = new Paddle(
+			canvas.width - canvas.width * 0.015 - canvas.width * 0.005,
+			canvas.height * 0.5 - ((canvas.height * 0.15) / 2),
+			canvas.width * 0.005,
+			canvas.height * 0.15,
+			0,
+			0,
+			canvas.height * 0.0015,
+		);
+		return paddle;	
+	}
+
+	createBall(canvas: GameCanvas) {
+		let ball = new Ball(
+			canvas.width * 0.5,
+			canvas.height * 0.5,
+			canvas.width * 0.02,
+			{
+				x: 2 * this.randomBallDirection(),
+				y: 2 * this.randomBallDirection(),
+			},
+			{
+				x: canvas.width * 0.004,
+				y: canvas.height * 0.007,
+			},
+		);
+		return ball;
+	}
+
+	createCanvas(width: number, height: number) {
+		let canvas = new GameCanvas(
+			width,
+			height,
+		);
+		return canvas;
+	}
+
 	handleResize(
-		canvas: GameCanvas,
+		client: Client,
 		winWidth: number,
 		winHeight: number,
-		leftPaddle: Paddle,
-		rightPaddle: Paddle,
-		ball: Ball,
 	) {
-		const width = canvas.width;
-		const height = canvas.height;
+		const width = client.canvas.width;
+		const height = client.canvas.height;
 
-		canvas.width = winWidth * 0.7;
-		canvas.height = winHeight * 0.8;
+		client.canvas.width = winWidth * 0.7;
+		client.canvas.height = winHeight * 0.8;
 
-		rightPaddle.x = canvas.width - canvas.width * 0.015 - canvas.width * 0.005;
-		rightPaddle.width =  canvas.width * 0.005;
-		rightPaddle.height = canvas.height * 0.15;
-		rightPaddle.y = rightPaddle.y * canvas.height / height;
-		rightPaddle.speed = canvas.height * 0.0015;
+		client.rightPaddle.x = client.canvas.width - client.canvas.width * 0.015 - client.canvas.width * 0.005;
+		client.rightPaddle.width =  client.canvas.width * 0.005;
+		client.rightPaddle.height = client.canvas.height * 0.15;
+		client.rightPaddle.y = client.rightPaddle.y * client.canvas.height / height;
+		client.rightPaddle.speed = client.canvas.height * 0.0015;
 
-		leftPaddle.x = canvas.width * 0.015;
-		leftPaddle.width = canvas.width * 0.005;
-		leftPaddle.height = canvas.height * 0.15;
-		leftPaddle.y = leftPaddle.y * canvas.height / height;
-		leftPaddle.speed = canvas.height * 0.015;
+		client.leftPaddle.x = client.canvas.width * 0.015;
+		client.leftPaddle.width = client.canvas.width * 0.005;
+		client.leftPaddle.height = client.canvas.height * 0.15;
+		client.leftPaddle.y = client.leftPaddle.y * client.canvas.height / height;
+		client.leftPaddle.speed = client.canvas.height * 0.015;
 
-		ball.size = canvas.width * 0.02;
-		ball.x = ball.x * canvas.width / width;
-		ball.y = ball.y * canvas.height / height;
-		ball.speed = {
-			x: canvas.width * 0.0004,
-			y: canvas.height * 0.0007,
+		client.ball.size = client.canvas.width * 0.02;
+		client.ball.x = client.ball.x * client.canvas.width / width;
+		client.ball.y = client.ball.y * client.canvas.height / height;
+		client.ball.speed = {
+			x: client.canvas.width * 0.0004,
+			y: client.canvas.height * 0.0007,
 		};
 	}
 
-	resetBall(ball: Ball, side: number, canvas: GameCanvas) {
-		ball.x = canvas.width * 0.5;
-		ball.y = canvas.height * 0.5;
-		if ((side < 0 && ball.direction.x > 0) ||
-			(side > 0 && ball.direction.x < 0))
-			ball.direction.x = -ball.direction.x;
-		ball.direction.y = this.randomBallDirection() < 0 ? ball.direction.y : -ball.direction.y;
+	resetBall(client: Client, side: number) {
+		client.ball.x = client.canvas.width * 0.5;
+		client.ball.y = client.canvas.height * 0.5;
+		if ((side < 0 && client.ball.direction.x > 0) ||
+			(side > 0 && client.ball.direction.x < 0))
+			client.ball.direction.x = -client.ball.direction.x;
+		client.ball.direction.y = this.randomBallDirection() < 0 ? client.ball.direction.y : -client.ball.direction.y;
 	}
 
 	updateBot(ball: Ball, paddle: Paddle, canvas: GameCanvas) {
@@ -86,21 +135,31 @@ export class GameService {
 		}
 	}
 
-	checkBallPosition(ball: Ball,
-		leftPaddle: Paddle,
-		rightPaddle: Paddle,
-		maxScore: number,
-		canvas: GameCanvas) {
-		if (ball.x < 0) {
-			this.resetBall(ball, -1, canvas);
-			if (++rightPaddle.score === maxScore) {
-				return 'rightWin';
+	checkBallPosition(game: Game): string {
+		if (game.leftClient.ball.x < 0) {
+			this.resetBall(game.leftClient, -1);
+			if (game.playerNumber == 2) {
+				this.resetBall(game.rightClient, 1);
+			}
+			game.leftClient.rightPaddle.score++;
+			if (game.playerNumber == 2) {
+				game.rightClient.rightPaddle.score++;
+			}
+			if (game.leftClient.rightPaddle.score === game.maxScore) {
+				return game.playerNumber === 1 ? 'Bot' : game.rightClient.user['login'];
 			}
 		}
-		else if (ball.x > canvas.width - ball.size) {
-			this.resetBall(ball, 1, canvas);
-			if (++leftPaddle.score === maxScore) {
-				return 'leftWin';
+		else if (game.leftClient.ball.x > game.leftClient.canvas.width - game.leftClient.ball.size) {
+			this.resetBall(game.leftClient, 1);
+			if (game.playerNumber == 2) {
+				this.resetBall(game.rightClient, -1);
+			}
+			game.leftClient.leftPaddle.score++;
+			if (game.playerNumber == 2) {
+				game.rightClient.leftPaddle.score++;
+			}
+			if (game.leftClient.leftPaddle.score === game.maxScore) {
+				return game.leftClient.user['login'];
 			}
 		}
 		return 'NoWinner';

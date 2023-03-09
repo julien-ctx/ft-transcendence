@@ -285,14 +285,14 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 		const User = await this.Service.getOneById(idUser);
 		const Room = await this.chatService.getRoomByName(data.roomName);
 		
-		console.log(this.findRoom(Room.name));
+		// console.log(this.findRoom(Room.name));
 		let roomInstance = this.findRoom(Room.name);
 		if (roomInstance === undefined) {
 			roomInstance = new RoomClass(User, client, Room.name);
 			this.Rooms = [...this.Rooms, roomInstance];
 		}
 		else {
-			console.log('Is in the room : ', roomInstance.isHere(User));
+			// console.log('Is in the room : ', roomInstance.isHere(User));
 			if (roomInstance.isHere(User) === false)
 				roomInstance.addUser(User, client);
 			else 
@@ -353,7 +353,7 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 		const Room = await this.chatService.getRoomByName(data.roomName);
 		
 		let mdp = await this.chatService.hashedPass(data.Pass);
-		console.log(mdp);
+		// console.log(mdp);
 		await this.prisma.room.update({
 			where: {
 				id: Room.id,
@@ -428,7 +428,7 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 	}
 
 	findRoom(name: string) {
-		console.log('The room', this.Rooms);
+		// console.log('The room', this.Rooms);
 		return this.Rooms.find((room) => room.roomName === name);
 	}
 }

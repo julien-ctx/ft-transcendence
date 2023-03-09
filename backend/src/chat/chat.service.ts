@@ -42,7 +42,7 @@ export class ChatService {
 		const rooms = relation.map((roomToUser) => 
 			roomToUser.room.name
 			);
-		console.log(rooms);
+		// console.log(rooms);
 		let roomObj = [];
 		let Obj : {name : string, owner : boolean, status : string, admin : boolean};
 		relation.forEach((relat) => {
@@ -50,7 +50,7 @@ export class ChatService {
 			// roomObj.push(relat.room.name, relat.owner);
 			roomObj.push(Obj);
 		});
-		console.log(roomObj);
+		// console.log(roomObj);
 		return roomObj;
 	}
 
@@ -96,7 +96,7 @@ export class ChatService {
 				});
 			}
 		}
-		console.log(Rooms);
+		// console.log(Rooms);
 		return Rooms;
 	}
 
@@ -153,11 +153,11 @@ export class ChatService {
 			},
 		});
 		const members = relation.filter((relat) => relat.user.id_user !== id);
-		console.log(members);
-		const membersObj = members.map((member) => {
-			return member.user;
-		});
-		console.log(membersObj);
+		// console.log(members);
+		// const membersObj = members.map((member) => {
+			// return member.user;
+		// });
+		// console.log(membersObj);
 		return members;
 	}
 }

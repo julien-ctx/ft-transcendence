@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Avatar, Dropdown, DropdownItem, MenuButton, Indicator } from "flowbite-svelte";
     import { myProfileDataStore, userProfileDataStore, usersDataStore } from '$lib/store/user';
-    import { socketFriendStore, socketUserStore } from '$lib/store/socket';
+    import { socketFriendStore, socketUserStore, socketMpStore } from '$lib/store/socket';
     import SvgAdd from "../../modules/htmlComponent/svgAdd.svelte";
     import SvgDelete from "../../modules/htmlComponent/svgDelete.svelte";
     import SvgProfile from "../../modules/htmlComponent/svgProfile.svelte";
@@ -12,6 +12,7 @@
 
 	let socketFriend : any;
 	let socketUser : any;
+    let socketMp : any;
 	let myProfile : any;
 	let allUsers : any = [];
     export let user : any;
@@ -20,6 +21,7 @@
 	usersDataStore.subscribe(val => allUsers = val);
 	socketFriendStore.subscribe(val => socketFriend = val);
 	socketUserStore.subscribe(val => socketUser = val);
+    socketMpStore.subscribe(val => socketMp = val);
 
 	function handleClickAcceptFriend(user : any) {
 		let notif : any;
@@ -112,7 +114,7 @@
                         <SvgAdd/>
                     </button>
                 {/if}
-                <button>
+                <button on:click={() => {socketMp.emit("create-room", {user_send : myProfile, user_receive : user})}}>
                     <SvgMsg />
                 </button>
             {/if}

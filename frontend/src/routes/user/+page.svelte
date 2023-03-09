@@ -3,7 +3,7 @@
 	import { Avatar, Card, Tabs, TabItem,  Dropdown, DropdownItem, MenuButton, } from "flowbite-svelte";
     import { onMount } from 'svelte';
     import { myProfileDataStore, userProfileDataStore, usersDataStore } from '$lib/store/user';
-    import { socketFriendStore, socketUserStore } from '$lib/store/socket';
+    import { socketFriendStore, socketMpStore, socketUserStore } from '$lib/store/socket';
     import UserCard from '../../modules/htmlComponent/userCard.svelte';
     import HeaderUserCard from '../../modules/htmlComponent/headerUserCard.svelte';
     import CardRank from '../../modules/htmlComponent/cardRank.svelte';
@@ -18,6 +18,7 @@
     let userProfile : any;
     let socketFriend : any;
     let socketUser : any;
+    let socketMp : any;
     let hasId : boolean = false;
 
     myProfileDataStore.subscribe(val => myProfile = val);
@@ -25,7 +26,8 @@
     usersDataStore.subscribe(val => allUsers = val);
 	socketFriendStore.subscribe(val => socketFriend = val);
     socketUserStore.subscribe(val => socketUser = val);
-        
+    socketMpStore.subscribe(val => socketMp = val);
+
 	onMount(async () => {
 		const urlParams = new URLSearchParams(window.location.search);
 		hasId = urlParams.has("id");
@@ -35,7 +37,7 @@
 			.then((res) => {
 				userProfileDataStore.set(res.data);
 			});
-		}        
+		}
 	})
 
 	function handleClickAcceptFriend(user : any) {
@@ -88,7 +90,7 @@
                                 <SvgAdd />
                             </button>
                         {/if}
-                        <button>
+                        <button on:click={() => {socketMp.emit("create-room", {user_send : myProfile, user_receive : userProfile})}}>
                             <SvgMsg />
                         </button>
                     {/if}

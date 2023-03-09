@@ -9,3 +9,5 @@ export const userProfileDataStore = writable({});
 export const myNotificationsDataStore = writable([]);
 
 export const myNotifLength = writable();
+
+export const myRoomMpStore = writable([]);

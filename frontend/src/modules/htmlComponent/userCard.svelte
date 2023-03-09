@@ -2,10 +2,10 @@
 	import { Avatar, Dropdown, DropdownItem, MenuButton, Indicator } from "flowbite-svelte";
     import { myProfileDataStore, userProfileDataStore, usersDataStore } from '$lib/store/user';
     import { socketFriendStore, socketUserStore, socketMpStore } from '$lib/store/socket';
-    import SvgAdd from "../../modules/htmlComponent/svgAdd.svelte";
-    import SvgDelete from "../../modules/htmlComponent/svgDelete.svelte";
-    import SvgProfile from "../../modules/htmlComponent/svgProfile.svelte";
-    import SvgMsg from "../../modules/htmlComponent/svgMsg.svelte";
+    import SvgAdd from "../../modules/htmlComponent/svgComponent/svgAdd.svelte";
+    import SvgDelete from "../../modules/htmlComponent/svgComponent/svgDelete.svelte";
+    import SvgProfile from "../../modules/htmlComponent/svgComponent/svgProfile.svelte";
+    import SvgMsg from "../../modules/htmlComponent/svgComponent/svgMsg.svelte";
     import { goto } from "$app/navigation";
     import { GetOneUser } from "$lib/userUtils";
     import UserActivity from './userActivity.svelte';

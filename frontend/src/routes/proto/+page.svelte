@@ -7,9 +7,9 @@
     import { myProfileDataStore, usersDataStore } from "$lib/store/user";
     import { io } from 'socket.io-client';
 	import Channels from './roomStyle.svelte';
-	import Trash from '../../modules/htmlComponent/svgTrash.svelte';
+	import Trash from '../../modules/htmlComponent/svgComponent/svgTrash.svelte';
     import RoomEdit from "../../modules/roomEdit.svelte";
-	import Close from '../../modules/htmlComponent/svgClose.svelte';
+	import Close from '../../modules/htmlComponent/svgComponent/svgClose.svelte';
     import Members from '../../modules/admin.svelte';
 
     let socket : any;

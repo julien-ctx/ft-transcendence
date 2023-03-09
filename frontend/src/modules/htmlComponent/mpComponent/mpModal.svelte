@@ -2,7 +2,7 @@
     import { Avatar } from "flowbite-svelte";
     import { afterUpdate } from "svelte";
     import MpBody from "./mpBody.svelte";
-    import SvgCancel from "../svgCancel.svelte";
+    import SvgCancel from "../svgComponent/svgCancel.svelte";
 
 	export let room : any;
 	export let myProfile : any;

@@ -22,7 +22,9 @@ export class AuthController{
 					id_user : dto.id
 				},
 				include : {
-					notification: true
+					notification: true,
+					RoomToUser: true,
+					roomMp : true
 				}
 			});
 			if (user) {

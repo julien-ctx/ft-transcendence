@@ -83,7 +83,22 @@
 				}
 			}                                                                                                                              
 		})
-
+		socketUser.on("room-unblock", (data : any) => {
+			if (myRoomMp && myRoomMp.length != 0) {
+				let arrId : number [] = [];
+				for (let i = 0; i < myRoomMp.length; i++) {
+					if (myRoomMp[i].id == data.id) {
+						myRoomMp[i] = data;
+						myRoomMpStore.set(myRoomMp)
+						arrId.push(data.id);
+					}
+				}
+				if (arrId && !arrId.includes(data.id)) {
+					myRoomMp.push(data)
+					myRoomMpStore.set(myRoomMp);
+				}
+			}
+		})
 		socketUserStore.set(socketUser);
 		
 		let socketFriend = io(API_URL, {
@@ -91,7 +106,6 @@
 			query : { token : getJwt()}
 		});
 		socketFriend.on('event_friend', (data : any) => {
-			console.log("event friend", data);
 			if (data.id && userProfile.id && data.id == userProfile.id)
 				userProfileDataStore.set(data);
 			else if (data.id && myProfile.id == data.id)

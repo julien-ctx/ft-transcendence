@@ -74,7 +74,7 @@ export class UserService {
 		})
 	}
 
-	async getAll(id : number) {
+	async getAll() {
 		return await this.prisma.user.findMany({
 			include : {
 				notification: true,

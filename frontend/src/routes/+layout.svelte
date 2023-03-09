@@ -3,7 +3,7 @@
     import "../app.postcss";
     import { page } from '$app/stores';
     import Header from "./Header.svelte";
-    import MpModal from "../modules/htmlComponent/mpModal.svelte";
+    import MpEach from "../modules/htmlComponent/mpComponent/mpEach.svelte";
 
 </script> 
 
@@ -15,6 +15,6 @@
 		<slot></slot>
 	</main>
 	{#if $page.url.pathname != "/login"}
-		<MpModal />
+		<MpEach />
 	{/if}
 </div>

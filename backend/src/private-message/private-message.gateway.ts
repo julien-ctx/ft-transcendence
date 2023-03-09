@@ -1,7 +1,7 @@
 import { UseGuards } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { WebSocketGateway, WebSocketServer, OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, MessageBody, ConnectedSocket } from "@nestjs/websockets";
-import { User, Notification, RoomMessagePrivate, MessagePrivate } from "@prisma/client";
+import { User, RoomMessagePrivate, MessagePrivate } from "@prisma/client";
 import { Server, Socket } from "socket.io";
 import { UserGuardGateway } from "src/user/guard/user.guard.gateway";
 import { UserGatewayInterface } from "src/user/interface/user.gateway.interface";
@@ -47,29 +47,24 @@ export class PrivateMessageGateway implements OnGatewayInit, OnGatewayConnection
 	async sendPm(@MessageBody() body : {user_send : any, user_receive : any}) {
 		const user1 = await this.userService.getOne(body.user_send.id);
 		const user2 = await this.userService.getOne(body.user_receive.id);
-		let isCreate : boolean = false;
-		let idRoom : number;
-		for (let i = 0; i < user2.roomMp.length && i < user1.roomMp.length; i++) {
-			if (user1.roomMp[i].id == user2.roomMp[i].id) {
-				isCreate= true;
-				idRoom = user1.roomMp[i].id;
-			}
-		}
+		let roomFind = await this.pmService.getRommPrivateWithIdUser(user1.id, user2.id);
+		if (!roomFind)
+			roomFind = await this.pmService.getRommPrivateWithIdUser(user2.id, user1.id);
 
-		if (!isCreate) {
-			await this.pmService.createRoomMessagePrivate(body.user_send, body.user_receive)
+		if (!roomFind) {
+			await this.pmService.createRoomMessagePrivate(user1, user2)
 			.then(async (room) => {
-				await this.userService.getOne(body.user_send.id)
-				.then(async (user) => {
+				await this.userService.getOne(user1.id)
+				.then(async (user : User) => {
 					this.emitToClientUser("update-user", user);
 					await this.pmService.getAllWithIdUser(user.id)
 					.then((allRoom) => {
-						this.emitToClientRoom("update-room", user, allRoom)
+						this.emitToClientRoom("all-update-room", user, allRoom)
 					})
 				})
 			})
 		} else {
-			await this.pmService.getRoomPrivate(idRoom)
+			await this.pmService.getRoomPrivate(roomFind.id)
 			.then(async (room) => {
 				let arr : number [] = room.open_id;
 				if (!arr.includes(user1.id))
@@ -78,7 +73,7 @@ export class PrivateMessageGateway implements OnGatewayInit, OnGatewayConnection
 					open_id : {
 						set : arr
 					}
-				}, idRoom)
+				}, roomFind.id)
 				.then(async (room) => {
 					await this.pmService.getAllMp(room.id)
 					.then(async (mp : MessagePrivate[]) => {
@@ -88,7 +83,8 @@ export class PrivateMessageGateway implements OnGatewayInit, OnGatewayConnection
 					})
 				})
 			});
-		}	
+		}
+
 	}
 
 	@UseGuards(UserGuardGateway)
@@ -130,16 +126,27 @@ export class PrivateMessageGateway implements OnGatewayInit, OnGatewayConnection
 				this.emitToClientRoom("update-room", userReceive, room);
 			})
 		})
-		// await this.pmService.getAllWithIdUser(body.id_user_send)
-		// .then(async (allRoom) => {
-		// 	const user = await this.userService.getOne(body.id_user_send);
-		// 	this.emitToClientRoom("update-room", user, allRoom);
-		// });
-		// await this.pmService.getAllWithIdUser(body.id_user_receive)
-		// .then(async (allRoom) => {
-		// 	const user = await this.userService.getOne(body.id_user_receive);
-		// 	this.emitToClientRoom("update-room", user, allRoom);
-		// });
+	}
+
+	@UseGuards(UserGuardGateway)
+	@SubscribeMessage("write")
+	async write(@MessageBody() body : {user_receive : User, room : any, login : string}) {
+		let room = body.room;
+		if (room.write && !room.write.includes(body.login))
+			room.write.push(body.login);
+		else if (!room.write)
+			room.write = [body.login]		
+		this.emitToClientRoom("update-room", body.user_receive, room);
+	}
+
+	@UseGuards(UserGuardGateway)
+	@SubscribeMessage("unwrite")
+	async unwrite(@MessageBody() body : {user_receive : User, room : any, login : string}) {
+		let room = body.room;
+		if (room.write) {
+			room.write = room.write.filter(elem => elem != body.login);
+		}
+		this.emitToClientRoom("update-room", body.user_receive, room);
 	}
 
 	emitToClientUser(event : string, user : User) {

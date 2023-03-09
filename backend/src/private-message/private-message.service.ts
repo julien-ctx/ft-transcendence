@@ -22,6 +22,19 @@ export class PrivateMessageService {
 		}
 	}
 
+	async getRommPrivateWithIdUser(id1 : number, id2 : number) {
+		try {
+			return await this.prisma.roomMessagePrivate.findFirst({
+				where : {
+					id_user1 : id1,
+					id_user2 : id2
+				}
+			})
+		} catch (error) {
+			throw error;
+		}
+	}
+
 	async getAllWithIdUser(idUser : number) {
 		try {
 			return await this.prisma.roomMessagePrivate.findMany({
@@ -80,7 +93,9 @@ export class PrivateMessageService {
 					},
 					open_id : {
 						set : user_send.id
-					}
+					},
+					id_user1 : user_send.id,
+					id_user2 : user_receive.id
 				}
 			})			
 		} catch (error) {

@@ -4,6 +4,7 @@
     import { page } from '$app/stores';
     import Header from "./Header.svelte";
     import MpEach from "../modules/htmlComponent/mpComponent/mpEach.svelte";
+    import MainChanel from "../modules/htmlComponent/chanelComponent/mainChanel.svelte";
 
 </script> 
 
@@ -15,6 +16,9 @@
 		<slot></slot>
 	</main>
 	{#if $page.url.pathname != "/login"}
-		<MpEach />
+		<div class="container-messagerie">
+			<MpEach />
+			<MainChanel />
+		</div>
 	{/if}
 </div>

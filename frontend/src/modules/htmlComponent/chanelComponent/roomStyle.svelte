@@ -1,7 +1,6 @@
 <script lang="ts">
-    import { Indicator } from 'flowbite-svelte';
-    import Trash from '../../modules/htmlComponent/svgComponent/svgTrash.svelte';
-    import Edit from '../../modules/htmlComponent/svgComponent/svgParams.svelte';
+    import Trash from '../svgComponent/svgTrash.svelte';
+    import Edit from '../svgComponent/svgParams.svelte';
 
     export let room : any;
     export let socket : any;

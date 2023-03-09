@@ -1,16 +1,15 @@
 <script lang="ts">
     import { Button, Modal, FloatingLabelInput, Select } from "flowbite-svelte";
     import { onMount } from "svelte";
-    import Arrow from '../../modules/htmlComponent/svgComponent/svgArrow.svelte';
+    import Arrow from '../svgComponent/svgArrow.svelte';
     import axios from 'axios';
     import { getJwt } from '$lib/jwtUtils';
     import { myProfileDataStore, usersDataStore } from "$lib/store/user";
     import { io } from 'socket.io-client';
-	import Channels from './roomStyle.svelte';
-	import Trash from '../../modules/htmlComponent/svgComponent/svgTrash.svelte';
-    import RoomEdit from "../../modules/roomEdit.svelte";
-	import Close from '../../modules/htmlComponent/svgComponent/svgClose.svelte';
-    import Members from '../../modules/admin.svelte';
+    import Members from '../../../modules/admin.svelte';
+    import SvgEdit from "../svgComponent/svgEdit.svelte";
+    import SvgTrash from "../svgComponent/svgTrash.svelte";
+    import SvgClose from "../svgComponent/svgClose.svelte";
 
     let socket : any;
     // Messagerie : //
@@ -101,22 +100,6 @@
 		});
     })
 
-    function changeAppearC() {
-        if (toShow === false) {
-            toShow = false;
-        } else {
-            toShow = false;
-        }
-    }
-
-    function changeAppearU() {
-        if (toShow === true) {
-            toShow = true;
-        } else {
-            toShow = true;
-        }
-    }
-
     function createRoom() {
         socket.emit('createRoom', {
             roomName: roomName,
@@ -168,32 +151,31 @@
         needPass = '';
     }
 
-	function leaveRoom(room : string) {
+	function leaveRoom(room : any) {
 		socket.emit('leaveRoom', {
-			roomName : room,
+			roomName : room.name,
 		});
 	}
 
 </script>
-
-<!-- <div class="relative h-1/2"> -->
+<div class="div-chan flex items-end">
     {#if show}
-		{#if openedRoom !== ''}
-			<div class="flex justify-between bg-white w-26 absolute bottom-0 right-0 w-64 mr-4 rounded-xl">
-				<button on:click={() => chat = true}>
-					<span>{openedRoom}</span> 
-				</button>
-				<button on:click={() => { openedRoom = ''}}>
-					<Close  />
-				</button>
-			</div>
-		{/if}
-        <div class="absolute bottom-0 right-0 w-64 mr-4 rounded-xl h-2/3 border border-secondary">
+        {#if openedRoom !== ''}
+            <div class="flex justify-between bg-white w-26 w-64 mr-4 rounded-xl">
+                <button on:click={() => chat = true}>
+                    <span>{openedRoom}</span> 
+                </button>
+                <button on:click={() => { openedRoom = ''}}>
+                    <SvgClose />
+                </button>
+            </div>
+        {/if}
+        <div class="w-full mr-4 rounded-xl h-full border border-secondary">
             <div class="flex flex-row justify-center gap-4 text-1xl pl-4">
-                <button on:click={() => changeAppearC()}>
+                <button on:click={() => toShow = false}>
                     Channels
                 </button>
-                <button on:click={() => changeAppearU()}>
+                <button on:click={() => toShow = true}>
                     Friends
                 </button>
                 <button on:click={() => show = !show}>
@@ -201,14 +183,26 @@
                 </button>
             </div>
             <br>
-            <div class="overflow-auto h-4/5">
+            <div class="overflow-auto">
                 {#if toShow === false}
                     <div class="flex flex-col gap-4">
                         {#each rooms as room}
-							<button on:click={() => {openedRoom = room.name; chat = true}}>
-								<Channels room={room} socket={socket} bind:admin={admin} bind:modalAdmin={modalAdmin}/>
-							</button>
-						{/each}
+                                <div class="flex flex-row justify-between w-full bg-white rounded text-2xl pl-4 ">
+                                    <button on:click={() => {openedRoom = room.name; chat = true}}>
+                                        {room.name.length > 10 ? room.name.substring(0, 10) + "..." : room.name}
+                                    </button>
+                                    <div>
+                                        {#if room.admin === true}
+                                            <button on:click={() => {admin = room.name; modalAdmin = true}}>
+                                                <SvgEdit />
+                                            </button>
+                                        {/if}
+                                        <button class="rounded justify-center" on:click={() => leaveRoom(room)}>
+                                            <SvgTrash />
+                                        </button>
+                                    </div>
+                                </div>
+                        {/each}
                     </div>
                 {:else}
                     {#each allUsers as user}
@@ -218,35 +212,34 @@
                     {/each}
                 {/if}
             </div>
-            <div class="flex justify-center bottom-0 absolute w-full pb-2">
-                <button class="bg-primary hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-l text-xl" on:click={() => openCreate()}>
+            <div class="container-action">
+                <button class="button-action" on:click={() => openCreate()}>
                     Create
                 </button>
-                <button class="bg-primary hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-r text-xl" on:click={() => openJoin()}>
+                <button class="button-action" on:click={() => openJoin()}>
                     Join
                 </button>
             </div>
         </div>
+    {:else}
+        <div>
+            {#if openedRoom !== ''}
+                <div class="flex justify-between bg-white w-26 border">
+                    <button on:click={() => chat = true}>
+                        <span>{openedRoom}</span> 
+                    </button>
+                    <button on:click={() => { openedRoom = ''}}>
+                        <SvgClose />
+                    </button>
+                </div>
+            {/if}
+            <button class="button-messagerie" on:click={() => show = true}>
+                Messagerie
+            </button>
+        </div>
     {/if}
-    {#if !show}
-    <div class="absolute bottom-0 right-0 flex gap-2 border rounded">
-		{#if openedRoom !== ''}
-			<div class="flex justify-between bg-white w-26 border">
-				<button on:click={() => chat = true}>
-					<span>{openedRoom}</span> 
-				</button>
-				<button on:click={() => { openedRoom = ''}}>
-					<Close  />
-				</button>
-			</div>
-		{/if}
-        <button class="flex justify-center bg-white rounded w-28" on:click={() => show = true}>
-            <span>Messagerie</span>
-        </button>
-
-    </div>
-    {/if}
-<!-- </div> -->
+</div>
+    
 
 <Modal bind:open={modalCreate} title="Create a room" color="third">
     <FloatingLabelInput style="filled" id="floating_filled" name="Room Name" type="text" label="Room Name" bind:value={roomName}/>

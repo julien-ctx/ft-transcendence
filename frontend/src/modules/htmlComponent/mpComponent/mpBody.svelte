@@ -143,13 +143,11 @@
 			{/if}
 		{/if}
 	{/each}
-	<!-- {#if room.write} -->
-		<div class="typing {(room.write && room.write.includes(otherProfile.login))? 'active' : ''}">
-			<span class="login">{otherProfile.login} </span>
-			<span>write a msg</span> 
-			<div class="dot-typing"></div>
-		</div>
-	<!-- {/if} -->
+	<div class="typing {(room.write && room.write.includes(otherProfile.login))? 'active' : ''}">
+		<span class="login">{otherProfile.login} </span>
+		<span>write a msg</span> 
+		<div class="dot-typing"></div>
+	</div>
 	{#if room.mp.length == 0}
 		Start a new conversation with {otherProfile.login}
 	{/if}

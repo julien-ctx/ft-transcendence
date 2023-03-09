@@ -61,9 +61,8 @@
 </script>
 {#if otherProfile && myProfile && room.open_id && room.open_id.includes(myProfile.id) && !otherProfile.block_id.includes(myProfile.id) && !myProfile.block_id.includes(otherProfile.id)}
 	<div class="mp-modal">
-		<div class="flex p-3 items-center gap-10 header {active}" on:dblclick={updateActive}>
-			<Avatar src={otherProfile.img_link} rounded class="object-cover"/>
-			<p>Conversation with {otherProfile.login}</p>
+		<div class="header {active}" on:dblclick={updateActive}>
+			<p>{otherProfile.login}</p>
 			<button on:click={() => closeMp(room)}>
 				<SvgCancel />
 			</button>

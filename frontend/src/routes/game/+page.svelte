@@ -140,6 +140,7 @@
 			canvas.height / 2 
 		)
 		socket.disconnect();
+		//maybe i just have to remove the socket from game and add to queue
 		socket = io(API_URL, {
 			path: '/pong',
 			query: { token: jwt}
@@ -183,7 +184,7 @@
 			drawScores(gameLeftPaddle.score, gameRightPaddle.score);
 			drawBall(gameBall);
 		}
-		requestAnimationFrame(gameLoop);
+		animationFrame = requestAnimationFrame(gameLoop);
 	}
 	
 	async function startGame(login: string) {
@@ -199,6 +200,8 @@
 			gameRightPaddle.score = rightScore;
 		});
 		socket.on('winner',  ({winner, side}) => {
+			gameStarted = false;
+			dataInit = false;
 			if (side === 1) {
 				gameRightPaddle.score++;
 			} else {
@@ -208,15 +211,13 @@
 			drawScores(gameLeftPaddle.score, gameRightPaddle.score);
 			gameLeftPaddle.score = 0;	
 			gameRightPaddle.score = 0;
-			gameStarted = false;
-			dataInit = false;
 			cancelAnimationFrame(animationFrame);
 		});
 		await drawOpponent(login);
 		await drawCounter();
 		canvas.addEventListener('mousemove', handleMouseMove);
 		socket.emit('gameLoop', {});
-		animationFrame = requestAnimationFrame(gameLoop);
+		gameLoop();
 	}
 
 	async function isReady() {

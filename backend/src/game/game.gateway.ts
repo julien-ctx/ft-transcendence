@@ -43,6 +43,10 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	handleDisconnect(socket: Socket) {
 		this.removeFromGame(socket);
 		this.removeFromQueue(socket);
+		if (this.interval) {
+			clearInterval(this.interval);
+			return;
+		}
 	}
 
 	removeFromQueue(socket: Socket) {
@@ -78,10 +82,6 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 				if (game.rightClient) {
 					game.rightClient.socket.emit('winner', {winner: winner, side: 1});
 				}
-			}
-			if (this.interval) {
-				clearInterval(this.interval);
-				return;
 			}
 		}
 		game.leftClient.socket.emit('paddlesData', {leftPaddle: game.leftClient.leftPaddle, rightPaddle: game.leftClient.rightPaddle});

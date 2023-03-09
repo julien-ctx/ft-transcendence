@@ -46,6 +46,7 @@
 	let playerNumber: number = 0;
 	let socket: Socket;	
 	let jwt: any;
+	let animationFrame: any;
 
 	onMount(async () => {
 		AuthGuard()
@@ -57,10 +58,6 @@
 			goto("/login")
 		})
 		jwt = getJwt();
-		socket = io(API_URL, {
-			path: '/pong',
-			query: { token: jwt}
-		});
 	});
 	
 	function drawPaddles(leftPaddle: any, rightPaddle: any) {
@@ -118,7 +115,7 @@
 	}
 
 	function playAgain() {
-		if (gameStarted === false) {
+		if (!gameStarted && !dataInit) {
 			socket.disconnect();
 			socket = io(API_URL, {
 				path: '/pong',
@@ -128,7 +125,7 @@
 		}
 	}
 
-	function drawWinner(winner: string) {
+	async function drawWinner(winner: string) {
 		clearCanvas();
 		ctx.fillStyle = OBJ_COLOR;
 		let winMsg: string = winner + ' won the game!';
@@ -138,7 +135,8 @@
 			canvas.width / 2 - ctx.measureText(winMsg).width / 2,
 			canvas.height / 2 
 		)
-		gameStarted = false;
+		await new Promise(r => setTimeout(r, 1500));
+
 		clearCanvas();
 		const msg = 'Click to play again';
 		ctx.fillText(msg, canvas.width * 0.5 - ctx.measureText(msg).width / 2, canvas.height * 0.5);	
@@ -202,34 +200,35 @@
 			drawScores(gameLeftPaddle.score, gameRightPaddle.score);
 			gameLeftPaddle.score = 0;	
 			gameRightPaddle.score = 0;
+			gameStarted = false;
+			dataInit = false;
+			cancelAnimationFrame(animationFrame);
 		});
-		
-		gameLoop();
+
+		animationFrame = requestAnimationFrame(gameLoop);
 	}
 
 	async function isReady() {
 		if (!gameStarted) {
+			socket = io(API_URL, {
+				path: '/pong',
+				query: { token: jwt}
+			});
 			gameStarted = true;
 			socket.emit('ready', { width: canvas.width, height: canvas.height, playerNumber });
-			canvas.addEventListener('mousemove', handleMouseMove);
 			await new Promise<void>((resolve) => {
-				socket.on('initData', async ({leftPaddle, rightPaddle, ball}) => {
+				socket.on('foundOpponent', async ({login, leftPaddle, rightPaddle, ball}) => {
 					gameLeftPaddle = leftPaddle;
 					gameRightPaddle = rightPaddle;
 					gameBall = ball;
 					dataInit = true;
-					resolve();
-				});
-			});
-			await new Promise<void>((resolve) => {
-				socket.on('foundOpponent', async ({login}) => {
 					await drawOpponent(login);
 					resolve();
 				});
 			});
 			await drawCounter();
 			socket.emit('gameLoop', {});
-			clearCanvas();
+			canvas.addEventListener('mousemove', handleMouseMove);
 			startGame();
 		}
 	}

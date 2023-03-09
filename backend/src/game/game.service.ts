@@ -12,9 +12,9 @@ export class GameService {
 	}
 
 	createLeftPaddle(canvas: GameCanvas) {
-		let paddle = new Paddle(
+		let paddle = new Paddle (
 			canvas.width * 0.015,
-			canvas.height * 0.5 - (canvas.height * 0.15 / 2),
+			canvas.height * 0.5 - ((canvas.height * 0.15) / 2),
 			canvas.width * 0.005,
 			canvas.height * 0.15,
 			0,
@@ -27,7 +27,7 @@ export class GameService {
 	createRightPaddle(canvas: GameCanvas) {
 		let paddle = new Paddle(
 			canvas.width - canvas.width * 0.015 - canvas.width * 0.005,
-			canvas.height * 0.5 - (canvas.height * 0.15 / 2),
+			canvas.height * 0.5 - ((canvas.height * 0.15) / 2),
 			canvas.width * 0.005,
 			canvas.height * 0.15,
 			0,

@@ -157,6 +157,6 @@ export class ChatService {
 			return member.user;
 		});
 		console.log(membersObj);
-		return membersObj;
+		return members;
 	}
 }

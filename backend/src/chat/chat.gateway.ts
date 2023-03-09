@@ -128,6 +128,9 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 		const room = await this.prisma.room.findUnique({
 			where: {
 				name: data.roomName,
+			},
+			include : {
+				banned : true,
 			}
 		});
 		const idUser : number = user['id'];
@@ -146,7 +149,6 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 				id_room: room.id,
 			}
 		});
-
 		if (room === null) {
 			client.emit('errors', {already : 'Room does not exist'});
 			return ;
@@ -155,6 +157,26 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 			client.emit('errors', {already : 'You already join this room'});
 			return ;
 		}
+		let Ban = false;
+		room.banned.forEach(ban => {
+			if (ban.id_user === User.id_user) {
+				let now : Date = new Date();
+				if (now > ban.endBan) {
+					this.prisma.banned.delete({
+						where: {
+							id: ban.id,
+						}
+					});
+					// return ;
+				} else {
+					client.emit('errors', {already : 'You are banned from this room'});
+					Ban = true;
+					return ;
+				}
+			}
+		});
+		if (Ban)
+			return ;
 		if (room.status === 'Protected' && data.roomPass === '') {
 			client.emit('needPass');
 			return;
@@ -347,8 +369,8 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 		const User = await this.Service.getOneById(user['id']);
 		const Room = await this.chatService.getRoomByName(data.roomName);
 
-		const t = new Sanction(data, this.prisma);
-		t.setEndOfSanction();
+		const t = new Sanction(this.Rooms, this.Client, data, this.prisma);
+		t.handleSanction();
 	}
 
 	handleDisconnect(client: any) {

@@ -21,126 +21,59 @@
 		const minutes = date.getMinutes();
 		return hour.toString().padStart(2, "0") + " h " + minutes.toString().padStart(2, "0");
 	}
+
+	function getUser(id : number) {
+		for (let i = 0; i < room.user.length; i++) {
+			if (room.user[i].id == id) {
+				return room.user[i];
+			}
+		}
+	}
 </script>
 
 <div class="body  {active}" bind:this={divBody}>
 	{#each room.mp as mp, i}
-		{#if mp.id_user_send == myProfile.id}
-			{#if !room.mp[i - 1] && myProfile}
-				<div>
-					<div class="avatar">
-						<Avatar src={myProfile.img_link} rounded class="object-cover" />
-						<p>{myProfile.login}</p>
-						<p>{getDate(mp)}</p>
-					</div>
-					<p class="msg">
-						{mp.content}
-						<!-- {#if mp.is_updated}
-							<span class="updated">(updated)</span>
-						{/if} -->
-					</p>
+		{#if !room.mp[i - 1]}
+			<div>
+				<div class="avatar">
+					<Avatar src={getUser(mp.id_user_send).img_link} rounded class="object-cover" />
+					<p>{getUser(mp.id_user_send).login}</p>
+					<p>{getDate(mp)}</p>
 				</div>
-			{:else if (room.mp[i - 1] && myProfile && room.mp[i - 1].id_user_send != myProfile.id) && ((room.mp[i + 1] && myProfile && room.mp[i + 1].id_user_send != myProfile.id) || !room.mp[i + 1])}
-				<div class="solo">
-					<div class="avatar">
-						<Avatar src={myProfile.img_link} rounded class="object-cover" />
-						<p>{myProfile.login}</p>
-						<p>{getDate(mp)}</p>
-					</div>
-					<p class="msg end">
-						{mp.content}
-						<!-- {#if mp.is_updated}
-							<span class="updated">(updated)</span>
-						{/if} -->
-					</p>
-				</div>
-			{:else if room.mp[i - 1] && myProfile && room.mp[i - 1].id_user_send != myProfile.id}
-				<div>
-					<div class="avatar">
-						<Avatar src={myProfile.img_link} rounded class="object-cover" />
-						<p>{myProfile.login}</p>
-						<p>{getDate(mp)}</p>
-					</div>
-					<p class="msg">
-						{mp.content}
-						<!-- {#if mp.is_updated}
-							<span class="updated">(updated)</span>
-						{/if} -->
-					</p>
-				</div>
-			{:else if room.mp[i + 1] && myProfile && room.mp[i + 1].id_user_send == myProfile.id}
 				<p class="msg">
 					{mp.content}
-					<!-- {#if mp.is_updated}
-						<span class="updated">(updated)</span>
-					{/if} -->
 				</p>
-			{:else}
+			</div>
+		{:else if (room.mp[i - 1] && room.mp[i - 1].id_user_send != room.mp[i].id_user_send) && ((room.mp[i + 1] && room.mp[i + 1].id_user_send != room.mp[i].id_user_send) || !room.mp[i + 1])}
+			<div class="solo">
+				<div class="avatar">
+					<Avatar src={getUser(mp.id_user_send).img_link} rounded class="object-cover" />
+					<p>{getUser(mp.id_user_send).login}</p>
+					<p>{getDate(mp)}</p>
+				</div>
 				<p class="msg end">
 					{mp.content}
-					<!-- {#if mp.is_updated}
-						<span class="updated">(updated)</span>
-					{/if} -->
 				</p>
-			{/if}
+			</div>
+		{:else if room.mp[i - 1] && room.mp[i - 1].id_user_send != room.mp[i].id_user_send}
+			<div>
+				<div class="avatar">
+					<Avatar src={getUser(mp.id_user_send).img_link} rounded class="object-cover" />
+					<p>{getUser(mp.id_user_send).login}</p>
+					<p>{getDate(mp)}</p>
+				</div>
+				<p class="msg">
+					{mp.content}
+				</p>
+			</div>
+		{:else if room.mp[i + 1] && room.mp[i + 1].id_user_send == room.mp[i].id_user_send}
+			<p class="msg">
+				{mp.content}
+			</p>
 		{:else}
-			{#if !room.mp[i - 1] && otherProfile}
-				<div>
-					<div class="avatar">
-						<Avatar src={otherProfile.img_link} rounded class="object-cover" />
-						<p>{otherProfile.login}</p>
-						<p>{getDate(mp)}</p>
-					</div>
-					<p class="msg">
-						{mp.content}
-						<!-- {#if mp.is_updated}
-							<span class="updated">(updated)</span>
-						{/if} -->
-					</p>
-				</div>
-			{:else if (room.mp[i - 1] && otherProfile && room.mp[i - 1].id_user_send != otherProfile.id) && ((room.mp[i + 1] && otherProfile && room.mp[i + 1].id_user_send != otherProfile.id) || !room.mp[i + 1])}
-				<div class="solo">
-					<div class="avatar">
-						<Avatar src={otherProfile.img_link} rounded class="object-cover" />
-						<p>{otherProfile.login}</p>
-						<p>{getDate(mp)}</p>
-					</div>
-					<p class="msg end">
-						{mp.content}
-						<!-- {#if mp.is_updated}
-							<span class="updated">(updated)</span>
-						{/if} -->
-					</p>
-				</div>
-			{:else if room.mp[i - 1] && otherProfile && room.mp[i - 1].id_user_send != otherProfile.id}
-				<div>
-					<div class="avatar">
-						<Avatar src={otherProfile.img_link} rounded class="object-cover" />
-						<p>{otherProfile.login}</p>
-						<p>{getDate(mp)}</p>
-					</div>
-					<p class="msg">
-						{mp.content}
-						<!-- {#if mp.is_updated}
-							<span class="updated">(updated)</span>
-						{/if} -->
-					</p>
-				</div>
-			{:else if room.mp[i + 1] && otherProfile && room.mp[i + 1].id_user_send == otherProfile.id}
-				<p class="msg">
-					{mp.content}
-					<!-- {#if mp.is_updated}
-						<span class="updated">(updated)</span>
-					{/if} -->
-				</p>
-			{:else}
-				<p class="msg end">
-					{mp.content}
-					<!-- {#if mp.is_updated}
-						<span class="updated">(updated)</span>
-					{/if} -->
-				</p>
-			{/if}
+			<p class="msg end">
+				{mp.content}
+			</p>
 		{/if}
 	{/each}
 	<div class="typing {(room.write && room.write.includes(otherProfile.login))? 'active' : ''}">

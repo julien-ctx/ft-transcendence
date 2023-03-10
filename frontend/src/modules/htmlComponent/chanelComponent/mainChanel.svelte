@@ -14,6 +14,8 @@
     import SvgMsg from "../svgComponent/svgMsg.svelte";
     import MpModal from "../mpComponent/mpModal.svelte";
     import ChanModal from "./chanModal.svelte";
+    import { API_URL } from "$lib/env";
+    import { currentRoomStore } from "$lib/store/roomStore";
 
     let socket : any;
     // Messagerie : //
@@ -26,7 +28,6 @@
 	let chat : boolean = false;
     let socketMp : any;
     let active : string = "";
-    let currentRoom : any;
 
     // Modal Create : //
     let roomName = '';
@@ -53,14 +54,13 @@
 	let modalAdmin = false;
 	let admin = '';
 
-    usersDataStore.subscribe((value) => {
-        allUsers = value;
-    });
+    // CurrentRoom //
+    let currentRoom : any;
+    let usersCurrentRoom : any [];
 
-    myProfileDataStore.subscribe((value) => {
-        myProfile = value;
-    });
-
+    currentRoomStore.subscribe((val) => currentRoom = val);
+    usersDataStore.subscribe((val) => allUsers = val);
+    myProfileDataStore.subscribe((val) => myProfile = val);
     socketMpStore.subscribe(val => socketMp = val);
 
     onMount(async () => {
@@ -166,10 +166,30 @@
 		});
 	}
 
+    async function updateCurrentRoom(room : any) {
+		await axios.get(`${API_URL}/Chat/AllUsers/${room.name}`, {
+			headers: {
+				Authorization : `Bearer ${getJwt()}`
+			}
+		})
+		.then((res) => {
+			usersCurrentRoom = res.data            
+		})
+
+		await axios.get(`${API_URL}/Chat/getRoom/${room.name}`, {
+			headers: {
+				Authorization : `Bearer ${getJwt()}`
+			}
+		})
+		.then((res) => {
+            currentRoomStore.set(res.data);
+		})                
+    }
+
 </script>
 <div class="div-chan flex items-end">
     {#if currentRoom}
-        <ChanModal myProfile={myProfile} room={currentRoom} socketRoom={socket}/>
+        <ChanModal myProfile={myProfile} socketRoom={socket} usersRoom={usersCurrentRoom} />
     {/if}
     <div class="content-chan {active}">
         <div class="header">
@@ -188,7 +208,7 @@
                 <div class="flex flex-col gap-4">
                     {#each rooms as room}
                         <div class="flex flex-row justify-between w-full bg-white rounded text-2xl pl-4 ">
-                            <button on:click={() => {currentRoom = room; chat = true}}>
+                            <button on:click={() => {updateCurrentRoom(room); chat = true;}}>
                                 {room.name.length > 10 ? room.name.substring(0, 10) + "..." : room.name}
                             </button>
                             <div>

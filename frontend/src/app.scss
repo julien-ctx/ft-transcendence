@@ -68,11 +68,11 @@ canvas {
 			display: flex;
 			flex-direction: column;
 			justify-content: space-between;
-			border: 1px solid $third;
 			border-radius: 7px;
 			gap: 5px;
 			&.active {
 				max-height: 100%;
+				border: 1px solid $third;
 			}
 			.header {
 				display: flex;

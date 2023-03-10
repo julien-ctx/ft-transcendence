@@ -319,14 +319,15 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 		const User = await this.Service.getOneById(user['id']);
 		const Room = await this.chatService.getRoomByName(data.roomName);
 		const message = await this.chatService.createMessage(User.id, Room.id, data.message);
-
-		const roomInstance = this.findRoom(Room.name);
-		roomInstance.ClientUser.forEach((elem) => {
-			elem.Client.emit('getMessages', {
-				message : message.content,
-				user : elem.User.id_user,
-			}); 
-		});
+		const roomInstance = await this.chatService.getRoomByName(data.roomName);
+		const userInRoom = await this.chatService.getUsersRooms(User.id, roomInstance.name);
+		this.Client.forEach((elem : any) => {
+			userInRoom.forEach((oneUser : User) => {
+				if (elem.user.id == oneUser.id_user) {
+					elem.client.emit("update-room", roomInstance);
+				}
+			})
+		})
 	}
 
 	@SubscribeMessage('verifPassword')
@@ -418,21 +419,15 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 	@UseGuards(UserGuardGateway)
 	@SubscribeMessage("write")
 	async write(@MessageBody() body : {user_receive : User [], room : any, login : string}) {
-		let room = body.room;
+		let room = body.room;		
 		if (room.write && !room.write.includes(body.login))
 			room.write.push(body.login);
 		else if (!room.write)
 			room.write = [body.login]
-		// console.log("write", room.write, body.user_receive);
 		this.Client.forEach((elem : any) => {
-			// console.log(elem);
-			
 			for (let i = 0; i < body.user_receive.length; i++) {
-				if (elem.user.id == body.user_receive[i].id_user) {
-					console.log(room);
-					
+				if (elem.user.id == body.user_receive[i].id_user)
 					elem.client.emit('event-write', room);
-				}
 			}
 		})
 	}
@@ -444,14 +439,10 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 		if (room.write) {
 			room.write = room.write.filter(elem => elem != body.login);
 		}
-		// console.log("unwrite", room.write, body.user_receive);
 		this.Client.forEach((elem : any) => {
 			for (let i = 0; i < body.user_receive.length; i++) {
-				if (elem.user.id == body.user_receive[i].id_user) {
-					console.log(room);
-					
+				if (elem.user.id == body.user_receive[i].id_user)
 					elem.client.emit('event-write', room);
-				}
 			}
 		})
 	}

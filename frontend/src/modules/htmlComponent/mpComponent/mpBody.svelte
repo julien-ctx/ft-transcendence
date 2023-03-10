@@ -1,6 +1,10 @@
 <script lang="ts">
-    import { myProfileDataStore } from "$lib/store/user";
-    import { Avatar } from "flowbite-svelte";
+    import { goto } from "$app/navigation";
+    import { socketFriendStore } from "$lib/store/socket";
+import { myProfileDataStore, userProfileDataStore } from "$lib/store/user";
+    import { GetOneUser } from "$lib/userUtils";
+    import { clippingParents } from "@popperjs/core";
+    import { Avatar, Dropdown, DropdownItem } from "flowbite-svelte";
     import { afterUpdate } from "svelte";
 
 	export let room : any;
@@ -8,8 +12,11 @@
 	export let otherProfile : any;
 	let divBody : any;
 	let myProfile : any;
+	let socketFriend : any;
+	let dropdownOpen : boolean = false;
 
 	myProfileDataStore.subscribe(val => myProfile = val);
+	socketFriendStore.subscribe(val => socketFriend = val);
 
 	afterUpdate(() => {
 		divBody.scrollTop = divBody.scrollHeight + 500;
@@ -33,7 +40,7 @@
 
 <div class="body  {active}" bind:this={divBody}>
 	{#each room.mp as mp, i}
-		{#if !room.mp[i - 1]}
+		{#if !room.mp[i - 1] || room.mp[i - 1] && room.mp[i - 1].id_user_send != room.mp[i].id_user_send}
 			<div>
 				<div class="avatar">
 					<Avatar src={getUser(mp.id_user_send).img_link} rounded class="object-cover" />
@@ -45,17 +52,6 @@
 				</p>
 			</div>
 		{:else if (room.mp[i - 1] && room.mp[i - 1].id_user_send != room.mp[i].id_user_send) && ((room.mp[i + 1] && room.mp[i + 1].id_user_send != room.mp[i].id_user_send) || !room.mp[i + 1])}
-			<div class="solo">
-				<div class="avatar">
-					<Avatar src={getUser(mp.id_user_send).img_link} rounded class="object-cover" />
-					<p>{getUser(mp.id_user_send).login}</p>
-					<p>{getDate(mp)}</p>
-				</div>
-				<p class="msg end">
-					{mp.content}
-				</p>
-			</div>
-		{:else if room.mp[i - 1] && room.mp[i - 1].id_user_send != room.mp[i].id_user_send}
 			<div>
 				<div class="avatar">
 					<Avatar src={getUser(mp.id_user_send).img_link} rounded class="object-cover" />

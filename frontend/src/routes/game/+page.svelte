@@ -150,7 +150,7 @@
 		await new Promise(r => setTimeout(r, 1500));
 	}
 
-	async function playAgain() {
+	function playAgain() {
 		if (!gameStarted && !dataInit) {	
 			clearCanvas();
 			isReady();
@@ -179,7 +179,6 @@
 		ctx.fillText(msg, canvas.width * 0.5 - ctx.measureText(msg).width / 2, canvas.height * 0.5);	
 		canvas.onclick = playAgain;
 	}
-
 
 	function gameLoop() {
 		if (gameStarted && dataInit) {

@@ -19,7 +19,7 @@ export class GameService {
 			canvas.height * 0.15,
 			0,
 			0,
-			canvas.height * 0.0015,
+			canvas.height * 0.0018,
 		);
 		return paddle;
 	}
@@ -43,8 +43,8 @@ export class GameService {
 			canvas.height * 0.5,
 			canvas.width * 0.02,
 			{
-				x: 2 * this.randomBallDirection(),
-				y: 2 * this.randomBallDirection(),
+				x: canvas.width * 0.0015,
+				y: canvas.height * 0.003,
 			},
 			{
 				x: canvas.width * 0.004,
@@ -94,13 +94,13 @@ export class GameService {
 		};
 	}
 
-	resetBall(client: Client, side: number) {
+	resetBall(client: Client, side: number, randomBallDirection: number) {
 		client.ball.x = client.canvas.width * 0.5;
 		client.ball.y = client.canvas.height * 0.5;
 		if ((side < 0 && client.ball.direction.x > 0) ||
 			(side > 0 && client.ball.direction.x < 0))
 			client.ball.direction.x = -client.ball.direction.x;
-		client.ball.direction.y = this.randomBallDirection() < 0 ? client.ball.direction.y : -client.ball.direction.y;
+		client.ball.direction.y = randomBallDirection < 0 ? client.ball.direction.y : -client.ball.direction.y;
 	}
 
 	updateBot(ball: Ball, paddle: Paddle, canvas: GameCanvas) {
@@ -137,9 +137,10 @@ export class GameService {
 
 	checkBallPosition(game: Game): string {
 		if (game.leftClient.ball.x < 0) {
-			this.resetBall(game.leftClient, -1);
+			const randomBallDirection = this.randomBallDirection();
+			this.resetBall(game.leftClient, -1, randomBallDirection);
 			if (game.playerNumber == 2) {
-				this.resetBall(game.rightClient, 1);
+				this.resetBall(game.rightClient, 1, randomBallDirection);
 			}
 			game.leftClient.rightPaddle.score++;
 			if (game.playerNumber == 2) {
@@ -150,9 +151,10 @@ export class GameService {
 			}
 		}
 		else if (game.leftClient.ball.x > game.leftClient.canvas.width - game.leftClient.ball.size) {
-			this.resetBall(game.leftClient, 1);
+			const randomBallDirection = this.randomBallDirection();
+			this.resetBall(game.leftClient, 1, randomBallDirection);
 			if (game.playerNumber == 2) {
-				this.resetBall(game.rightClient, -1);
+				this.resetBall(game.rightClient, -1, randomBallDirection);
 			}
 			game.leftClient.leftPaddle.score++;
 			if (game.playerNumber == 2) {
@@ -171,25 +173,25 @@ export class GameService {
 		return (deltaX * deltaX + deltaY * deltaY) < (ball.size * ball.size);
 	}
 
-	updateBall(ball: Ball, canvas: GameCanvas, leftPaddle: Paddle, rightPaddle: Paddle) {
-		ball.x += ball.direction.x / 2;
-		ball.y += ball.direction.y / 2;
-		if (ball.y < 0) {
-			ball.y = 0;
-			ball.direction.y = -ball.direction.y;
+	updateBall(client: Client) {
+		client.ball.x += client.ball.direction.x / 2;
+		client.ball.y += client.ball.direction.y / 2;
+		if (client.ball.y < 0) {
+			client.ball.y = 0;
+			client.ball.direction.y = -client.ball.direction.y;
 		}
-		else if (ball.y > canvas.height - ball.size) {
-			ball.y = canvas.height - ball.size;
-			ball.direction.y = -ball.direction.y;
+		else if (client.ball.y > client.canvas.height - client.ball.size) {
+			client.ball.y = client.canvas.height - client.ball.size;
+			client.ball.direction.y = -client.ball.direction.y;
 		}
 		
-		if (ball.x <= leftPaddle.x + leftPaddle.width && this.collision(ball, leftPaddle)) {
-			ball.direction.x = -ball.direction.x;
-			ball.x = leftPaddle.x + leftPaddle.width;
+		if (client.ball.x <= client.leftPaddle.x + client.leftPaddle.width && this.collision(client.ball, client.leftPaddle)) {
+			client.ball.direction.x = -client.ball.direction.x;
+			client.ball.x = client.leftPaddle.x + client.leftPaddle.width;
 		}
-		else if (ball.x + ball.size >= rightPaddle.x && this.collision(ball, rightPaddle)) {
-			ball.direction.x = -ball.direction.x;
-			ball.x = rightPaddle.x - ball.size;
+		else if (client.ball.x + client.ball.size >= client.rightPaddle.x && this.collision(client.ball, client.rightPaddle)) {
+			client.ball.direction.x = -client.ball.direction.x;
+			client.ball.x = client.rightPaddle.x - client.ball.size;
 		}
 	}
 }

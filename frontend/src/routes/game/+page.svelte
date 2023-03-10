@@ -48,6 +48,7 @@
 	let jwt: any;
 	let animationFrame: any;
 	let sizeChanged = false;
+	let currMsg: any;
 
 	onMount(async () => {
 		AuthGuard()
@@ -74,6 +75,14 @@
 		canvas.height = window.innerHeight * 0.8;
 		ctx.fillStyle = OBJ_COLOR;
 		sizeChanged = true;
+		if (currMsg) {
+			if (currMsg == 1 || currMsg == 2 || currMsg == 3)
+				ctx.font = 'bold ' + canvas.width * 0.1 + 'px Audiowide';
+			else
+				ctx.font = 'bold ' + canvas.width * 0.03 + 'px Audiowide';
+			clearCanvas();
+			ctx.fillText(currMsg, canvas.width * 0.5 - ctx.measureText(currMsg).width / 2, canvas.height * 0.5);
+		}
 	}
 
 	
@@ -135,17 +144,43 @@
 
 	async function drawCounter() {
 		clearCanvas();
+		ctx.font = 'bold ' + canvas.width * 0.1 + 'px Audiowide';
 		for (let i = 3; i > 0; i--) {
-			await drawWithInterval(i, 800, 0.1);
+			currMsg = i;
+			ctx.fillText(i, canvas.width * 0.5 - ctx.measureText(i).width / 2, canvas.height * 0.5);
+			await new Promise(r => setTimeout(r, 800));
 			clearCanvas();
 		}
+		currMsg = null;
+		ctx.font = 'bold ' + canvas.width * 0.03 + 'px Audiowide';
+	}
+
+	async function drawOpponent(opponent: string) {
+		currMsg = 'Your opponent is ' + opponent;
+		ctx.fillText(
+			currMsg,
+			canvas.width / 2 - ctx.measureText(currMsg).width / 2,
+			canvas.height / 2 
+		)
+		await new Promise(r => setTimeout(r, 1500));
+		currMsg = null;
+	}
+
+	async function drawWinner(winner: string) {
+		currMsg = winner + ' won the game!'
+		ctx.fillText(
+			currMsg,
+			canvas.width / 2 - ctx.measureText(currMsg).width / 2,
+			canvas.height / 2 
+		)
+		await new Promise(r => setTimeout(r, 1500));
+		currMsg = null;
 	}
 
 	function playAgain() {
 		clearCanvas();
-		const msg = 'Click to play again';
-		ctx.fillText(msg, canvas.width * 0.5 - ctx.measureText(msg).width / 2, canvas.height * 0.5);
-		
+		currMsg = 'Click to play again';
+		ctx.fillText(currMsg, canvas.width * 0.5 - ctx.measureText(currMsg).width / 2, canvas.height * 0.5);
 		canvas.onclick = () => {
 			if (!gameStarted && !dataInit) {	
 				clearCanvas();
@@ -163,32 +198,6 @@
 			drawBall(gameBall);
 		}
 		animationFrame = requestAnimationFrame(gameLoop);
-	}
-
-	function drawWithInterval(msg: any, timeout: number, fontSizeCoef: number) {
-		return new Promise(resolve => {
-			ctx.font = 'bold ' + canvas.width * fontSizeCoef + 'px Audiowide';
-			ctx.fillText(
-				msg,
-				canvas.width / 2 - ctx.measureText(msg).width / 2,
-				canvas.height / 2 
-			)
-			const intervalID = setInterval(() => {
-				if (sizeChanged) {
-					sizeChanged = false;
-					ctx.font = 'bold ' + canvas.width * fontSizeCoef + 'px Audiowide';
-					ctx.fillText(
-						msg,
-						canvas.width / 2 - ctx.measureText(msg).width / 2,
-						canvas.height / 2 
-					)
-				}
-			}, 1);
-			setTimeout(() => {
-				clearInterval(intervalID);
-				resolve({});
-			}, timeout);
-		});
 	}
 
 	async function startGame(login: string) {
@@ -222,11 +231,10 @@
 			gameLeftPaddle.score = 0;	
 			gameRightPaddle.score = 0;
 			cancelAnimationFrame(animationFrame);
-			await drawWithInterval(winner + ' won the game!', 1500, 0.03);	
+			await drawWinner(winner);
 			playAgain();
 		});
-
-		await drawWithInterval('Your opponent is ' + login, 1500, 0.03);
+		await drawOpponent(login);	
 		await drawCounter();
 		canvas.addEventListener('mousemove', handleMouseMove);
 		socket.emit('gameLoop', {});

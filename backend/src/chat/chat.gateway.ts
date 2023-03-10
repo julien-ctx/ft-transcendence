@@ -437,7 +437,10 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 	async unwrite(@MessageBody() body : {user_receive : User [], room : any, login : string}) {
 		let room = body.room;
 		if (room.write) {
-			room.write = room.write.filter(elem => elem != body.login);
+			for (let i = 0; i > room.write.length; i++) {
+				if (room.write[i].login == body.login)
+					room.write.splice(i, 1);
+			}		
 		}
 		this.Client.forEach((elem : any) => {
 			for (let i = 0; i < body.user_receive.length; i++) {

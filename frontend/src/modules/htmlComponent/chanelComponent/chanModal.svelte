@@ -18,8 +18,12 @@
 
 	onMount(async () => {
 		socketRoom.on("event-write", (data : any) => {
-            if (data.write)
-				loginWrite = data.write[0];
+            if (data.write) {
+				for (let i = 0; i < data.write.length; i++) {
+					if (data.write[i] != myProfile.login)
+						loginWrite = data.write[i];
+				}
+			}
 			else
 				loginWrite = "";
         })
@@ -139,7 +143,7 @@
 					{/if}
 				{/each}
 			{/if}
-			<div class="typing {(loginWrite != "" && myProfile.login != loginWrite)? 'active' : ''}">
+			<div class="typing {(loginWrite)? 'active' : ''}">
 				<span class="login">{loginWrite}</span>
 				<span>write a msg</span> 
 				<div class="dot-typing"></div>

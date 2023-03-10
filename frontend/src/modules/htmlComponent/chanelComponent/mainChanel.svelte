@@ -1,10 +1,10 @@
 <script lang="ts">
-    import { Button, Modal, FloatingLabelInput, Select } from "flowbite-svelte";
+    import { Button, Modal, FloatingLabelInput, Select, Avatar, Dropdown, DropdownItem } from "flowbite-svelte";
     import { onMount } from "svelte";
     import Arrow from '../svgComponent/svgArrow.svelte';
     import axios from 'axios';
     import { getJwt } from '$lib/jwtUtils';
-    import { myProfileDataStore, usersDataStore } from "$lib/store/user";
+    import { myProfileDataStore, userProfileDataStore, usersDataStore } from "$lib/store/user";
     import { io } from 'socket.io-client';
     import Members from '../../../modules/admin.svelte';
     import SvgEdit from "../svgComponent/svgEdit.svelte";
@@ -16,6 +16,9 @@
     import ChanModal from "./chanModal.svelte";
     import { API_URL } from "$lib/env";
     import { currentRoomStore } from "$lib/store/roomStore";
+    import SvgProfile from "../svgComponent/svgProfile.svelte";
+    import { goto } from "$app/navigation";
+    import { GetOneUser } from "$lib/userUtils";
 
     let socket : any;
     // Messagerie : //
@@ -186,6 +189,14 @@
 		})                
     }
 
+    async function handleGotoUser(id : string) {
+        await GetOneUser(id)
+        .then((res) => {
+            userProfileDataStore.set(res.data);
+        })
+        goto(`/user?id=${id}`);
+    }
+
 </script>
 <div class="div-chan flex items-end">
     {#if currentRoom}
@@ -207,19 +218,26 @@
             {#if toShow === false}
                 <div class="flex flex-col gap-4">
                     {#each rooms as room}
-                        <div class="flex flex-row justify-between w-full bg-white rounded text-2xl pl-4 ">
+                        <div class="container-room">
                             <button on:click={() => {updateCurrentRoom(room); chat = true;}}>
                                 {room.name.length > 10 ? room.name.substring(0, 10) + "..." : room.name}
                             </button>
                             <div>
-                                {#if room.admin === true}
-                                    <button on:click={() => {admin = room.name; modalAdmin = true}}>
-                                        <SvgEdit />
-                                    </button>
-                                {/if}
-                                <button class="rounded justify-center" on:click={() => leaveRoom(room)}>
-                                    <SvgTrash />
-                                </button>
+                                <button class="button-open-dropdown">...</button>
+                                <Dropdown class="bg-primary">
+                                    {#if room.admin === true}
+                                        <DropdownItem defaultClass="button-rooms">
+                                            <button on:click={() => {admin = room.name; modalAdmin = true}}>
+                                                Admin panel
+                                            </button>
+                                        </DropdownItem>
+                                    {/if}
+                                    <DropdownItem  defaultClass="button-rooms">
+                                        <button class="rounded justify-center" on:click={() => leaveRoom(room)}>
+                                            Put in trash
+                                        </button>
+                                    </DropdownItem>
+                                </Dropdown>
                             </div>
                         </div>
                     {/each}
@@ -227,10 +245,22 @@
             {:else}
                 {#each allUsers as user}
                     {#if myProfile.friend_id && myProfile.friend_id.includes(user.id)}
-                        {user.login} 
-                        <button on:click={() => {socketMp.emit("create-room", {user_send : myProfile, user_receive : user})}}>
-                            <SvgMsg />
-                        </button>
+                    <div class="grid grid-cols-3">
+                        <Avatar src={user.img_link} rounded class="object-cover"/>
+                        <p>{user.login}</p>
+                        <div class="grid grid-cols-2">
+                            <button on:click={() => {socketMp.emit("create-room", {user_send : myProfile, user_receive : user})}}>
+                                <SvgMsg />
+                            </button>
+                            <button on:click={() => {handleGotoUser(user.id)}}>
+                                <SvgProfile />
+                            </button>
+                            <button>
+                                <img src="./game-battle.png" alt="">
+                            </button>
+                        </div>
+                    </div>
+
                     {/if}
                 {/each}
             {/if}

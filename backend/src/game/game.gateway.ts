@@ -45,6 +45,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		this.removeFromQueue(socket);
 		if (this.interval) {
 			clearInterval(this.interval);
+			this.interval = null;
 			return;
 		}
 	}
@@ -103,23 +104,10 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	@SubscribeMessage('ready')
 	startGame(socket: Socket, data: {width, height, playerNumber}) {
 		let waitingClient = this.queue.find(waitingClient => waitingClient.socket === socket);
-		// if (!waitingClient) {
-		// 	this.games.forEach((element, index) => {
-		// 		if ((element.leftClient.socket === socket)) {
-		// 			waitingClient = new WaitingClient(element.leftClient.socket, element.leftClient.user);
-		// 			this.removeFromGame(socket);
-		// 		} else if (element.rightClient && element.rightClient.socket === socket) {
-		// 			waitingClient = new WaitingClient(element.rightClient.socket, element.rightClient.user);
-		// 			this.removeFromGame(socket);
-		// 		}
-		// 	});
-		// 	console.log('waitingClient null');
-		// 	return;
-		// } else if () {
+	
 		if (socket === waitingClient.socket) {
 			this.removeFromQueue(socket);
 		}
-		// }
 		let canvas = this.gameService.createCanvas(data.width, data.height);
 		let client = new Client(
 			waitingClient.socket,
@@ -190,11 +178,8 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 					rightPaddle: client.rightPaddle,
 					ball: client.ball,
 				});
-			}
-			socket.on('gameLoop', ({}) => {
-				this.interval = setInterval(this.gameLoop, 1, this.games[this.games.length - 1]);
-			});
-			
+			}	
 		}
 	}
 };
+

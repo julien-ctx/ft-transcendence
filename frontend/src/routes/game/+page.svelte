@@ -141,17 +141,11 @@
 		}
 	}
 
-	async function drawOpponent(login: string) {
-		clearCanvas();
-		let msg: string = 'Your opponent is ' + login;
-		ctx.fillText(msg, canvas.width * 0.5 - ctx.measureText(msg).width / 2, canvas.height * 0.5);	
-		await new Promise(r => setTimeout(r, 1500));
-	}
-
 	function playAgain() {
 		clearCanvas();
 		const msg = 'Click to play again';
-		ctx.fillText(msg, canvas.width * 0.5 - ctx.measureText(msg).width / 2, canvas.height * 0.5);	
+		ctx.fillText(msg, canvas.width * 0.5 - ctx.measureText(msg).width / 2, canvas.height * 0.5);
+		
 		canvas.onclick = () => {
 			if (!gameStarted && !dataInit) {	
 				clearCanvas();
@@ -228,10 +222,11 @@
 			gameLeftPaddle.score = 0;	
 			gameRightPaddle.score = 0;
 			cancelAnimationFrame(animationFrame);
-			await drawWithInterval(winner + ' won the game!', 1500, 0.03);
+			await drawWithInterval(winner + ' won the game!', 1500, 0.03);	
 			playAgain();
 		});
-		await drawOpponent(login);
+
+		await drawWithInterval('Your opponent is ' + login, 1500, 0.03);
 		await drawCounter();
 		canvas.addEventListener('mousemove', handleMouseMove);
 		socket.emit('gameLoop', {});

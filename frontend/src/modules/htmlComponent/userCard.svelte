@@ -118,6 +118,9 @@
                     <SvgMsg />
                 </button>
             {/if}
+            <button>
+                <img src="./game-battle.png" alt="" style="max-width: none;">
+            </button>
             <button on:click={handleGotoUser}>
                 <SvgProfile />
             </button>

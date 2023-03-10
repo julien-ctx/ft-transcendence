@@ -27,8 +27,8 @@ export class Sanction {
 
     setEndOfSanction() {
         let now = new Date();
-        console.log(now);
-        console.log('-> Arg time : ', this.time, this.duration);
+        // console.log(now);
+        // console.log('-> Arg time : ', this.time, this.duration);
         if (this.time === '' || this.duration === '') 
             return null;
         switch (this.duration) {
@@ -46,7 +46,7 @@ export class Sanction {
                 break;
         }
         this.endOfSanction = now;
-        console.log(now);
+        // console.log(now);
     }
 
     async handleSanction() {
@@ -65,7 +65,7 @@ export class Sanction {
     }
 
     async ban() {
-        console.log('ban');
+        // console.log('ban');
         // Delete relation
         const User = await this.db.user.findUnique({
             where: {
@@ -91,7 +91,7 @@ export class Sanction {
             }
         });
         // Create Ban model
-        console.log(this.endOfSanction);
+        // console.log(this.endOfSanction);
         await this.prisma.banned.create({
             data : {
                 id_user: User.id_user,
@@ -99,7 +99,7 @@ export class Sanction {
                 endBan : this.endOfSanction,
             }
         });
-        console.log(this.Clients)
+        // console.log(this.Clients)
         for (let i = 0; i < this.Clients.length; i++) {
             // console.log(this.Clients[i].user);
             if (this.Clients[i].user.login === User.login) {
@@ -117,7 +117,7 @@ export class Sanction {
 
     // Same as ban but without the creation of the ban model
     async kick() {
-        console.log('Kick');
+        // console.log('Kick');
         const User = await this.db.user.findUnique({
             where: {
                 id_user : this.member.id_user
@@ -141,9 +141,9 @@ export class Sanction {
                 id: relation[0].id,
             }
         });
-        console.log(this.Clients)
+        // console.log(this.Clients)
         for (let i = 0; i < this.Clients.length; i++) {
-            console.log(this.Clients[i].user);
+            // console.log(this.Clients[i].user);
             if (this.Clients[i].user.login === User.login) {
                 this.Clients[i].client.emit('deletedRoom', Room.name);
             }

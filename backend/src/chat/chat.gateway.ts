@@ -18,6 +18,9 @@ import { UserService } from 'src/user/user.service';
 import { RoomClass } from './room.interface';
 import { Socket } from 'dgram';
 import { Sanction } from './sanction.class';
+import { UseGuards } from '@nestjs/common';
+import { UserGuardGateway } from 'src/user/guard/user.guard.gateway';
+import { User } from '@prisma/client';
 
 @WebSocketGateway({
 	path : '/chat',
@@ -65,7 +68,7 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 			err.errs.name = 'Room already exist';
 		}
 		if (err.hasErrors()) {
-			console.log('error : ', err.errs.status , err.errs.name, err.errs.desc, err.errs.pass, err.errs.cpass);
+			// console.log('error : ', err.errs.status , err.errs.name, err.errs.desc, err.errs.pass, err.errs.cpass);
 			client.emit('errors', err.errs);
 			return ;
 		}
@@ -285,14 +288,14 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 		const User = await this.Service.getOneById(idUser);
 		const Room = await this.chatService.getRoomByName(data.roomName);
 		
-		console.log(this.findRoom(Room.name));
+		// console.log(this.findRoom(Room.name));
 		let roomInstance = this.findRoom(Room.name);
 		if (roomInstance === undefined) {
 			roomInstance = new RoomClass(User, client, Room.name);
 			this.Rooms = [...this.Rooms, roomInstance];
 		}
 		else {
-			console.log('Is in the room : ', roomInstance.isHere(User));
+			// console.log('Is in the room : ', roomInstance.isHere(User));
 			if (roomInstance.isHere(User) === false)
 				roomInstance.addUser(User, client);
 			else 
@@ -316,14 +319,15 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 		const User = await this.Service.getOneById(user['id']);
 		const Room = await this.chatService.getRoomByName(data.roomName);
 		const message = await this.chatService.createMessage(User.id, Room.id, data.message);
-
-		const roomInstance = this.findRoom(Room.name);
-		roomInstance.ClientUser.forEach((elem) => {
-			elem.Client.emit('getMessages', {
-				message : message.content,
-				user : elem.User.id_user,
-			}); 
-		});
+		const roomInstance = await this.chatService.getRoomByName(data.roomName);
+		const userInRoom = await this.chatService.getUsersRooms(User.id, roomInstance.name);
+		this.Client.forEach((elem : any) => {
+			userInRoom.forEach((oneUser : User) => {
+				if (elem.user.id == oneUser.id_user) {
+					elem.client.emit("update-room", roomInstance);
+				}
+			})
+		})
 	}
 
 	@SubscribeMessage('verifPassword')
@@ -353,7 +357,7 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 		const Room = await this.chatService.getRoomByName(data.roomName);
 		
 		let mdp = await this.chatService.hashedPass(data.Pass);
-		console.log(mdp);
+		// console.log(mdp);
 		await this.prisma.room.update({
 			where: {
 				id: Room.id,
@@ -387,7 +391,7 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 		const User = await this.Service.getOneById(user['id']);
 		const Room = await this.chatService.getRoomByName(data.roomName);
 
-		console.log({data});
+		// console.log({data});
 
 		const relation = await this.prisma.roomToUser.findMany({
 			where: {
@@ -404,18 +408,98 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 			},
 		});
 		this.Client.forEach((elem) => {
-			// console.log(elem.user.id_user);
-			// console.log(data.member.id_user);
-			if (elem.user.id_user === data.member.id_user) {
-				elem.client.emit('OP', data.roomName);
+			if (elem.user.id === data.member.id_user) {
+				elem.client.emit('newRight', {
+					roomName : data.roomName,
+					admin : true,
+					id_user : data.member.id_user,
+				});
 			}
 		});
+		client.emit('newRight', {
+			roomName : data.roomName,
+			admin : true,
+			id_user : data.member.id_user,
+		});
+	}
+
+	@SubscribeMessage('DEOP')
+	async handleDEOP(@ConnectedSocket() client, @MessageBody() data: any) {
+		const token = client.handshake.query.token as string;
+		const user = this.jwt.decode(token);
+		if (user === undefined) return;
+
+		const User = await this.Service.getOneById(user['id']);
+		const Room = await this.chatService.getRoomByName(data.roomName);
+
+		const relation = await this.prisma.roomToUser.findMany({
+			where: {
+				id_user : data.member.id_user,
+				id_room : Room.id,
+			}
+		});
+		await this.prisma.roomToUser.update({
+			where :{
+				id : relation[0].id
+			},
+			data : {
+				admin : false,
+			},
+		});
+		this.Client.forEach((elem) => {
+			if (elem.user.id === data.member.id_user) {
+				elem.client.emit('newRight', {
+					roomName : data.roomName,
+					admin : false,
+					id_user : data.member.id_user,
+				});
+			}
+		});
+		client.emit('newRight', {
+			roomName : data.roomName,
+			admin : false,
+			id_user : data.member.id_user,
+		});
+	}
+
+	@UseGuards(UserGuardGateway)
+	@SubscribeMessage("write")
+	async write(@MessageBody() body : {user_receive : User [], room : any, login : string}) {
+		let room = body.room;		
+		if (room.write && !room.write.includes(body.login))
+			room.write.push(body.login);
+		else if (!room.write)
+			room.write = [body.login]
+		this.Client.forEach((elem : any) => {
+			for (let i = 0; i < body.user_receive.length; i++) {
+				if (elem.user.id == body.user_receive[i].id_user)
+					elem.client.emit('event-write', room);
+			}
+		})
+	}
+
+	@UseGuards(UserGuardGateway)
+	@SubscribeMessage("unwrite")
+	async unwrite(@MessageBody() body : {user_receive : User [], room : any, login : string}) {
+		let room = body.room;
+		if (room.write) {
+			for (let i = 0; i > room.write.length; i++) {
+				if (room.write[i].login == body.login)
+					room.write.splice(i, 1);
+			}		
+		}
+		this.Client.forEach((elem : any) => {
+			for (let i = 0; i < body.user_receive.length; i++) {
+				if (elem.user.id == body.user_receive[i].id_user)
+					elem.client.emit('event-write', room);
+			}
+		})
 	}
 
 	handleDisconnect(client: any) {
 		const token = client.handshake.query.token as string;
 		const user = this.jwt.decode(token);
-		if (user === undefined) return;
+		if (user === undefined || user === null) return;
 
 		const User = this.prisma.user.findUnique({
 			where: {
@@ -428,7 +512,7 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 	}
 
 	findRoom(name: string) {
-		console.log('The room', this.Rooms);
+		// console.log('The room', this.Rooms);
 		return this.Rooms.find((room) => room.roomName === name);
 	}
 }

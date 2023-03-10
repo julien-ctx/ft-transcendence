@@ -1,16 +1,24 @@
 <script lang="ts">
-    import { Button, Modal, FloatingLabelInput, Select } from "flowbite-svelte";
+    import { Button, Modal, FloatingLabelInput, Select, Avatar, Dropdown, DropdownItem } from "flowbite-svelte";
     import { onMount } from "svelte";
-    import Arrow from '../../modules/htmlComponent/svgComponent/svgArrow.svelte';
+    import Arrow from '../svgComponent/svgArrow.svelte';
     import axios from 'axios';
     import { getJwt } from '$lib/jwtUtils';
-    import { myProfileDataStore, usersDataStore } from "$lib/store/user";
+    import { myProfileDataStore, userProfileDataStore, usersDataStore } from "$lib/store/user";
     import { io } from 'socket.io-client';
-	import Channels from './roomStyle.svelte';
-	import Trash from '../../modules/htmlComponent/svgComponent/svgTrash.svelte';
-    import RoomEdit from "../../modules/roomEdit.svelte";
-	import Close from '../../modules/htmlComponent/svgComponent/svgClose.svelte';
-    import Members from '../../modules/admin.svelte';
+    import Members from '../../../modules/admin.svelte';
+    import SvgEdit from "../svgComponent/svgEdit.svelte";
+    import SvgTrash from "../svgComponent/svgTrash.svelte";
+    import SvgClose from "../svgComponent/svgClose.svelte";
+    import { socketMpStore } from "$lib/store/socket";
+    import SvgMsg from "../svgComponent/svgMsg.svelte";
+    import MpModal from "../mpComponent/mpModal.svelte";
+    import ChanModal from "./chanModal.svelte";
+    import { API_URL } from "$lib/env";
+    import { currentRoomStore } from "$lib/store/roomStore";
+    import SvgProfile from "../svgComponent/svgProfile.svelte";
+    import { goto } from "$app/navigation";
+    import { GetOneUser } from "$lib/userUtils";
 
     let socket : any;
     // Messagerie : //
@@ -21,6 +29,8 @@
     let myProfile : any;
 	let openedRoom : any = '';
 	let chat : boolean = false;
+    let socketMp : any;
+    let active : string = "";
 
     // Modal Create : //
     let roomName = '';
@@ -47,13 +57,14 @@
 	let modalAdmin = false;
 	let admin = '';
 
-    usersDataStore.subscribe((value) => {
-        allUsers = value;
-    });
+    // CurrentRoom //
+    let currentRoom : any;
+    let usersCurrentRoom : any [];
 
-    myProfileDataStore.subscribe((value) => {
-        myProfile = value;
-    });
+    currentRoomStore.subscribe((val) => currentRoom = val);
+    usersDataStore.subscribe((val) => allUsers = val);
+    myProfileDataStore.subscribe((val) => myProfile = val);
+    socketMpStore.subscribe(val => socketMp = val);
 
     onMount(async () => {
         let token : string = getJwt();
@@ -100,22 +111,6 @@
 			rooms = rooms.filter((room : any) => room.name !== receivedRoom);
 		});
     })
-
-    function changeAppearC() {
-        if (toShow === false) {
-            toShow = false;
-        } else {
-            toShow = false;
-        }
-    }
-
-    function changeAppearU() {
-        if (toShow === true) {
-            toShow = true;
-        } else {
-            toShow = true;
-        }
-    }
 
     function createRoom() {
         socket.emit('createRoom', {
@@ -168,85 +163,122 @@
         needPass = '';
     }
 
-	function leaveRoom(room : string) {
+	function leaveRoom(room : any) {
 		socket.emit('leaveRoom', {
-			roomName : room,
+			roomName : room.name,
 		});
 	}
 
+    async function updateCurrentRoom(room : any) {
+		await axios.get(`${API_URL}/Chat/AllUsers/${room.name}`, {
+			headers: {
+				Authorization : `Bearer ${getJwt()}`
+			}
+		})
+		.then((res) => {
+			usersCurrentRoom = res.data            
+		})
+
+		await axios.get(`${API_URL}/Chat/getRoom/${room.name}`, {
+			headers: {
+				Authorization : `Bearer ${getJwt()}`
+			}
+		})
+		.then((res) => {
+            currentRoomStore.set(res.data);
+		})                
+    }
+
+    async function handleGotoUser(id : string) {
+        await GetOneUser(id)
+        .then((res) => {
+            userProfileDataStore.set(res.data);
+        })
+        goto(`/user?id=${id}`);
+    }
+
 </script>
-
-<!-- <div class="relative h-1/2"> -->
-    {#if show}
-		{#if openedRoom !== ''}
-			<div class="flex justify-between bg-white w-26 absolute bottom-0 right-0 w-64 mr-4 rounded-xl">
-				<button on:click={() => chat = true}>
-					<span>{openedRoom}</span> 
-				</button>
-				<button on:click={() => { openedRoom = ''}}>
-					<Close  />
-				</button>
-			</div>
-		{/if}
-        <div class="absolute bottom-0 right-0 w-64 mr-4 rounded-xl h-2/3 border border-secondary">
-            <div class="flex flex-row justify-center gap-4 text-1xl pl-4">
-                <button on:click={() => changeAppearC()}>
-                    Channels
-                </button>
-                <button on:click={() => changeAppearU()}>
-                    Friends
-                </button>
-                <button on:click={() => show = !show}>
-                    <Arrow />
-                </button>
-            </div>
-            <br>
-            <div class="overflow-auto h-4/5">
-                {#if toShow === false}
-                    <div class="flex flex-col gap-4">
-                        {#each rooms as room}
-							<button on:click={() => {openedRoom = room.name; chat = true}}>
-								<Channels room={room} socket={socket} bind:admin={admin} bind:modalAdmin={modalAdmin}/>
-							</button>
-						{/each}
-                    </div>
-                {:else}
-                    {#each allUsers as user}
-                        {#if myProfile.friend_id && myProfile.friend_id.includes(user.id)}
-                            {user.login}
-                        {/if}
-                    {/each}
-                {/if}
-            </div>
-            <div class="flex justify-center bottom-0 absolute w-full pb-2">
-                <button class="bg-primary hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-l text-xl" on:click={() => openCreate()}>
-                    Create
-                </button>
-                <button class="bg-primary hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-r text-xl" on:click={() => openJoin()}>
-                    Join
-                </button>
-            </div>
+<div class="div-chan flex items-end">
+    {#if currentRoom}
+        <ChanModal myProfile={myProfile} socketRoom={socket} usersRoom={usersCurrentRoom} />
+    {/if}
+    <div class="content-chan {active}">
+        <div class="header">
+            <button on:click={() => toShow = false}>
+                Channels
+            </button>
+            <button on:click={() => toShow = true}>
+                Friends
+            </button>
+            <button on:click={() => active = ""}>
+                <Arrow />
+            </button>
         </div>
-    {/if}
-    {#if !show}
-    <div class="absolute bottom-0 right-0 flex gap-2 border rounded">
-		{#if openedRoom !== ''}
-			<div class="flex justify-between bg-white w-26 border">
-				<button on:click={() => chat = true}>
-					<span>{openedRoom}</span> 
-				</button>
-				<button on:click={() => { openedRoom = ''}}>
-					<Close  />
-				</button>
-			</div>
-		{/if}
-        <button class="flex justify-center bg-white rounded w-28" on:click={() => show = true}>
-            <span>Messagerie</span>
-        </button>
+        <div class="body">
+            {#if toShow === false}
+                <div class="flex flex-col gap-4">
+                    {#each rooms as room}
+                        <div class="container-room">
+                            <button on:click={() => {updateCurrentRoom(room); chat = true;}}>
+                                {room.name.length > 10 ? room.name.substring(0, 10) + "..." : room.name}
+                            </button>
+                            <div>
+                                <button class="button-open-dropdown">...</button>
+                                <Dropdown class="bg-primary">
+                                    {#if room.admin === true}
+                                        <DropdownItem defaultClass="button-rooms">
+                                            <button on:click={() => {admin = room.name; modalAdmin = true}}>
+                                                Admin panel
+                                            </button>
+                                        </DropdownItem>
+                                    {/if}
+                                    <DropdownItem  defaultClass="button-rooms">
+                                        <button class="rounded justify-center" on:click={() => leaveRoom(room)}>
+                                            Put in trash
+                                        </button>
+                                    </DropdownItem>
+                                </Dropdown>
+                            </div>
+                        </div>
+                    {/each}
+                </div>
+            {:else}
+                {#each allUsers as user}
+                    {#if myProfile.friend_id && myProfile.friend_id.includes(user.id)}
+                    <div class="grid grid-cols-3">
+                        <Avatar src={user.img_link} rounded class="object-cover"/>
+                        <p>{user.login}</p>
+                        <div class="grid grid-cols-2">
+                            <button on:click={() => {socketMp.emit("create-room", {user_send : myProfile, user_receive : user})}}>
+                                <SvgMsg />
+                            </button>
+                            <button on:click={() => {handleGotoUser(user.id)}}>
+                                <SvgProfile />
+                            </button>
+                            <button>
+                                <img src="./game-battle.png" alt="" style="max-width: none;">
+                            </button>
+                        </div>
+                    </div>
 
+                    {/if}
+                {/each}
+            {/if}
+        </div>
+        <div class="container-action">
+            <button class="button-action" on:click={() => openCreate()}>
+                Create
+            </button>
+            <button class="button-action" on:click={() => openJoin()}>
+                Join
+            </button>
+        </div>
     </div>
-    {/if}
-<!-- </div> -->
+    <button class="button-messagerie {active}" on:click={() => active = "active"}>
+        Messagerie
+    </button>
+</div>
+    
 
 <Modal bind:open={modalCreate} title="Create a room" color="third">
     <FloatingLabelInput style="filled" id="floating_filled" name="Room Name" type="text" label="Room Name" bind:value={roomName}/>

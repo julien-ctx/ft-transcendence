@@ -56,6 +56,6 @@ export class errors {
 		this.desc = desc;
 		this.pass = pass;
 		this.cpass = cpass;
-		console.log(this.status, this.name, this.desc, this.pass, this.cpass);
+		// console.log(this.status, this.name, this.desc, this.pass, this.cpass);
 	}
 }

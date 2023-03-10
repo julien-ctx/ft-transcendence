@@ -44,6 +44,7 @@
 	let gameBall: Ball;
 	
 	let playerNumber: number = 0;
+
 	let socket: Socket;	
 	let jwt: any;
 	let animationFrame: any;
@@ -61,8 +62,39 @@
 		socket = io(API_URL, {
 				path: '/pong',
 				query: { token: jwt}
+			});
 		});
-	});
+	
+	function handleResize() {
+		socket.emit('resize', {
+			width: window.innerWidth,
+			height: window.innerHeight,
+		});
+		canvas.width = window.innerWidth * 0.7;
+		canvas.height = window.innerHeight * 0.8;
+	}
+	
+	function handleMouseMove(e: any) {
+		mouseY = e.clientY - canvas.offsetTop;
+		socket.emit('mousemove', {mouseY});	
+	}
+	
+	function handleKeyDown(e: any) {
+		const move: string = e.key;
+		socket.emit('keydown', {move});
+	}
+	
+	function handleKeyUp(e: any) {
+		const move: string = e.key;
+		socket.emit('keyup', {move});
+	}
+
+	function removeEvents() {
+		canvas.removeEventListener('mousemove', handleMouseMove);
+		window.removeEventListener("keydown", handleKeyDown);
+		window.removeEventListener("keyup", handleKeyUp);
+		window.removeEventListener("resize", handleResize);
+	}
 	
 	function drawPaddles(leftPaddle: any, rightPaddle: any) {
 		ctx.fillStyle = OBJ_COLOR;
@@ -96,7 +128,7 @@
 		
 	function drawScores(leftScore: number, rightScore: number) {
 		ctx.fillStyle = OBJ_COLOR;
-		ctx.font = 'bold ' + canvas.width * 0.03 + 'px Courier';
+		ctx.font = 'bold ' + canvas.width * 0.03 + 'px Audiowide';
 		ctx.fillText(leftScore, canvas.width * 0.4, canvas.height * 0.1);
 		ctx.fillText(rightScore, canvas.width * 0.6 - ctx.measureText(rightScore).width, canvas.height * 0.1);
 	}
@@ -104,7 +136,7 @@
 	async function drawCounter() {
 		clearCanvas();
 		for (let i = 3; i > 0; i--) {
-			ctx.font = 'bold ' + canvas.width * 0.1 + 'px Courier';
+			ctx.font = 'bold ' + canvas.width * 0.1 + 'px Audiowide';
 			ctx.fillText(i, canvas.width * 0.5 - ctx.measureText(i).width / 2, canvas.height * 0.5);
 			await new Promise(r => setTimeout(r, 800));
 			clearCanvas();
@@ -115,13 +147,11 @@
 		clearCanvas();
 		let msg: string = 'Your opponent is ' + login;
 		ctx.fillText(msg, canvas.width * 0.5 - ctx.measureText(msg).width / 2, canvas.height * 0.5);	
-		await new Promise(r => setTimeout(r, 1000));
+		await new Promise(r => setTimeout(r, 1500));
 	}
 
-	async function playAgain() {
+	function playAgain() {
 		if (!gameStarted && !dataInit) {	
-			gameStarted = false;
-			dataInit = false;
 			clearCanvas();
 			isReady();
 		}
@@ -129,18 +159,16 @@
 
 	async function drawWinner(winner: string) {
 		clearCanvas();
-		canvas.removeEventListener('mousemove', handleMouseMove);
-		// need to remove other event listeners here
+		removeEvents();
 		ctx.fillStyle = OBJ_COLOR;
 		let winMsg: string = winner + ' won the game!';
-		ctx.font = 'bold ' + canvas.width * 0.03 + 'px Courier';
+		ctx.font = 'bold ' + canvas.width * 0.03 + 'px Audiowide';
 		ctx.fillText(
 			winMsg,
 			canvas.width / 2 - ctx.measureText(winMsg).width / 2,
 			canvas.height / 2 
 		)
 		socket.disconnect();
-		//maybe i just have to remove the socket from game and add to queue
 		socket = io(API_URL, {
 			path: '/pong',
 			query: { token: jwt}
@@ -150,30 +178,6 @@
 		const msg = 'Click to play again';
 		ctx.fillText(msg, canvas.width * 0.5 - ctx.measureText(msg).width / 2, canvas.height * 0.5);	
 		canvas.onclick = playAgain;
-	}
-
-	function handleResize() {
-		socket.emit('resize', {
-			width: window.innerWidth,
-			height: window.innerHeight,
-		});
-		canvas.width = window.innerWidth * 0.7;
-		canvas.height = window.innerHeight * 0.8;
-	}
-	
-	function handleMouseMove(e: any) {
-		mouseY = e.clientY - canvas.offsetTop;
-		socket.emit('mousemove', {mouseY});	
-	}
-	
-	function handleKeyDown(e: any) {
-		const move: string = e.key;
-		socket.emit('keydown', {move});
-	}
-	
-	function handleKeyUp(e: any) {
-		const move: string = e.key;
-		socket.emit('keyup', {move});
 	}
 
 	function gameLoop() {
@@ -209,9 +213,9 @@
 			}
 			drawWinner(winner);
 			drawScores(gameLeftPaddle.score, gameRightPaddle.score);
+			cancelAnimationFrame(animationFrame);
 			gameLeftPaddle.score = 0;	
 			gameRightPaddle.score = 0;
-			cancelAnimationFrame(animationFrame);
 		});
 		await drawOpponent(login);
 		await drawCounter();
@@ -248,7 +252,7 @@
 		
 		ctx = canvas.getContext('2d');
 		if (!ctx) return;
-		ctx.font = canvas.width * 0.03 + 'px Courier';
+		ctx.font = canvas.width * 0.03 + 'px Audiowide';
 		ctx.fillStyle = TEXT_COLOR;
 	
 		containerCanvas.appendChild(canvas)

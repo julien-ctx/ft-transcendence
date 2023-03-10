@@ -1,5 +1,4 @@
 <script lang="ts">
-    import { Avatar } from "flowbite-svelte";
     import { afterUpdate } from "svelte";
     import MpBody from "./mpBody.svelte";
     import SvgCancel from "../svgComponent/svgCancel.svelte";
@@ -31,11 +30,9 @@
 
 	function changeInput() {
 		if (inputMp == "") {
-			console.log("vide");
 			socketMp.emit("unwrite", {user_receive : otherProfile, room, login : myProfile.login});
 		}
 		else {
-			console.log("plein", inputMp.length);
 			socketMp.emit("write", {user_receive : otherProfile, room, login : myProfile.login});
 		}
 	}
@@ -69,7 +66,7 @@
 		</div>
 		<MpBody room={room} active={active} otherProfile={otherProfile}/>
 		<div class="send {active}">
-			<input placeholder="Send a message to {otherProfile.login}" class="send-msg focus:outline-none focus:ring-0" type="text" bind:value={inputMp} on:keypress={handleSubmit} on:input={changeInput}/>
+			<input placeholder="Send a message" class="send-msg focus:outline-none focus:ring-0" type="text" bind:value={inputMp} on:keypress={handleSubmit} on:input={changeInput}/>
 		</div>
 	</div>
 {/if}

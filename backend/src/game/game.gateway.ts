@@ -1,134 +1,198 @@
-import { SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
-import { Socket } from 'dgram';
-import { request } from 'http';
-import { Server } from 'socket.io';
-import { PrismaService } from 'src/prisma/prisma.service';
 import { GameService } from './game.service';
-import { Ball, Paddle, GameCanvas } from './objects/objects';
+import { Ball, Paddle, GameCanvas, Game, Client, WaitingClient } from './objects/objects';
 import { findLast } from 'lodash';
+import { JwtService } from "@nestjs/jwt";
+import { WebSocketGateway, WebSocketServer, OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, MessageBody, ConnectedSocket } from "@nestjs/websockets";
+import { User } from "@prisma/client";
+import { Server, Socket } from "socket.io";
+import { PrismaService } from "src/prisma/prisma.service";
 
-let interval: any;
+const MAX_SCORE = 3;
 
-@WebSocketGateway({cors: true})
-export class GameGateway {
+@WebSocketGateway({
+	cors: true,
+	path: '/pong'
+})
+export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
 	constructor (
-		private gameCanvas: GameCanvas,
-		private leftPaddle: Paddle,
-		private rightPaddle: Paddle,
-		private ball: Ball,
-		private game: GameService,
-		private prisma: PrismaService,
-	) {}
-
-	private maxScore: number = 11;
+	private gameService : GameService,
+	private jwt : JwtService,
+	private prisma : PrismaService
+	) {this.gameLoop = this.gameLoop.bind(this);}
 	
+	private queue: WaitingClient[] = [];
+	private games: Game[] = [];
+	private interval: any = null;
+
 	@WebSocketServer() server: Server;
 
-	setLeftPaddle() {
-		this.leftPaddle = {
-			x: this.gameCanvas.width * 0.015,
-			y: this.gameCanvas.height * 0.5 - (this.gameCanvas.height * 0.15 / 2),
-			width: this.gameCanvas.width * 0.005,
-			height: this.gameCanvas.height * 0.15,
-			score: 0,
-			direction: 0,
-			speed: this.gameCanvas.height * 0.0015,
-		};
+	afterInit() {}
+
+	async handleConnection(socket : Socket) {
+		const token = socket.handshake.query.token as string;
+		const user = this.jwt.decode(token);
+		if (user == undefined) return;
+		const fullUserData = await this.prisma.user.findUnique({
+			where : {
+				id_user : user['id'],
+			}
+		})
+		this.queue.push(new WaitingClient(socket, fullUserData))
 	}
 
-	setRightPaddle() {
-		this.rightPaddle = {
-			x: this.gameCanvas.width - this.gameCanvas.width * 0.015 - this.gameCanvas.width * 0.005,
-			y: this.gameCanvas.height * 0.5 - (this.gameCanvas.height * 0.15 / 2),
-			width: this.gameCanvas.width * 0.005,
-			height: this.gameCanvas.height * 0.15,
-			score: 0,
-			direction: 0,
-			speed: this.gameCanvas.height * 0.0015,
-		};
-	}
-
-	setBall() {
-		this.ball = {
-			x: this.gameCanvas.width * 0.5,
-			y: this.gameCanvas.height * 0.5,
-			size: this.gameCanvas.width * 0.02,
-			direction: {
-				x: 2 * this.game.randomBallDirection(),
-				y: 2 * this.game.randomBallDirection(),
-			},
-			speed: {
-				x: this.gameCanvas.width * 0.004,
-				y: this.gameCanvas.height * 0.007,
-			},
-		};
-	}
-
-	gameLoop(client: any, instance: any) {
-		const winner = instance.game.checkBallPosition(
-			instance.ball,
-			instance.leftPaddle,
-			instance.rightPaddle,
-			instance.maxScore,
-			instance.gameCanvas
-		);
-		if (winner === 'leftWin' || winner === 'rightWin') {
-			client.emit(winner, {});
-			clearInterval(interval);
+	handleDisconnect(socket: Socket) {
+		this.removeFromGame(socket);
+		this.removeFromQueue(socket);
+		if (this.interval) {
+			clearInterval(this.interval);
+			this.interval = null;
 			return;
 		}
-		client.emit('paddlesData', {leftPaddle: instance.leftPaddle, rightPaddle: instance.rightPaddle});
-		client.emit('ballData', {ball: instance.ball});
-		client.emit('scoresData', {leftScore: instance.leftPaddle.score, rightScore: instance.rightPaddle.score});
-		instance.game.updateBall(instance.ball, instance.gameCanvas, instance.leftPaddle, instance.rightPaddle);
-		instance.game.movePaddles(instance.leftPaddle, instance.gameCanvas);
-		instance.game.updateBot(instance.ball, instance.rightPaddle, instance.gameCanvas);
+	}
+
+	removeFromQueue(socket: Socket) {
+		for (let i = 0; i < this.queue.length; i++) {
+			if (this.queue[i].socket == socket) {
+				this.queue.splice(i, 1);
+			}
+		}
+	}
+
+	removeFromGame(socket: Socket) {
+		this.games.forEach((element, index) => {
+			if ((element.leftClient.socket === socket)) {
+				this.games.splice(index, 1);
+			} else if (element.rightClient && element.rightClient.socket === socket) {
+				this.games.splice(index, 1);
+			}
+		});
+	}
+	
+	gameLoop(game: Game) {
+		const winner = this.gameService.checkBallPosition(game);
+		if (winner !== 'NoWinner') {
+			if (winner === 'Bot') {
+				game.leftClient.socket.emit('winner', {winner: winner, side: 1});
+			} else if (winner === game.leftClient.user['login']) {
+				game.leftClient.socket.emit('winner', {winner: winner, side: -1});
+				if (game.rightClient) {
+					game.rightClient.socket.emit('winner', {winner: winner, side: -1});
+				}
+			} else {
+				game.leftClient.socket.emit('winner', {winner: winner, side: 1});
+				if (game.rightClient) {
+					game.rightClient.socket.emit('winner', {winner: winner, side: 1});
+				}
+			}
+		}
+		game.leftClient.socket.emit('paddlesData', {leftPaddle: game.leftClient.leftPaddle, rightPaddle: game.leftClient.rightPaddle});
+		game.leftClient.socket.emit('ballData', {ball: game.leftClient.ball});
+		game.leftClient.socket.emit('scoresData', {leftScore: game.leftClient.leftPaddle.score, rightScore: game.leftClient.rightPaddle.score});
+		this.gameService.updateBall(game.leftClient);
+		this.gameService.movePaddles(game.leftClient.leftPaddle, game.leftClient.canvas);
+		if (game.playerNumber === 2) {
+			game.rightClient.socket.emit('paddlesData', {leftPaddle: game.rightClient.leftPaddle, rightPaddle: game.rightClient.rightPaddle});
+			game.rightClient.socket.emit('ballData', {ball: game.rightClient.ball});
+			game.rightClient.socket.emit('scoresData', {leftScore: game.rightClient.leftPaddle.score, rightScore: game.rightClient.rightPaddle.score});
+			this.gameService.updateBall(game.rightClient);
+			this.gameService.movePaddles(game.rightClient.leftPaddle, game.rightClient.canvas);
+		}
+		if (game.playerNumber == 1)
+			this.gameService.updateBot(game.leftClient.ball, game.leftClient.rightPaddle, game.leftClient.canvas);
 	}
 
 	@SubscribeMessage('ready')
-	startGame(socket: any, data: {width, height, playerNumber}) {
-		this.gameCanvas.width = data.width;
-		this.gameCanvas.height = data.height;
-		this.setLeftPaddle();
-		this.setRightPaddle();
-		this.setBall();
-
+	startGame(socket: Socket, data: {width, height, playerNumber}) {
+		let waitingClient = this.queue.find(waitingClient => waitingClient.socket === socket);
+	
+		if (socket === waitingClient.socket) {
+			this.removeFromQueue(socket);
+		}
+		let canvas = this.gameService.createCanvas(data.width, data.height);
+		let client = new Client(
+			waitingClient.socket,
+			waitingClient.user,
+			canvas,
+			this.gameService.createLeftPaddle(canvas),
+			this.gameService.createRightPaddle(canvas),
+			this.gameService.createBall(canvas),
+			0,
+		);
+		let gameReady = false; 
+		if (data.playerNumber === 1) {
+			client.side = -1;
+			this.games.push(new Game(client, null, 1, MAX_SCORE));
+			gameReady = true;
+		} else if (this.games.find(game => game.playerNumber === 2 && game.rightClient === null)) {
+			let game = this.games.find(game => game.playerNumber === 2 && game.rightClient === null);
+			client.side = 1;
+			game.rightClient = client;
+			gameReady = true;
+		} else {
+			client.side = -1;
+			this.games.push(new Game(client, null, 2, MAX_SCORE));
+		}
 		socket.on('resize',  ({ width, height }) => {
-			this.game.handleResize(
-				this.gameCanvas,
+			this.gameService.handleResize(
+				client,
 				width,
 				height,
-				this.leftPaddle,
-				this.rightPaddle,
-				this.ball,
 			);
 		});
 		socket.on('keydown', ({ move }) => {
+			let paddle = client.side < 0 ? client.leftPaddle : client.rightPaddle;
 			if (move === 'ArrowUp') {
-				this.leftPaddle.direction = -1;
+				paddle.direction = -1;
 			} else if (move === 'ArrowDown') {
-				this.leftPaddle.direction = 1;
+				paddle.direction = 1;
 			}
 		});
 		socket.on('keyup', ({ move }) => {
+			let paddle = client.side < 0 ? client.leftPaddle : client.rightPaddle;
 			if (move === 'ArrowUp' || move === 'ArrowDown') {
-				this.leftPaddle.direction = 0;
+				paddle.direction = 0;
 			}
 		});
 		socket.on('mousemove', ({ mouseY }) => {
+			let paddle = client.side < 0 ? client.leftPaddle : client.rightPaddle;
 			if (mouseY < 0) {
 				mouseY = 0;
-			} else if (mouseY > this.gameCanvas.height - (this.leftPaddle.height)) {
-				mouseY = this.gameCanvas.height - (this.leftPaddle.height);
+			} else if (mouseY > client.canvas.height - (paddle.height)) {
+				mouseY = client.canvas.height - (paddle.height);
 			}
-			this.leftPaddle.y = mouseY;
+			paddle.y = mouseY;
 		});
-		socket.emit('initData', {
-			leftPaddle: this.leftPaddle,
-			rightPaddle: this.rightPaddle,
-			ball: this.ball,
-		});
-
-		interval = setInterval(this.gameLoop, 1, socket, this);
+		
+		if (gameReady) {
+			if (data.playerNumber == 2) {
+				socket.emit('foundOpponent', {
+					login: client.user['login'],
+					leftPaddle: client.leftPaddle,
+					rightPaddle: client.rightPaddle,
+					ball: client.ball,
+				});
+			} else if (data.playerNumber === 1) {
+				socket.emit('foundOpponent', {
+					login: 'the bot',
+					leftPaddle: client.leftPaddle,
+					rightPaddle: client.rightPaddle,
+					ball: client.ball,
+				});
+			}	
+		}
+	}
+	
+	@SubscribeMessage('gameLoop')
+	launchGameLoop(socket: Socket) {
+		const game = this.games[this.games.length - 1];
+		let randomBallDirectionX = this.gameService.randomBallDirection();
+		let randomBallDirectionY = this.gameService.randomBallDirection();
+		game.leftClient.ball.direction.x *= randomBallDirectionX;
+		game.leftClient.ball.direction.y *= randomBallDirectionY;
+		if (game.playerNumber === 2) {
+			game.rightClient.ball.direction.x *= randomBallDirectionX;
+			game.rightClient.ball.direction.y *= randomBallDirectionY;
+		}
+		this.interval = setInterval(this.gameLoop, 1, game);
 	}
 };

@@ -68,7 +68,7 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 			err.errs.name = 'Room already exist';
 		}
 		if (err.hasErrors()) {
-			console.log('error : ', err.errs.status , err.errs.name, err.errs.desc, err.errs.pass, err.errs.cpass);
+			// console.log('error : ', err.errs.status , err.errs.name, err.errs.desc, err.errs.pass, err.errs.cpass);
 			client.emit('errors', err.errs);
 			return ;
 		}

@@ -18,6 +18,9 @@ import { UserService } from 'src/user/user.service';
 import { RoomClass } from './room.interface';
 import { Socket } from 'dgram';
 import { Sanction } from './sanction.class';
+import { UseGuards } from '@nestjs/common';
+import { UserGuardGateway } from 'src/user/guard/user.guard.gateway';
+import { User } from '@prisma/client';
 
 @WebSocketGateway({
 	path : '/chat',
@@ -316,14 +319,15 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 		const User = await this.Service.getOneById(user['id']);
 		const Room = await this.chatService.getRoomByName(data.roomName);
 		const message = await this.chatService.createMessage(User.id, Room.id, data.message);
-
-		const roomInstance = this.findRoom(Room.name);
-		roomInstance.ClientUser.forEach((elem) => {
-			elem.Client.emit('getMessages', {
-				message : message.content,
-				user : elem.User.id_user,
-			}); 
-		});
+		const roomInstance = await this.chatService.getRoomByName(data.roomName);
+		const userInRoom = await this.chatService.getUsersRooms(User.id, roomInstance.name);
+		this.Client.forEach((elem : any) => {
+			userInRoom.forEach((oneUser : User) => {
+				if (elem.user.id == oneUser.id_user) {
+					elem.client.emit("update-room", roomInstance);
+				}
+			})
+		})
 	}
 
 	@SubscribeMessage('verifPassword')
@@ -410,6 +414,40 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 				elem.client.emit('OP', data.roomName);
 			}
 		});
+	}
+
+	@UseGuards(UserGuardGateway)
+	@SubscribeMessage("write")
+	async write(@MessageBody() body : {user_receive : User [], room : any, login : string}) {
+		let room = body.room;		
+		if (room.write && !room.write.includes(body.login))
+			room.write.push(body.login);
+		else if (!room.write)
+			room.write = [body.login]
+		this.Client.forEach((elem : any) => {
+			for (let i = 0; i < body.user_receive.length; i++) {
+				if (elem.user.id == body.user_receive[i].id_user)
+					elem.client.emit('event-write', room);
+			}
+		})
+	}
+
+	@UseGuards(UserGuardGateway)
+	@SubscribeMessage("unwrite")
+	async unwrite(@MessageBody() body : {user_receive : User [], room : any, login : string}) {
+		let room = body.room;
+		if (room.write) {
+			for (let i = 0; i > room.write.length; i++) {
+				if (room.write[i].login == body.login)
+					room.write.splice(i, 1);
+			}		
+		}
+		this.Client.forEach((elem : any) => {
+			for (let i = 0; i < body.user_receive.length; i++) {
+				if (elem.user.id == body.user_receive[i].id_user)
+					elem.client.emit('event-write', room);
+			}
+		})
 	}
 
 	handleDisconnect(client: any) {

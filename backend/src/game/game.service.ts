@@ -92,6 +92,9 @@ export class GameService {
 			x: client.canvas.width * 0.0004,
 			y: client.canvas.height * 0.0007,
 		};
+		client.socket.emit('paddlesData', {leftPaddle: client.leftPaddle, rightPaddle: client.rightPaddle})
+		client.socket.emit('ballData', {ball: client.ball})
+		client.socket.emit('scoresData', {leftScore: client.leftPaddle.score, rightScore: client.rightPaddle.score})
 	}
 
 	resetBall(client: Client, side: number, randomBallDirection: number) {

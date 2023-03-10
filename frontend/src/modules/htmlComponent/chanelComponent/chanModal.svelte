@@ -99,47 +99,49 @@
 		<div class="body {active}" bind:this={divBody}>
 			{#if currentRoom.Message}
 				{#each currentRoom.Message as mp, i}
-					{#if !currentRoom.Message[i - 1]}
-						<div>
-							<div class="avatar">
-								<Avatar src={getUser(mp.id_user).img_link} rounded class="object-cover" />
-								<p>{getUser(mp.id_user).login}</p>
-								<p>{getDate(mp)}</p>
+					{#if getUser(mp.id_user)}
+						{#if !currentRoom.Message[i - 1]}
+							<div>
+								<div class="avatar">
+									<Avatar src={getUser(mp.id_user).img_link} rounded class="object-cover" />
+									<p>{getUser(mp.id_user).login}</p>
+									<p>{getDate(mp)}</p>
+								</div>
+								<p class="msg">
+									{mp.content}
+								</p>
 							</div>
+						{:else if (currentRoom.Message[i - 1] && currentRoom.Message[i - 1].id_user != currentRoom.Message[i].id_user) && ((currentRoom.Message[i + 1] && currentRoom.Message[i + 1].id_user != currentRoom.Message[i].id_user) || !currentRoom.Message[i + 1])}
+							<div class="solo">
+								<div class="avatar">
+									<Avatar src={getUser(mp.id_user).img_link} rounded class="object-cover" />
+									<p>{getUser(mp.id_user).login}</p>
+									<p>{getDate(mp)}</p>
+								</div>
+								<p class="msg end">
+									{mp.content}
+								</p>
+							</div>
+						{:else if currentRoom.Message[i - 1] && currentRoom.Message[i - 1].id_user != currentRoom.Message[i].id_user}
+							<div>
+								<div class="avatar">
+									<Avatar src={getUser(mp.id_user).img_link} rounded class="object-cover" />
+									<p>{getUser(mp.id_user).login}</p>
+									<p>{getDate(mp)}</p>
+								</div>
+								<p class="msg">
+									{mp.content}
+								</p>
+							</div>
+						{:else if currentRoom.Message[i + 1] && currentRoom.Message[i + 1].id_user == currentRoom.Message[i].id_user}
 							<p class="msg">
 								{mp.content}
 							</p>
-						</div>
-					{:else if (currentRoom.Message[i - 1] && currentRoom.Message[i - 1].id_user != currentRoom.Message[i].id_user) && ((currentRoom.Message[i + 1] && currentRoom.Message[i + 1].id_user != currentRoom.Message[i].id_user) || !currentRoom.Message[i + 1])}
-						<div class="solo">
-							<div class="avatar">
-								<Avatar src={getUser(mp.id_user).img_link} rounded class="object-cover" />
-								<p>{getUser(mp.id_user).login}</p>
-								<p>{getDate(mp)}</p>
-							</div>
+						{:else}
 							<p class="msg end">
 								{mp.content}
 							</p>
-						</div>
-					{:else if currentRoom.Message[i - 1] && currentRoom.Message[i - 1].id_user != currentRoom.Message[i].id_user}
-						<div>
-							<div class="avatar">
-								<Avatar src={getUser(mp.id_user).img_link} rounded class="object-cover" />
-								<p>{getUser(mp.id_user).login}</p>
-								<p>{getDate(mp)}</p>
-							</div>
-							<p class="msg">
-								{mp.content}
-							</p>
-						</div>
-					{:else if currentRoom.Message[i + 1] && currentRoom.Message[i + 1].id_user == currentRoom.Message[i].id_user}
-						<p class="msg">
-							{mp.content}
-						</p>
-					{:else}
-						<p class="msg end">
-							{mp.content}
-						</p>
+						{/if}
 					{/if}
 				{/each}
 			{/if}

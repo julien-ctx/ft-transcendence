@@ -90,6 +90,9 @@
                                 <SvgAdd />
                             </button>
                         {/if}
+                        <button>
+                            <img src="./game-battle.png" alt="" style="max-width: none;">
+                        </button>
                         <button on:click={() => {socketMp.emit("create-room", {user_send : myProfile, user_receive : userProfile})}}>
                             <SvgMsg />
                         </button>

@@ -1,7 +1,12 @@
 <script lang="ts">
+    import { goto } from "$app/navigation";
     import { currentRoomStore } from "$lib/store/roomStore";
-    import { Avatar } from "flowbite-svelte";
+    import { socketFriendStore } from "$lib/store/socket";
+    import { userProfileDataStore, usersDataStore } from "$lib/store/user";
+    import { GetOneUser } from "$lib/userUtils";
+    import { Avatar, Dropdown, DropdownItem } from "flowbite-svelte";
 	import { afterUpdate, onDestroy, onMount } from "svelte";
+    import { element } from "svelte/internal";
     import SvgCancel from "../svgComponent/svgCancel.svelte";
 
 	export let myProfile : any;
@@ -13,8 +18,13 @@
 	let divBody : any;
 	let inputMp : any;
 	let loginWrite : string = "";
+	let allUsers : any;
+	let socketFriend : any;
+	let dropdownOpen : boolean = false;
 
 	currentRoomStore.subscribe((val) => currentRoom = val);
+	usersDataStore.subscribe((val) => allUsers = val);
+	socketFriendStore.subscribe((val) => socketFriend = val);
 
 	onMount(async () => {
 		socketRoom.on("event-write", (data : any) => {
@@ -86,53 +96,105 @@
 		}
 	}
 
+	async function handleGotoUser(id : string) {
+        await GetOneUser(id)
+        .then((res) => {
+            userProfileDataStore.set(res.data);
+        })
+        goto(`/user?id=${id}`);
+    }
+
+	function returnIdUser(id_user : any) {
+		for (let i = 0; i < allUsers.length; i++) {
+			if (allUsers[i].id_user == id_user)
+				return allUsers[i].id;
+		}
+	}
+
+	function returnIdUserFromLogin(login : string) {
+		for (let i = 0; i < allUsers.length; i++) {
+			if (allUsers[i].login == login)
+				return allUsers[i].id;
+		}
+	}
 </script>
 
 {#if usersRoom && myProfile && currentRoom}
 	<div class="mp-modal">
-		<div class="header {active}" on:dblclick={updateActive}>
-			<p>{currentRoom.name}</p>
+		<button class="header {active}">
+			<button class="login" on:click={updateActive}>{currentRoom.name}</button>
 			<button on:click={() => currentRoomStore.set(null)}>
 				<SvgCancel />
 			</button>
-		</div>
+		</button>
 		<div class="body {active}" bind:this={divBody}>
 			{#if currentRoom.Message}
 				{#each currentRoom.Message as mp, i}
-					{#if getUser(mp.id_user)}
-						{#if !currentRoom.Message[i - 1]}
-							<div>
-								<div class="avatar">
-									<Avatar src={getUser(mp.id_user).img_link} rounded class="object-cover" />
-									<p>{getUser(mp.id_user).login}</p>
-									<p>{getDate(mp)}</p>
+					{#if getUser(mp.id_user) && getUser(mp.id_user).login && (myProfile.block_id && !myProfile.block_id.includes(returnIdUser(mp.id_user)))}
+						{#if !currentRoom.Message[i - 1] || currentRoom.Message[i - 1] && currentRoom.Message[i - 1].id_user != currentRoom.Message[i].id_user}
+							{#if mp.id_user != myProfile.id_user}
+								<div>
+									<div class="avatar">
+										<Avatar src={getUser(mp.id_user).img_link} rounded class="object-cover cursor-pointer" />
+										<Dropdown open={dropdownOpen} class="bg-primary rounded">
+											<DropdownItem defaultClass="bg-primary border-none rounded-none p-2 font-sm hover:bg-secondary text-sm">
+												Invite game
+											</DropdownItem>
+											<DropdownItem defaultClass="bg-primary border-none rounded-none p-2 font-sm hover:bg-secondary text-sm" on:click={() => handleGotoUser(returnIdUser(mp.id_user))}>
+												Profile
+											</DropdownItem>
+										</Dropdown>
+										<p>{getUser(mp.id_user).login}</p>
+										<p>{getDate(mp)}</p>
+									</div>
+									<p class="msg">
+										{mp.content}
+									</p>
 								</div>
-								<p class="msg">
-									{mp.content}
-								</p>
-							</div>
+							{:else}
+								<div>
+									<div class="avatar">
+										<Avatar src={getUser(mp.id_user).img_link} rounded class="object-cover" />
+										<p>{getUser(mp.id_user).login}</p>
+										<p>{getDate(mp)}</p>
+									</div>
+									<p class="msg">
+										{mp.content}
+									</p>
+								</div>
+							{/if}
 						{:else if (currentRoom.Message[i - 1] && currentRoom.Message[i - 1].id_user != currentRoom.Message[i].id_user) && ((currentRoom.Message[i + 1] && currentRoom.Message[i + 1].id_user != currentRoom.Message[i].id_user) || !currentRoom.Message[i + 1])}
-							<div class="solo">
-								<div class="avatar">
-									<Avatar src={getUser(mp.id_user).img_link} rounded class="object-cover" />
-									<p>{getUser(mp.id_user).login}</p>
-									<p>{getDate(mp)}</p>
+							{#if mp.id_user != myProfile.id_user}
+								<div class="solo">
+									<div class="avatar">
+										<Avatar src={getUser(mp.id_user).img_link} rounded class="object-cover cursor-pointer" />
+										<Dropdown open={dropdownOpen}  class="bg-primary rounded">
+											<DropdownItem defaultClass="bg-primary border-none rounded-none p-2 font-sm hover:bg-secondary text-sm">
+												Invite game
+											</DropdownItem>
+											<DropdownItem defaultClass="bg-primary border-none rounded-none p-2 font-sm hover:bg-secondary text-sm" on:click={() => handleGotoUser(returnIdUser(mp.id_user))}>
+												Profile
+											</DropdownItem>
+										</Dropdown>
+										<p>{getUser(mp.id_user).login}</p>
+										<p>{getDate(mp)}</p>
+									</div>
+									<p class="msg end">
+										{mp.content}
+									</p>
 								</div>
-								<p class="msg end">
-									{mp.content}
-								</p>
-							</div>
-						{:else if currentRoom.Message[i - 1] && currentRoom.Message[i - 1].id_user != currentRoom.Message[i].id_user}
-							<div>
-								<div class="avatar">
-									<Avatar src={getUser(mp.id_user).img_link} rounded class="object-cover" />
-									<p>{getUser(mp.id_user).login}</p>
-									<p>{getDate(mp)}</p>
+							{:else}
+								<div class="solo">
+									<div class="avatar">
+										<Avatar src={getUser(mp.id_user).img_link} rounded class="object-cover" />
+										<p>{getUser(mp.id_user).login}</p>
+										<p>{getDate(mp)}</p>
+									</div>
+									<p class="msg end">
+										{mp.content}
+									</p>
 								</div>
-								<p class="msg">
-									{mp.content}
-								</p>
-							</div>
+							{/if}
 						{:else if currentRoom.Message[i + 1] && currentRoom.Message[i + 1].id_user == currentRoom.Message[i].id_user}
 							<p class="msg">
 								{mp.content}
@@ -145,7 +207,7 @@
 					{/if}
 				{/each}
 			{/if}
-			<div class="typing {(loginWrite)? 'active' : ''}">
+			<div class="typing {(loginWrite && myProfile.block_id && !myProfile.block_id.includes(returnIdUserFromLogin(loginWrite)))? 'active' : ''}">
 				<span class="login">{loginWrite}</span>
 				<span>write a msg</span> 
 				<div class="dot-typing"></div>

@@ -35,6 +35,8 @@
 	let gameStarted: boolean = false;
 	let clickMode : boolean = false;
 	let ctx: any;
+	let playAlone: boolean = false;
+	let botLevel: number = 0;
 	let mouseY: number;
 	
 	let gameLeftPaddle: Paddle;
@@ -46,7 +48,6 @@
 	let socket: Socket;	
 	let jwt: any;
 	let animationFrame: any;
-	let playAlone: boolean = false;
 	let currMsg: any;
 
 	onMount(async () => {
@@ -275,8 +276,10 @@
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
 	}
 
-	function createCanvas(userNb: number, botLevel: any = 0) {
-		console.log(botLevel);
+	function createCanvas(userNb: number) {
+		if (userNb === 1) {
+			botLevel = document.getElementById('custom-slider').value;
+		}
 		clickMode = true;
 		canvas = document.createElement("canvas");
 		canvas.setAttribute("id", "main-game-canvas");
@@ -308,11 +311,13 @@
 				Multiplayer
 			</button>
 			{/if}
-			{#if playAlone}
-			<label for="bot-level">Bot level</label>
-			<input type="range" name="bot-level" id="custom-slider" class="custom-slider appearance-none" min="0" max="100">
-			<button class="button-mode" on:click={() => createCanvas(1, document.getElementById('custom-slider')?.getAttribute('value'))}>Play now</button>
-			{/if}
+			<div class="play-with-bot">
+				{#if playAlone}
+				  <label for="bot-level" class="bot-level">Bot level</label>
+				  <input type="range" name="bot-level" id="custom-slider" class="custom-slider appearance-none" min="0" max="100">
+				  <button class="button-mode" id="play-alone-button" on:click={() => createCanvas(1)}>Play now</button>
+				{/if}
+			</div>
 		</div>
 	</div>
 {/if}

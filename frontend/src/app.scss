@@ -159,6 +159,8 @@ canvas {
 		max-width: 300px;
 		inline-size: 300px;
 		.header {
+			width: 100%;
+			border-radius: 0;
 			border: none;
 			cursor: pointer;
 			user-select: none;
@@ -168,6 +170,10 @@ canvas {
 			align-items: center;
 			justify-content: space-between;
 			padding: 5px;
+			.login {
+				width: 100%;
+				padding-left: 10px;
+			}
 			&.active {
 				border-bottom: 1px solid $third;
 			}

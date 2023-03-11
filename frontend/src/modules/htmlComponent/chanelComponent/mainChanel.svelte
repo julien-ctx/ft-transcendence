@@ -265,7 +265,7 @@
                                 <SvgProfile />
                             </button>
                             <button>
-                                <img src="./game-battle.png" alt="">
+                                <img src="./game-battle.png" alt="" style="max-width: none;">
                             </button>
                         </div>
                     </div>

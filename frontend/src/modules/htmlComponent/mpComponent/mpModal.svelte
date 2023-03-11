@@ -2,11 +2,18 @@
     import { afterUpdate } from "svelte";
     import MpBody from "./mpBody.svelte";
     import SvgCancel from "../svgComponent/svgCancel.svelte";
+    import { Dropdown, DropdownItem } from "flowbite-svelte";
+    import { GetOneUser } from "$lib/userUtils";
+    import { goto } from "$app/navigation";
+    import { userProfileDataStore } from "$lib/store/user";
+    import { socketFriendStore } from "$lib/store/socket";
 
 	export let room : any;
 	export let myProfile : any;
-	let otherProfile : any;
 	export let socketMp : any;
+
+	let dropdownOpen : boolean = false;
+	let otherProfile : any;
 	let inputMp : any;
 	let active : string = "";
 
@@ -55,15 +62,32 @@
 		else
 			active = ""
 	}
+
+	async function handleGotoUser(id : string) {
+        await GetOneUser(id)
+        .then((res) => {
+            userProfileDataStore.set(res.data);
+        })
+        goto(`/user?id=${id}`);
+    }
 </script>
 {#if otherProfile && myProfile && room.open_id && room.open_id.includes(myProfile.id) && !otherProfile.block_id.includes(myProfile.id) && !myProfile.block_id.includes(otherProfile.id)}
 	<div class="mp-modal">
-		<div class="header {active}" on:dblclick={updateActive}>
-			<p>{otherProfile.login}</p>
+		<button class="header {active}">
+			<button class="button-card-user">...</button>
+			<Dropdown open={dropdownOpen} class="bg-primary">
+				<DropdownItem  defaultClass="bg-primary border-none rounded-none p-2 font-sm hover:bg-secondary text-sm">
+					Invite game
+				</DropdownItem>
+				<DropdownItem defaultClass="bg-primary border-none rounded-none p-2 font-sm hover:bg-secondary text-sm" on:click={() => {handleGotoUser(otherProfile.id); dropdownOpen = false;}}>
+					Profile
+				</DropdownItem>
+			</Dropdown>
+			<button class="login" on:click={updateActive}>{otherProfile.login}</button>
 			<button on:click={() => closeMp(room)}>
 				<SvgCancel />
 			</button>
-		</div>
+		</button>
 		<MpBody room={room} active={active} otherProfile={otherProfile}/>
 		<div class="send {active}">
 			<input placeholder="Send a message" class="send-msg focus:outline-none focus:ring-0" type="text" bind:value={inputMp} on:keypress={handleSubmit} on:input={changeInput}/>

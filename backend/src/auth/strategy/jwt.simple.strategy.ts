@@ -5,7 +5,7 @@ import { ExtractJwt, Strategy } from "passport-jwt";
 import { PrismaService } from "src/prisma/prisma.service";
 
 @Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy, "jwt-two-factor"){
+export class JwtSimpleStrategy extends PassportStrategy(Strategy, "jwt-simple"){
 	constructor(config : ConfigService, private prisma : PrismaService) {
 		super({
 			jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -26,9 +26,6 @@ export class JwtStrategy extends PassportStrategy(Strategy, "jwt-two-factor"){
 		})
 		if (!user)
 			throw new UnauthorizedException()
-		if (user.twoFaEnabled && !user.twoFaAuth) {
-			throw new UnauthorizedException()
-		}
 		return user;
 	}
 }

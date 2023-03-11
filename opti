@@ -10,7 +10,9 @@ palier exp
 probleme sur les status en ligne, deco et en game !
 	
 game:	fix resize speed
-		text resize
+		leave game running
+		bot levels
+		randomBallDirection ?
 
 
 

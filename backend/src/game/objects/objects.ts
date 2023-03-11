@@ -1,4 +1,3 @@
-import { Injectable } from "@nestjs/common";
 import { Socket } from "socket.io";
 
 export class WaitingClient {
@@ -26,6 +25,7 @@ export class Game {
 		public rightClient: Client | null,
 		public playerNumber: number,
 		public maxScore: number,
+		public botLevel: number,
 	) {}
 };
 

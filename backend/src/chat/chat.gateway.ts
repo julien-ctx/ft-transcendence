@@ -318,6 +318,12 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 		
 		const User = await this.Service.getOneById(user['id']);
 		const Room = await this.chatService.getRoomByName(data.roomName);
+		// console.log({data}, {User});
+		if (await this.chatService.muteUpdate(Room, User) === false) {
+			// console.log('Muted');
+			client.emit('muted', 'You are muted');
+			return ;
+		}
 		const message = await this.chatService.createMessage(User.id, Room.id, data.message);
 		const roomInstance = await this.chatService.getRoomByName(data.roomName);
 		const userInRoom = await this.chatService.getUsersRooms(User.id, roomInstance.name);
@@ -380,6 +386,56 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 
 		const t = new Sanction(this.Rooms, this.Client, data, this.prisma, client);
 		t.handleSanction();
+	}
+
+	// @UseGuards(UserGuardGateway)
+	@SubscribeMessage('mute')
+	async handleMute(@ConnectedSocket() client, @MessageBody() data: any) {
+		const token = client.handshake.query.token as string;
+		const user = this.jwt.decode(token);
+		if (user === undefined) return;
+
+		// const User = await this.Service.getOneById(user['id']);
+		const Room = await this.chatService.getRoomByName(data.roomName);
+
+		const relate = await this.prisma.roomToUser.findMany({
+			where: {
+				id_user : data.member.id_user,
+				id_room : Room.id,
+			},
+			include : {
+				user : true,
+				room : true,
+			}
+		});
+		let Sanction : Date = new Date();
+		let error : boolean = false;
+		console.log({data});
+		switch (data.duration) {
+			case 'Second':
+				Sanction.setSeconds(Sanction.getSeconds() + data.time); break;
+			case 'Minutes':
+				Sanction.setMinutes(Sanction.getMinutes() + data.time); break;
+			case 'Hour':
+				Sanction.setHours(Sanction.getHours() + data.time); break;
+			case 'Day':
+				Sanction.setDate(Sanction.getDate() + data.time); break;
+			case 'Month':
+				Sanction.setMonth(Sanction.getMonth() + data.time); break;
+			default:
+				error = true; break;
+		}
+		if (error === false) {
+			await this.prisma.roomToUser.update({
+				where : {
+					id : relate[0].id,
+				},
+				data : {
+					Muted : true,
+					EndMute : Sanction,
+				}
+			});
+		}
 	}
 
 	@SubscribeMessage('OP')

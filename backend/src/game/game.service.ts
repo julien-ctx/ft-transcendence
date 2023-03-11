@@ -121,6 +121,11 @@ export class GameService {
 		}
 	}
 
+	syncPaddles(leftClient: Client, rightClient: Client) {
+		leftClient.rightPaddle.y = rightClient.rightPaddle.y * leftClient.canvas.height / rightClient.canvas.height;
+		rightClient.leftPaddle.y = leftClient.leftPaddle.y * rightClient.canvas.height / leftClient.canvas.height;
+	}
+
 	movePaddles(paddle: Paddle, canvas: GameCanvas) {
 		if (paddle.direction == -1) {
 			if (paddle.y - paddle.speed >= 0) {
@@ -138,12 +143,11 @@ export class GameService {
 		}
 	}
 
-	checkBallPosition(game: Game): string {
+	checkBallPosition(game: Game, randomBallDirection: number): string {
 		if (game.leftClient.ball.x < 0) {
-			const randomBallDirection = this.randomBallDirection();
 			this.resetBall(game.leftClient, -1, randomBallDirection);
 			if (game.playerNumber == 2) {
-				this.resetBall(game.rightClient, 1, randomBallDirection);
+				this.resetBall(game.rightClient, -1, randomBallDirection);
 			}
 			game.leftClient.rightPaddle.score++;
 			if (game.playerNumber == 2) {
@@ -154,10 +158,9 @@ export class GameService {
 			}
 		}
 		else if (game.leftClient.ball.x > game.leftClient.canvas.width - game.leftClient.ball.size) {
-			const randomBallDirection = this.randomBallDirection();
 			this.resetBall(game.leftClient, 1, randomBallDirection);
 			if (game.playerNumber == 2) {
-				this.resetBall(game.rightClient, -1, randomBallDirection);
+				this.resetBall(game.rightClient, 1, randomBallDirection);
 			}
 			game.leftClient.leftPaddle.score++;
 			if (game.playerNumber == 2) {

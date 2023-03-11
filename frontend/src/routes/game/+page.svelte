@@ -33,7 +33,6 @@
 	}
 	
 	let gameStarted: boolean = false;
-	let waitingUser : boolean = false;
 	let clickMode : boolean = false;
 	let ctx: any;
 	let mouseY: number;
@@ -81,7 +80,7 @@
 			else
 				ctx.font = 'bold ' + canvas.width * 0.03 + 'px Audiowide';
 			clearCanvas();
-			ctx.fillText(currMsg, canvas.width * 0.5 - ctx.measureText(currMsg).width / 2, canvas.height * 0.5);
+			ctx.fillText(currMsg, canvas.width / 2 - ctx.measureText(currMsg).width / 2, canvas.height / 2);
 		}
 	}
 
@@ -147,7 +146,7 @@
 		ctx.font = 'bold ' + canvas.width * 0.1 + 'px Audiowide';
 		for (let i = 3; i > 0; i--) {
 			currMsg = i;
-			ctx.fillText(i, canvas.width * 0.5 - ctx.measureText(i).width / 2, canvas.height * 0.5);
+			ctx.fillText(i, canvas.width / 2 - ctx.measureText(i).width / 2, canvas.height / 2);
 			await new Promise(r => setTimeout(r, 800));
 			clearCanvas();
 		}
@@ -155,14 +154,24 @@
 		ctx.font = 'bold ' + canvas.width * 0.03 + 'px Audiowide';
 	}
 
+	function drawWaitingForOpponent() {
+		currMsg = 'Waiting for opponent...';
+		ctx.fillText(
+			currMsg,
+			canvas.width / 2 - ctx.measureText(currMsg).width / 2,
+			canvas.height / 2 
+		);
+	}
+
 	async function drawOpponent(opponent: string) {
+		clearCanvas();
 		currMsg = 'Your opponent is ' + opponent;
 		ctx.fillText(
 			currMsg,
 			canvas.width / 2 - ctx.measureText(currMsg).width / 2,
 			canvas.height / 2 
-		)
-		await new Promise(r => setTimeout(r, 1500));
+		);
+		await new Promise(r => setTimeout(r, 2000));
 		currMsg = null;
 	}
 
@@ -172,7 +181,7 @@
 			currMsg,
 			canvas.width / 2 - ctx.measureText(currMsg).width / 2,
 			canvas.height / 2 
-		)
+		);
 		await new Promise(r => setTimeout(r, 1500));
 		currMsg = null;
 	}
@@ -180,7 +189,7 @@
 	function playAgain() {
 		clearCanvas();
 		currMsg = 'Click to play again';
-		ctx.fillText(currMsg, canvas.width * 0.5 - ctx.measureText(currMsg).width / 2, canvas.height * 0.5);
+		ctx.fillText(currMsg, canvas.width / 2 - ctx.measureText(currMsg).width / 2, canvas.height / 2);
 		canvas.onclick = () => {
 			if (!gameStarted && !dataInit) {	
 				clearCanvas();
@@ -201,14 +210,14 @@
 	}
 
 	async function startGame(login: string) {
-		socket.on('paddlesData',  ({leftPaddle, rightPaddle}) => {
+		socket.on('paddlesData', ({leftPaddle, rightPaddle}) => {
 			gameLeftPaddle = leftPaddle;
 			gameRightPaddle = rightPaddle;
 		});
-		socket.on('ballData',  ({ball}) => {
+		socket.on('ballData', ({ball}) => {
 			gameBall = ball;
 		});
-		socket.on('scoresData',  ({leftScore, rightScore}) => {
+		socket.on('scoresData', ({leftScore, rightScore}) => {
 			gameLeftPaddle.score = leftScore;
 			gameRightPaddle.score = rightScore;
 		});
@@ -245,6 +254,7 @@
 		if (!gameStarted) {
 			gameStarted = true;
 			socket.on('foundOpponent', ({login, leftPaddle, rightPaddle, ball}) => {
+				currMsg = null;
 				gameLeftPaddle = leftPaddle;
 				gameRightPaddle = rightPaddle;
 				gameBall = ball;
@@ -252,6 +262,9 @@
 				startGame(login);
 			});
 			socket.emit('ready', { width: canvas.width, height: canvas.height, playerNumber });
+			if (playerNumber === 2) {
+				drawWaitingForOpponent();
+			}
 		}
 	}
   
@@ -286,15 +299,10 @@
 			<button class="button-mode" on:click={() => {createCanvas(1);}}>
 				Solo
 			</button>
-			<button class="button-mode" on:click={() => waitingUser = true}>
+			<button class="button-mode" on:click={() => {createCanvas(2)}}>
 				Multiplayer
 			</button>
 		</div>
-		{#if waitingUser}
-			<div class="mb-5">
-				Waiting for opponent...
-			</div>
-		{/if}
 	</div>
 {/if}
 <div bind:this={containerCanvas} />

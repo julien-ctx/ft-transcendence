@@ -69,7 +69,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	}
 	
 	gameLoop(game: Game) {
-		const winner = this.gameService.checkBallPosition(game);
+		const winner = this.gameService.checkBallPosition(game, this.gameService.randomBallDirection());
 		if (winner !== 'NoWinner') {
 			if (winner === 'Bot') {
 				game.leftClient.socket.emit('winner', {winner: winner, side: 1});
@@ -85,17 +85,19 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 				}
 			}
 		}
+
+		this.gameService.updateBall(game.leftClient);
+		this.gameService.movePaddles(game.leftClient.leftPaddle, game.leftClient.canvas);
 		game.leftClient.socket.emit('paddlesData', {leftPaddle: game.leftClient.leftPaddle, rightPaddle: game.leftClient.rightPaddle});
 		game.leftClient.socket.emit('ballData', {ball: game.leftClient.ball});
 		game.leftClient.socket.emit('scoresData', {leftScore: game.leftClient.leftPaddle.score, rightScore: game.leftClient.rightPaddle.score});
-		this.gameService.updateBall(game.leftClient);
-		this.gameService.movePaddles(game.leftClient.leftPaddle, game.leftClient.canvas);
 		if (game.playerNumber === 2) {
-			game.rightClient.socket.emit('paddlesData', {leftPaddle: game.rightClient.leftPaddle, rightPaddle: game.rightClient.rightPaddle});
-			game.rightClient.socket.emit('ballData', {ball: game.rightClient.ball});
-			game.rightClient.socket.emit('scoresData', {leftScore: game.rightClient.leftPaddle.score, rightScore: game.rightClient.rightPaddle.score});
 			this.gameService.updateBall(game.rightClient);
 			this.gameService.movePaddles(game.rightClient.leftPaddle, game.rightClient.canvas);
+			this.gameService.syncPaddles(game.leftClient, game.rightClient);
+			game.rightClient.socket.emit('paddlesData', {leftPaddle: game.leftClient.leftPaddle, rightPaddle: game.rightClient.rightPaddle});
+			game.rightClient.socket.emit('ballData', {ball: game.rightClient.ball});
+			game.rightClient.socket.emit('scoresData', {leftScore: game.rightClient.leftPaddle.score, rightScore: game.rightClient.rightPaddle.score});
 		}
 		if (game.playerNumber == 1)
 			this.gameService.updateBot(game.leftClient.ball, game.leftClient.rightPaddle, game.leftClient.canvas);
@@ -118,13 +120,14 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 			this.gameService.createBall(canvas),
 			0,
 		);
-		let gameReady = false; 
+		let gameReady = false;
+		let game: Game | null = null;
 		if (data.playerNumber === 1) {
 			client.side = -1;
 			this.games.push(new Game(client, null, 1, MAX_SCORE));
 			gameReady = true;
 		} else if (this.games.find(game => game.playerNumber === 2 && game.rightClient === null)) {
-			let game = this.games.find(game => game.playerNumber === 2 && game.rightClient === null);
+			game = this.games.find(game => game.playerNumber === 2 && game.rightClient === null);
 			client.side = 1;
 			game.rightClient = client;
 			gameReady = true;
@@ -132,14 +135,14 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 			client.side = -1;
 			this.games.push(new Game(client, null, 2, MAX_SCORE));
 		}
-		socket.on('resize',  ({ width, height }) => {
+		socket.on('resize',  ({width, height}) => {
 			this.gameService.handleResize(
 				client,
 				width,
 				height,
 			);
 		});
-		socket.on('keydown', ({ move }) => {
+		socket.on('keydown', ({move}) => {
 			let paddle = client.side < 0 ? client.leftPaddle : client.rightPaddle;
 			if (move === 'ArrowUp') {
 				paddle.direction = -1;
@@ -147,13 +150,13 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 				paddle.direction = 1;
 			}
 		});
-		socket.on('keyup', ({ move }) => {
+		socket.on('keyup', ({move}) => {
 			let paddle = client.side < 0 ? client.leftPaddle : client.rightPaddle;
 			if (move === 'ArrowUp' || move === 'ArrowDown') {
 				paddle.direction = 0;
 			}
 		});
-		socket.on('mousemove', ({ mouseY }) => {
+		socket.on('mousemove', ({mouseY}) => {
 			let paddle = client.side < 0 ? client.leftPaddle : client.rightPaddle;
 			if (mouseY < 0) {
 				mouseY = 0;
@@ -165,11 +168,17 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		
 		if (gameReady) {
 			if (data.playerNumber == 2) {
-				socket.emit('foundOpponent', {
-					login: client.user['login'],
-					leftPaddle: client.leftPaddle,
-					rightPaddle: client.rightPaddle,
-					ball: client.ball,
+				game.leftClient.socket.emit('foundOpponent', {
+					login: game.rightClient.user['login'],
+					leftPaddle: game.leftClient.leftPaddle,
+					rightPaddle: game.leftClient.rightPaddle,
+					ball: game.leftClient.ball,
+				});
+				game.rightClient.socket.emit('foundOpponent', {
+					login: game.leftClient.user['login'],
+					leftPaddle: game.rightClient.leftPaddle,
+					rightPaddle: game.rightClient.rightPaddle,
+					ball: game.rightClient.ball,
 				});
 			} else if (data.playerNumber === 1) {
 				socket.emit('foundOpponent', {
@@ -193,6 +202,6 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 			game.rightClient.ball.direction.x *= randomBallDirectionX;
 			game.rightClient.ball.direction.y *= randomBallDirectionY;
 		}
-		this.interval = setInterval(this.gameLoop, 1, game);
+		this.interval = setInterval(this.gameLoop, 3, game);
 	}
 };

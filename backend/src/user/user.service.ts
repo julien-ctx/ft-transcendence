@@ -36,6 +36,7 @@ export class UserService {
 	}
 
 	async getOne(id : number) {
+		if (Number.isNaN(id)) { ;return ;}
 		return await this.prisma.user.findUnique({
 			where: {
 				id

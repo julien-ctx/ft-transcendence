@@ -48,10 +48,9 @@ export class ChatService {
 				id_user : user.id_user,
 			}
 		});
-		let now : Date = new Date();
 		if (relation.Muted === true) {
+			let now : Date = new Date();
 			if (now > relation.EndMute) {
-				// console.log('Demuted')
 				await this.prisma.roomToUser.update({
 					where : {
 						id : relation.id

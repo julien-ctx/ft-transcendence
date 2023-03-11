@@ -1,8 +1,5 @@
 @import "variables.scss";
-// .div-card-user {
-// 	// border: 1px solid $secondary;
-// 	box-shadow: 0 0px 3px $secondary;
-// }
+
 *,
 *::before,
 *::after {
@@ -38,6 +35,14 @@ canvas {
 	}
 }
 
+.title-nav {
+	font-family: 'Audiowide';
+	transition: 300ms all ease-in-out;
+	&:hover {
+		color: $third;
+	}
+}
+
 .div-notif {
 	transform: translateY(-3px);
 }
@@ -66,18 +71,20 @@ canvas {
 	right: 0;
 	display: flex;
 	align-items: flex-end;
+	gap: 2px;
 	.div-chan {
-		// background-color: $primary;
-		// height: 300px;
+		gap: 2px;
 		position: relative;
 		.button-messagerie {
 			background-color: $primary;
 			padding: 5px 10px;
 			border: 1px solid $third;
+			border-bottom: none;
 			position: absolute;
 			right: 0;
 			bottom: 0;
-			width: 100%;
+			border-radius: 7px 7px 0 0;
+			width: 236px;
 			&.active {
 				display: none;
 			}
@@ -91,39 +98,51 @@ canvas {
 			background-color: $primary;
 			display: flex;
 			flex-direction: column;
-			justify-content: space-between;
-			border-radius: 7px;
+			border-radius: 7px 7px 0 0;
 			gap: 5px;
+			max-width: 237px;
+			position: relative;
 			&.active {
 				max-height: 100%;
-				min-height: 250px;
+				min-height: 300px;
 				opacity: 1;
 				border: 1px solid $third;
+				border-bottom: 0;
 			}
 			.header {
 				display: flex;
 				align-items: center;
 				justify-content: space-between;
-				gap: 5px;
-				padding: 7px;
+				gap: 20px;
+				padding: 10px 15px;
 				border-bottom: 1px solid $third;
+				button {
+					transition: none;
+					border-bottom: 1px solid transparent;
+					&.active {
+						border-bottom: 1px solid $third;
+						color: $third;
+						border-radius: 0;
+					}
+				}
 			}
 			.container-action {
 				display: flex;
-				justify-content: center;
-				gap: 5px;
-				.button-action {
-					border: 1px solid $third;
-					padding: 5px 10px;
-				}
+				justify-content: space-between;
+				padding: 0 5px;
+				position: absolute;
+				bottom: 0;
+				left: 0;
+				right: 0;
 			}
-			.body {
-				max-height: 150px;
+			.body-room {
+				max-height: 200px;
 				overflow-y: scroll;
 				overflow-x: hidden;
-				&::-webkit-scrollbar{
-					display: none;
-				}
+				padding: 10px 0;
+				display: flex;
+				flex-direction: column;
+				gap: 10px;
 				.container-room {
 					background-color: $primary;
 					display: flex;
@@ -140,6 +159,41 @@ canvas {
 					}
 				}
 			}
+			.body-friend {
+				max-height: 230px;
+				overflow-y: scroll;
+				overflow-x: hidden;
+				padding: 10px 0;
+				display: flex;
+				flex-direction: column;
+				gap: 10px;
+				.user-friend {
+					margin: 0 auto;
+					display: flex;
+					align-items: center;
+					width: 100%;
+					p {
+						font-family: 'Audiowide';
+						font-size: 14px;
+					}
+					.object-cover {
+						margin-left: 25px;
+					}
+					.flex-shrink-0 {
+						margin-left: 10px;
+					}
+					p {
+						margin-left: 5px;
+						width: 100px;
+					}
+					.button-svg {
+						margin-right: 5px;
+						svg {
+							width: 20px;
+						}
+					}
+				}
+			}
 		}
 	}
 	.div-mp {
@@ -151,7 +205,8 @@ canvas {
 	}
 	.mp-modal {
 		border: 1px solid $third;
-		border-radius: 7px;
+		border-radius: 7px 7px 0 0;
+		border-bottom: none;
 		background-color: $primary;
 		font-family: 'Audiowide' !important;
 		min-width: 300px;
@@ -170,12 +225,17 @@ canvas {
 			align-items: center;
 			justify-content: space-between;
 			padding: 5px;
+			max-height: 35px;
 			.login {
 				width: 100%;
 				padding-left: 10px;
 			}
 			&.active {
 				border-bottom: 1px solid $third;
+				max-height: none;
+			}
+			.button-card-user {
+				transform: translateY(-5px);
 			}
 		}
 		.body {
@@ -184,6 +244,8 @@ canvas {
 			padding: 0 10px;
 			font-family: 'Ubuntu', sans-serif;
 			transition: all 300ms ease-in-out;
+			inline-size: 280px;
+			overflow-wrap: break-word;
 			&::-webkit-scrollbar{
 				display: none;
 			}
@@ -350,7 +412,11 @@ button,
 }
 
 #search,
-#login {
+#login,
+#room-name,
+#room-desc,
+#room-pass,
+#room-cpass {
 	padding: 4px;
 	border: none;
 	border-bottom: 1px solid $third;
@@ -363,7 +429,8 @@ button,
 }
 
 #order,
-#filter {
+#filter,
+#room-status {
 	cursor: pointer;
 	border: none;
 	padding-left: 2px;
@@ -371,6 +438,10 @@ button,
 	border-bottom: 1px solid $third;
 	background-color: transparent;
 	max-width: 150px;
+}
+
+#room-status {
+	max-width: 200px;
 }
 
 .header-user-card {
@@ -382,6 +453,23 @@ button,
 	label {
 		font-family: "Audiowide";
 		font-weight: 700;
+	}
+}
+
+.button-actions {
+	background-color: $secondary;
+	padding: 5px 10px;
+	transition: all 300ms ease-in-out;
+	&:hover {
+		background-color: $primary;
+		color: $third;
+	}
+}
+
+.modal-chan {
+	.option {
+		font-size: 10px;
+		font-weight: 300;
 	}
 }
 

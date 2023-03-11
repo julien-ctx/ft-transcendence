@@ -71,7 +71,7 @@
         try {
             await axios.get('http://localhost:4000/Chat/getRooms', {
                 headers: {
-                    Authorization: `Bearer ${token}`
+                    Authorization: `Bearer ${getJwt()}`
                 }
             }).then((res : any) => {
                 rooms = res.data;
@@ -80,6 +80,7 @@
         } catch (error) {
             console.log(error);
         }
+
         socket = io('http://localhost:4000', {
             path : '/chat',
             query : {

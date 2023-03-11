@@ -18,7 +18,8 @@
 	let divBody : any;
 	let inputMp : any;
 	let loginWrite : string = "";
-	let muted = '';	let allUsers : any;
+	let Endmute : any = null;	
+	let allUsers : any;
 	let socketFriend : any;
 	let dropdownOpen : boolean = false;
 
@@ -44,8 +45,8 @@
 		})
 
 		socketRoom.on("muted", (data : any) => {
-			console.log(data);
-			muted = data;
+			Endmute = data;
+			console.log('Endmute ->', Endmute);
 		});
 	})
 
@@ -84,6 +85,7 @@
 
 	function submitMp() {
 		if (inputMp != "") {
+			Endmute = null;
 			socketRoom.emit('sendMessage', {
 				roomName : currentRoom.name, 
 				message : inputMp
@@ -216,14 +218,14 @@
 				<span class="login">{loginWrite}</span>
 				<span>write a msg</span> 
 				<div class="dot-typing"></div>
-				{#if muted !== ''}
-					<div class="text-red-500 text-sm">
-						<p>{muted}</p>
-					</div>
-				{/if}
 			</div>
 			{#if currentRoom.Message && currentRoom.Message.length == 0}
 				Start a new conversation in {currentRoom.name}
+			{/if}
+			{#if Endmute !== null}
+				<div class="text-xs">
+					Your mute end the {Endmute.Years} {Endmute.Days}/{Endmute.Months} at {Endmute.Hours}:{Endmute.Minutes}:{Endmute.Seconds}
+				</div>	
 			{/if}
 		</div>
 		<div class="send {active}">

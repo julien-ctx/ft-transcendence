@@ -43,12 +43,12 @@ export class GameService {
 			canvas.height * 0.5,
 			canvas.width * 0.02,
 			{
-				x: canvas.width * 0.0015,
-				y: canvas.height * 0.003,
+				x: (canvas.width + canvas.height) * 0.0009,
+				y: (canvas.width + canvas.height) * 0.0010,
 			},
 			{
-				x: canvas.width * 0.004,
-				y: canvas.height * 0.007,
+				x: (canvas.width + canvas.height) * 0.002,
+				y: (canvas.width + canvas.height) * 0.002,
 			},
 		);
 		return ball;
@@ -121,7 +121,7 @@ export class GameService {
 		}
 	}
 
-	syncPaddles(leftClient: Client, rightClient: Client) {
+	syncObjects(leftClient: Client, rightClient: Client) {
 		leftClient.rightPaddle.y = rightClient.rightPaddle.y * leftClient.canvas.height / rightClient.canvas.height;
 		rightClient.leftPaddle.y = leftClient.leftPaddle.y * rightClient.canvas.height / leftClient.canvas.height;
 	}

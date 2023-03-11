@@ -1,4 +1,3 @@
-import { Injectable } from "@nestjs/common";
 import { Socket } from "socket.io";
 
 export class WaitingClient {

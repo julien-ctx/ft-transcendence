@@ -46,7 +46,7 @@
 	let socket: Socket;	
 	let jwt: any;
 	let animationFrame: any;
-	let sizeChanged = false;
+	let playAlone: boolean = false;
 	let currMsg: any;
 
 	onMount(async () => {
@@ -73,7 +73,6 @@
 		canvas.width = window.innerWidth * 0.7;
 		canvas.height = window.innerHeight * 0.8;
 		ctx.fillStyle = OBJ_COLOR;
-		sizeChanged = true;
 		if (currMsg) {
 			if (currMsg == 1 || currMsg == 2 || currMsg == 3)
 				ctx.font = 'bold ' + canvas.width * 0.1 + 'px Audiowide';
@@ -163,9 +162,9 @@
 		);
 	}
 
-	async function drawOpponent(opponent: string) {
+	async function drawOpponent(opponentMsg: string) {
 		clearCanvas();
-		currMsg = 'Your opponent is ' + opponent;
+		currMsg = opponentMsg;
 		ctx.fillText(
 			currMsg,
 			canvas.width / 2 - ctx.measureText(currMsg).width / 2,
@@ -175,8 +174,8 @@
 		currMsg = null;
 	}
 
-	async function drawWinner(winner: string) {
-		currMsg = winner + ' won the game!'
+	async function drawWinner(winnerMsg: string) {
+		currMsg = winnerMsg;
 		ctx.fillText(
 			currMsg,
 			canvas.width / 2 - ctx.measureText(currMsg).width / 2,
@@ -221,7 +220,7 @@
 			gameLeftPaddle.score = leftScore;
 			gameRightPaddle.score = rightScore;
 		});
-		socket.on('winner', async ({winner, side}) => {
+		socket.on('winner', async ({winner, side, forfeit}) => {
 			gameStarted = false;
 			dataInit = false;
 			if (side === 1) {
@@ -240,10 +239,14 @@
 			gameLeftPaddle.score = 0;	
 			gameRightPaddle.score = 0;
 			cancelAnimationFrame(animationFrame);
-			await drawWinner(winner);
+			let winMsg = winner + ' won the game';
+			if (forfeit) {
+				winMsg += ' by forfeit!';
+			}
+			await drawWinner(winMsg);
 			playAgain();
 		});
-		await drawOpponent(login);	
+		await drawOpponent('Your opponent is ' + login);	
 		await drawCounter();
 		canvas.addEventListener('mousemove', handleMouseMove);
 		socket.emit('gameLoop', {});
@@ -272,7 +275,8 @@
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
 	}
 
-	function createCanvas(nb: number) {
+	function createCanvas(userNb: number, botLevel: any = 0) {
+		console.log(botLevel);
 		clickMode = true;
 		canvas = document.createElement("canvas");
 		canvas.setAttribute("id", "main-game-canvas");
@@ -286,7 +290,7 @@
 	
 		containerCanvas.appendChild(canvas)
 		
-		playerNumber = nb;
+		playerNumber = userNb;
 		isReady();
 	}
 
@@ -296,12 +300,19 @@
 	<div class="game-mode mt-20">
 		<h3 class="mb-10">Choose a game mode</h3>
 		<div class="space-x-5 mb-10">
-			<button class="button-mode" on:click={() => {createCanvas(1);}}>
+			{#if !playAlone}	
+			<button class="button-mode" on:click={() => playAlone = true}>
 				Solo
 			</button>
-			<button class="button-mode" on:click={() => {createCanvas(2)}}>
+			<button class="button-mode" on:click={() => {createCanvas(2);}}>
 				Multiplayer
 			</button>
+			{/if}
+			{#if playAlone}
+			<label for="bot-level">Bot level</label>
+			<input type="range" name="bot-level" id="custom-slider" class="custom-slider appearance-none" min="0" max="100">
+			<button class="button-mode" on:click={() => createCanvas(1, document.getElementById('custom-slider')?.getAttribute('value'))}>Play now</button>
+			{/if}
 		</div>
 	</div>
 {/if}

@@ -7,7 +7,7 @@ import { User } from "@prisma/client";
 import { Server, Socket } from "socket.io";
 import { PrismaService } from "src/prisma/prisma.service";
 
-const MAX_SCORE = 11;
+const MAX_SCORE = 2;
 
 @WebSocketGateway({
 	cors: true,
@@ -41,24 +41,26 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	}
 
 	handleDisconnect(socket: Socket) {
-		this.removeFromQueue(socket);
-		const WinnerByForfeit: any = this.removeFromGame(socket);
-		if (WinnerByForfeit.client) {
-			WinnerByForfeit.client.socket.emit('winner', {winner: WinnerByForfeit.client.user['login'], side: WinnerByForfeit.side, forfeit: true});
-		}
-		if (this.interval) {
-			clearInterval(this.interval);
-			this.interval = null;
-			return;
+		if (!this.removeFromQueue(socket)) {
+			const WinnerByForfeit: any = this.removeFromGame(socket);
+			if (WinnerByForfeit.client) {
+				WinnerByForfeit.client.socket.emit('winner', {winner: WinnerByForfeit.client.user['login'], side: WinnerByForfeit.side, forfeit: true});
+			}
+			if (this.interval) {
+				clearInterval(this.interval);
+				this.interval = null;
+			}
 		}
 	}
 
-	removeFromQueue(socket: Socket) {
+	removeFromQueue(socket: Socket): boolean {
 		for (let i = 0; i < this.queue.length; i++) {
 			if (this.queue[i].socket == socket) {
 				this.queue.splice(i, 1);
+				return true;
 			}
 		}
+		return false;
 	}
 
 	removeFromGame(socket: Socket) {
@@ -98,6 +100,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
 		this.gameService.updateBall(game.leftClient);
 		this.gameService.movePaddles(game.leftClient.leftPaddle, game.leftClient.canvas);
+
 		game.leftClient.socket.emit('paddlesData', {leftPaddle: game.leftClient.leftPaddle, rightPaddle: game.leftClient.rightPaddle});
 		game.leftClient.socket.emit('ballData', {ball: game.leftClient.ball});
 		game.leftClient.socket.emit('scoresData', {leftScore: game.leftClient.leftPaddle.score, rightScore: game.leftClient.rightPaddle.score});
@@ -105,6 +108,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 			this.gameService.updateBall(game.rightClient);
 			this.gameService.movePaddles(game.rightClient.leftPaddle, game.rightClient.canvas);
 			this.gameService.syncObjects(game.leftClient, game.rightClient);
+
 			game.rightClient.socket.emit('paddlesData', {leftPaddle: game.rightClient.leftPaddle, rightPaddle: game.rightClient.rightPaddle});
 			game.rightClient.socket.emit('ballData', {ball: game.rightClient.ball});
 			game.rightClient.socket.emit('scoresData', {leftScore: game.rightClient.leftPaddle.score, rightScore: game.rightClient.rightPaddle.score});
@@ -138,7 +142,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 			gameReady = true;
 		} else if (this.games.find(game => game.playerNumber === 2 && game.rightClient === null)) {
 			game = this.games.find(game => game.playerNumber === 2 && game.rightClient === null
-			/*&& client.user['login'] != game.leftClient.user['login']*/);
+			&& client.user['login'] != game.leftClient.user['login']);
 			client.side = 1;
 			game.rightClient = client;
 			gameReady = true;

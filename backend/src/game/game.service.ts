@@ -43,12 +43,16 @@ export class GameService {
 			canvas.height * 0.5,
 			canvas.width * 0.02,
 			{
-				x: (canvas.width + canvas.height) * 0.0009,
-				y: (canvas.width + canvas.height) * 0.0010,
+				// x: (canvas.width + canvas.height) * 0.0009,
+				// y: (canvas.width + canvas.height) * 0.0010,
+				x: 2,
+				y: 2,
 			},
 			{
-				x: (canvas.width + canvas.height) * 0.002,
-				y: (canvas.width + canvas.height) * 0.002,
+				// x: (canvas.width + canvas.height) * 0.002,
+				// y: (canvas.width + canvas.height) * 0.002,
+				x: 2,
+				y: 2
 			},
 		);
 		return ball;
@@ -89,8 +93,8 @@ export class GameService {
 		client.ball.x = client.ball.x * client.canvas.width / width;
 		client.ball.y = client.ball.y * client.canvas.height / height;
 		client.ball.speed = {
-			x: client.canvas.width * 0.0004,
-			y: client.canvas.height * 0.0007,
+			x: 2,
+			y: 2,
 		};
 		client.socket.emit('paddlesData', {leftPaddle: client.leftPaddle, rightPaddle: client.rightPaddle})
 		client.socket.emit('ballData', {ball: client.ball})

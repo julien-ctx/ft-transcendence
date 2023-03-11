@@ -18,7 +18,7 @@
 	let divBody : any;
 	let inputMp : any;
 	let loginWrite : string = "";
-	let allUsers : any;
+	let muted = '';	let allUsers : any;
 	let socketFriend : any;
 	let dropdownOpen : boolean = false;
 
@@ -42,6 +42,11 @@
 			if (currentRoom != null)
 				currentRoomStore.set(data);
 		})
+
+		socketRoom.on("muted", (data : any) => {
+			console.log(data);
+			muted = data;
+		});
 	})
 
 	afterUpdate(() => {
@@ -211,6 +216,11 @@
 				<span class="login">{loginWrite}</span>
 				<span>write a msg</span> 
 				<div class="dot-typing"></div>
+				{#if muted !== ''}
+					<div class="text-red-500 text-sm">
+						<p>{muted}</p>
+					</div>
+				{/if}
 			</div>
 			{#if currentRoom.Message && currentRoom.Message.length == 0}
 				Start a new conversation in {currentRoom.name}

@@ -103,6 +103,15 @@
 		socket.on('deletedRoom', (receivedRoom : string) => {
 			rooms = rooms.filter((room : any) => room.name !== receivedRoom);
 		});
+
+        socket.on('newRight', (data : any) => {
+            rooms = rooms.map((room : any) => {
+                if (room.name === data.roomName) {
+                    room.admin = data.admin;
+                }
+                return room;
+            });
+        })
     })
 
     function createRoom() {

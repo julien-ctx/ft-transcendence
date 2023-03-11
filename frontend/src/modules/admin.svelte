@@ -58,17 +58,13 @@
 		});
 
 		socket.on('newRight', (data : any) => {
-			// console.log('New right ->', {data});
+			console.log('New right ->', {data});
 			members = members.map((mem : any) => {
 				if (mem.user.id_user === data.id_user) {
 					mem.admin = data.admin;
 				}
 				return mem;
 			});
-			members = members;
-			for (let i = 0; i < members.lenght; i++) {
-
-			}
 		});
 	});
 
@@ -81,7 +77,8 @@
 			member: Punished,
 			time: time,
 			duration: duration,
-		})
+		});
+		resetTime();
 	}
 
 	function Kick(Punished : any) {
@@ -91,7 +88,8 @@
 			member: Punished,
 			time: '',
 			duration: '',
-		})
+		});
+		resetTime();
 	}
 
 	function OP(Punished : any) {
@@ -99,6 +97,7 @@
 			roomName: room,
 			member: Punished,
 		});
+		resetTime();
 	}
 
 	function DEOP(Punished : any) {
@@ -106,6 +105,17 @@
 			roomName: room,
 			member: Punished,
 		});
+		resetTime();
+	}
+
+	function Muted(Punished : any) {
+		socket.emit('mute', {
+			roomName: room,
+			member: Punished,
+			time: time,
+			duration: duration,
+		});
+		resetTime();
 	}
 
 	let selected = '';
@@ -129,6 +139,11 @@
 		}
 	}
 	
+
+	function resetTime() {
+		time = '';
+		duration = '';
+	}
 </script>
 
 
@@ -199,7 +214,9 @@
 									<option value="Month">Month</option>
 								</select>
 								<div class="justify-center">
-									<Door />
+									<button on:click={() => Muted(member.user)}>
+										<Door />
+									</button>
 								</div>
 							</div>
 						</DropdownItem>
@@ -254,7 +271,9 @@
 									<option value="Month">Month</option>
 								</select>
 								<div class="justify-center">
-									<Door />
+									<button on:click={() => Muted(member.user)}>
+										<Door />
+									</button>
 								</div>
 							</div>
 						</DropdownItem>

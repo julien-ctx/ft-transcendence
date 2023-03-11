@@ -31,6 +31,45 @@ export class ChatService {
 		})
 	}
 
+	async getTimedMute(room : any, user : any) {
+		const relation = await this.prisma.roomToUser.findFirst({
+			where : {
+				id_room : room.id,
+				id_user : user.id_user,
+			}
+		});
+		return relation.EndMute;
+	}
+
+	async muteUpdate(room: any, user: any) {
+		const relation = await this.prisma.roomToUser.findFirst({
+			where : {
+				id_room : room.id,
+				id_user : user.id_user,
+			}
+		});
+		let now : Date = new Date();
+		if (relation.Muted === true) {
+			if (now > relation.EndMute) {
+				// console.log('Demuted')
+				await this.prisma.roomToUser.update({
+					where : {
+						id : relation.id
+					},
+					data : {
+						Muted : false,
+						EndMute : now,
+					}
+				});
+				return true;
+			}
+			else 
+				return false;
+		}
+		else 
+			return true;
+	}
+
 	async getAllUsersRooms(room : string) {
 		const Room = await this.getRoomByName(room);
 		const relation = await this.prisma.roomToUser.findMany({

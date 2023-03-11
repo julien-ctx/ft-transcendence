@@ -17,7 +17,7 @@
 	socketMpStore.subscribe(val => socketMp = val);
 	myRoomMpStore.subscribe(val => myRoomMp = val);
 
-	onMount(() => {
+	onMount(async () => {
 		let socketMp = io(API_URL, {
 			query : {
 				token : getJwt()

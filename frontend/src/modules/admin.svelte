@@ -9,6 +9,7 @@
 	import Close from './htmlComponent/svgComponent/svgClose.svelte';
 	import Door from './htmlComponent/svgComponent/svgDoor.svelte';
 	import Upgrade from './htmlComponent/svgComponent/svgUpgrade.svelte';
+	import { usersDataStore } from "$lib/store/user";
 
 	export let socket : any;
 	export let room : string;
@@ -23,6 +24,9 @@
 	let validatePass : Boolean = false;
 	let passError : string = '';
 
+	let users : any;
+
+	usersDataStore.subscribe(val => users = val);
 
 	onMount(async () => {
 		current = infoChannel.filter((Chan : any) => Chan.name === room)[0];
@@ -36,7 +40,7 @@
 			})
 			.then((res) => {
 				members = res.data;
-				// console.log(res);
+				console.log(members);
 			});
 		} catch (error) {
 			console.log(error);
@@ -58,10 +62,30 @@
 		});
 
 		socket.on('newRight', (data : any) => {
-			console.log('New right ->', {data});
+			// console.log('New right ->', {data});
 			members = members.map((mem : any) => {
 				if (mem.user.id_user === data.id_user) {
 					mem.admin = data.admin;
+				}
+				return mem;
+			});
+		});
+
+		socket.on('unmute', (data : any) => {
+			// console.log('Unmute ->', {data});
+			members = members.map((mem : any) => {
+				if (mem.user.id_user === data.id_user) {
+					mem.Muted = false;
+				}
+				return mem;
+			});
+		});
+
+		socket.on('mute', (data : any) => {
+			// console.log('Mute ->', {data});
+			members = members.map((mem : any) => {
+				if (mem.user.id_user === data.id_user) {
+					mem.Muted = true;
 				}
 				return mem;
 			});
@@ -114,6 +138,14 @@
 			member: Punished,
 			time: time,
 			duration: duration,
+		});
+		resetTime();
+	}
+
+	function unmute(Punished : any) {
+		socket.emit('unmute', {
+			roomName: room,
+			member: Punished,
 		});
 		resetTime();
 	}
@@ -202,25 +234,37 @@
 						</DropdownItem>
 					</Dropdown>
 					<Mute />
-					<Dropdown class="w-full">
-						<DropdownItem>
-							<div class="flex justify-between">
-								<input type="number" id="tentacles" name="tentacles" min="1" max="60" bind:value={time}>
-								<select bind:value={duration}>
-									<option value="Second">Second</option>
-									<option value="Minutes">Minutes</option>
-									<option value="Hour">Hour</option>
-									<option value="Day">Day</option>
-									<option value="Month">Month</option>
-								</select>
-								<div class="justify-center">
-									<button on:click={() => Muted(member.user)}>
-										<Door />
+					{#if member.Muted === false}
+						<Dropdown class="w-full">
+							<DropdownItem>
+								<div class="flex justify-between">
+									<input type="number" id="tentacles" name="tentacles" min="1" max="60" bind:value={time}>
+									<select bind:value={duration}>
+										<option value="Second">Second</option>
+										<option value="Minutes">Minutes</option>
+										<option value="Hour">Hour</option>
+										<option value="Day">Day</option>
+										<option value="Month">Month</option>
+									</select>
+									<div class="justify-center">
+										<button on:click={() => Muted(member.user)}>
+											<Door />
+										</button>
+									</div>
+								</div>
+							</DropdownItem>
+						</Dropdown>
+					{:else}
+						<Dropdown class="w-full">
+							<DropdownItem>
+								<div class="flex justify-between">
+									<button on:click={() => unmute(member)}>
+										Unmute {member.user.login}
 									</button>
 								</div>
-							</div>
-						</DropdownItem>
-					</Dropdown>
+							</DropdownItem>
+						</Dropdown>
+					{/if}
 					<Hammer />
 					<Dropdown class="w-full">
 						<DropdownItem>
@@ -323,3 +367,8 @@
 		{/if}
 	</div>
 {/if}
+<!-- {#if current.status === 'Private'}
+	{#each users as user}
+		<button></button>
+	{/each}
+{/if} -->

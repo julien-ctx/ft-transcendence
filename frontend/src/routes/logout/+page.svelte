@@ -1,8 +1,8 @@
 <script lang="ts">
-    import { goto } from "$app/navigation";
-    import { removeJwt } from "$lib/jwtUtils";
     import { onMount } from "svelte";
-	import { UpdateProfileConnected, UpdateProfileToStore } from '$lib/profileUtils';
+    import { removeJwt } from "$lib/jwtUtils";
+    import { goto } from "$app/navigation";
+    import { UpdateProfileConnected, UpdateProfileToStore } from "$lib/profileUtils";
 
 	onMount(() => {
 		UpdateProfileConnected(0)
@@ -11,9 +11,6 @@
 		});
 		removeJwt();
 		goto("/login");
+
 	})
 </script>
-
-<div>
-	logout
-</div>

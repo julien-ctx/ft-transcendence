@@ -215,6 +215,34 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 		return ;
 	}
 
+	@SubscribeMessage('joinInvite')
+	async handleJoinInvite(@ConnectedSocket() client, @MessageBody() data: any) {
+		const token = client.handshake.query.token as string;
+		const user = this.jwt.decode(token);
+		if (user === undefined) return;
+		
+		const User = await this.prisma.user.findUnique({
+			where: {
+				id_user: user['id'],
+			},
+		});
+		const Room = await this.chatService.getRoomByName(data.roomName);
+		const createRelation = await this.prisma.roomToUser.create({
+			data: {
+				room: {
+					connect: {
+						id: Room.id,
+					}
+				},
+				user: {
+					connect: {
+						id: User.id,
+					}
+				},
+			}
+		});
+	}
+
 	@SubscribeMessage('leaveRoom')
 	async handleLeaveRoom(@ConnectedSocket() client, @MessageBody() data: any) {
 		const token = client.handshake.query.token as string;
@@ -321,7 +349,28 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 		// console.log({data}, {User});
 		if (await this.chatService.muteUpdate(Room, User) === false) {
 			// console.log('Muted');
-			client.emit('muted', 'You are muted');
+			const relation = await this.prisma.roomToUser.findFirst({
+				where: {
+					id_user: User.id_user,
+					id_room: Room.id,
+				}
+			});
+			let time = {Years: '', Months: '', Days: '', Hours: '', Minutes: '', Seconds: ''};
+			time.Years = relation.EndMute.getFullYear().toString();
+			time.Months = relation.EndMute.getMonth().toString();
+			time.Days = relation.EndMute.getDate().toString();
+			time.Hours = relation.EndMute.getHours().toString();
+			time.Minutes = relation.EndMute.getMinutes().toString();
+			time.Seconds = relation.EndMute.getSeconds().toString();
+			time.Years = time.Years.length === 1 ? '0' + time.Years : time.Years;
+			time.Months = time.Months.length === 1 ? '0' + time.Months : time.Months;
+			time.Days = time.Days.length === 1 ? '0' + time.Days : time.Days;
+			time.Hours = time.Hours.length === 1 ? '0' + time.Hours : time.Hours;
+			time.Minutes = time.Minutes.length === 1 ? '0' + time.Minutes : time.Minutes;
+			time.Seconds = time.Seconds.length === 1 ? '0' + time.Seconds : time.Seconds;                                                                                                                                                                                                    
+			// console.log(relation);
+			// console.log(time);
+			client.emit('muted', time);
 			return ;
 		}
 		const message = await this.chatService.createMessage(User.id, Room.id, data.message);
@@ -426,16 +475,50 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 				error = true; break;
 		}
 		if (error === false) {
-			await this.prisma.roomToUser.update({
+			const newUser = await this.prisma.roomToUser.update({
 				where : {
 					id : relate[0].id,
 				},
 				data : {
 					Muted : true,
 					EndMute : Sanction,
+				},
+				include : {
+					user : true,
+					room : true,
 				}
 			});
-		}
+			client.emit('mute', newUser);
+		} else return;
+	}
+
+	@SubscribeMessage('unmute')
+	async handleUnmute(@ConnectedSocket() client, @MessageBody() data: any) {
+		const token = client.handshake.query.token as string;
+		const user = this.jwt.decode(token);
+		if (user === undefined) return;
+
+		const room = await this.chatService.getRoomByName(data.roomName);
+		const relation = await this.prisma.roomToUser.findFirst({
+			where : {
+				id_user : data.member.id_user,
+				id_room : room.id,
+			}
+		});
+		const newUser = await this.prisma.roomToUser.update({
+			where : {
+				id : relation.id,
+			},
+			data : {
+				Muted : false,
+				EndMute : new Date(),
+			},
+			include : {
+				user : true,
+				room : true,
+			}
+		});
+		client.emit('unmute', newUser);
 	}
 
 	@SubscribeMessage('OP')

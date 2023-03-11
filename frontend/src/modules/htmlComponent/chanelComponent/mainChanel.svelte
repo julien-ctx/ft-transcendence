@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { Button, Modal, FloatingLabelInput, Select, Avatar, Dropdown, DropdownItem } from "flowbite-svelte";
+    import { Button, Modal, FloatingLabelInput, Select, Avatar, Dropdown, DropdownItem, Indicator } from "flowbite-svelte";
     import { onMount } from "svelte";
     import Arrow from '../svgComponent/svgArrow.svelte';
     import axios from 'axios';
@@ -22,15 +22,14 @@
 
     let socket : any;
     // Messagerie : //
-    let show : boolean = false;
     let toShow : boolean = false;
     let rooms : any = [];
     let allUsers : any = [];
     let myProfile : any;
-	let openedRoom : any = '';
 	let chat : boolean = false;
     let socketMp : any;
     let active : string = "";
+    let dropdownUserOpen : boolean = false;
 
     // Modal Create : //
     let roomName = '';
@@ -38,11 +37,6 @@
     let roomPass = '';
     let roomCPass = '';
     let modalCreate = false;
-    let states = [
-        {value:"Protected", name: "Protected"},
-        {value:"Private", name: "Private"},
-        {value:"Public", name: "Public"},
-        ]
     let err : any = {name : "", desc : "", status : "", pass : "", cpass : "", already : ""};   
     let status : string = '';
 
@@ -56,7 +50,7 @@
 	// Modal Admin : //
 	let modalAdmin = false;
 	let admin = '';
-
+    let dropdownAdminOpen = false;
     // CurrentRoom //
     let currentRoom : any;
     let usersCurrentRoom : any [];
@@ -75,7 +69,6 @@
                 }
             }).then((res : any) => {
                 rooms = res.data;
-                console.log(rooms);
             });
         } catch (error) {
             console.log(error);
@@ -159,7 +152,7 @@
         modalCreate = true;
         err = {name : "", desc : "", status : "", pass : "", cpass : "", already : ""};
         roomName = '';
-        status = '';
+        status = 'Public';
         roomDesc = '';
         roomPass = '';
         roomCPass = '';
@@ -214,18 +207,18 @@
     {/if}
     <div class="content-chan {active}">
         <div class="header">
-            <button on:click={() => toShow = false}>
+            <button on:click={() => toShow = false} class={(!toShow)? "active" : ""}>
                 Channels
             </button>
-            <button on:click={() => toShow = true}>
+            <button on:click={() => toShow = true} class={(toShow)? "active" : ""}>
                 Friends
             </button>
             <button on:click={() => active = ""}>
                 <Arrow />
             </button>
         </div>
-        <div class="body">
-            {#if toShow === false}
+        {#if !toShow}
+            <div class="body-room">
                 <div class="flex flex-col gap-4">
                     {#each rooms as room}
                         <div class="container-room">
@@ -234,17 +227,17 @@
                             </button>
                             <div>
                                 <button class="button-open-dropdown">...</button>
-                                <Dropdown class="bg-primary">
+                                <Dropdown class="bg-primary" open={dropdownAdminOpen}>
                                     {#if room.admin === true}
                                         <DropdownItem defaultClass="button-rooms">
-                                            <button on:click={() => {admin = room.name; modalAdmin = true}}>
+                                            <button class="bg-primary border-none rounded-none p-2 font-sm hover:bg-secondary text-sm w-full text-left" on:click={() => {admin = room.name; modalAdmin = true; dropdownAdminOpen = false;}}>
                                                 Admin panel
                                             </button>
                                         </DropdownItem>
                                     {/if}
                                     <DropdownItem  defaultClass="button-rooms">
-                                        <button class="rounded justify-center" on:click={() => leaveRoom(room)}>
-                                            Put in trash
+                                        <button class="bg-primary border-none rounded-none p-2 font-sm hover:bg-secondary text-sm w-full text-left" on:click={() => {leaveRoom(room); dropdownAdminOpen = false;}}>
+                                            Leave room
                                         </button>
                                     </DropdownItem>
                                 </Dropdown>
@@ -252,37 +245,42 @@
                         </div>
                     {/each}
                 </div>
-            {:else}
+            </div>
+            <div class="container-action">
+                <button class="button-actions" on:click={() => openCreate()}>
+                    Create
+                </button>
+                <button class="button-actions" on:click={() => openJoin()}>
+                    Join
+                </button>
+            </div>
+        {:else}
+            <div class="body-friend">
                 {#each allUsers as user}
-                    {#if myProfile.friend_id && myProfile.friend_id.includes(user.id)}
-                    <div class="grid grid-cols-3">
-                        <Avatar src={user.img_link} rounded class="object-cover"/>
+                {#if myProfile.friend_id && myProfile.friend_id.includes(user.id)}
+                <div class="user-friend">
+                    <!-- <button class="button-friend"> -->
+                        <Avatar size="xs" src={user.img_link} rounded class="object-cover"/>
+                        {#if user.activity === 0}
+                            <Indicator size="xs" color="red"/>
+                        {:else if user.activity === 1}
+                            <Indicator size="xs" color="green"/>
+                        {:else if user.activity === 2}
+                            <Indicator size="xs" color="blue"/>
+                        {/if}
                         <p>{user.login}</p>
-                        <div class="grid grid-cols-2">
-                            <button on:click={() => {socketMp.emit("create-room", {user_send : myProfile, user_receive : user})}}>
-                                <SvgMsg />
-                            </button>
-                            <button on:click={() => {handleGotoUser(user.id)}}>
-                                <SvgProfile />
-                            </button>
-                            <button>
-                                <img src="./game-battle.png" alt="" style="max-width: none;">
-                            </button>
-                        </div>
-                    </div>
+                        <button class="button-svg" on:click={() => socketMp.emit("create-room", {user_send : myProfile, user_receive : user})}>
+                            <SvgMsg />
+                        </button>
+                        <button>
+                            <img src="./game-battle.png" alt="" width="20">
+                        </button>
+                </div>
 
-                    {/if}
-                {/each}
-            {/if}
-        </div>
-        <div class="container-action">
-            <button class="button-action" on:click={() => openCreate()}>
-                Create
-            </button>
-            <button class="button-action" on:click={() => openJoin()}>
-                Join
-            </button>
-        </div>
+                {/if}
+            {/each}
+            </div>
+        {/if}
     </div>
     <button class="button-messagerie {active}" on:click={() => active = "active"}>
         Messagerie
@@ -290,29 +288,49 @@
 </div>
     
 
-<Modal bind:open={modalCreate} title="Create a room" color="third">
-    <FloatingLabelInput style="filled" id="floating_filled" name="Room Name" type="text" label="Room Name" bind:value={roomName}/>
-    {#if err.name !== ''}
-        <p class="text-red-500 text-xs">{err.name}</p>
-    {/if}
-    <FloatingLabelInput style="filled" id="floating_filled" name="Room Name" type="text" label="Description (option)" bind:value={roomDesc}/>
-    <Select id="select-underline" underline class="mt-2" items={states} bind:value={status}/>
-    {#if err.status !== ''}
-        <p class="text-red-500 text-xs">{err.status}</p>
-    {/if}
-    {#if status === "Protected"}
-        <FloatingLabelInput style="filled" id="floating_filled" name="Room Name" type="password" label="Password" bind:value={roomPass}/>
-        {#if err.pass !== ''}
-            <p class="text-red-500 text-xs">{err.pass}</p>
+<Modal bind:open={modalCreate} title="Create a room" color="third" class="bg-primary modal-chan">
+    <div class="flex flex-col justify-between">
+        <label for="room-name">Room name</label>
+        <input class="focus:outline-none focus:ring-0" type="text" bind:value={roomName} id="room-name">
+        {#if err.name !== ''}
+            <p class="text-red-500 text-xs">{err.name}</p>
         {/if}
-        <FloatingLabelInput style="filled" id="floating_filled" name="Room Name" type="password" label="Confirm Password" bind:value={roomCPass}/>
-        {#if err.cpass !== ''}
-            <p class="text-red-500 text-xs">{err.cpass}</p>
+    </div>
+
+    <div class="flex flex-col justify-between">
+        <label for="room-desc">Room description <span class="option">(option)</span></label>
+        <input class="focus:outline-none focus:ring-0" type="text" bind:value={roomDesc} id="room-desc">
+    </div>
+
+    <div class="flex flex-col justify-between">
+
+        <select class="focus:outline-none focus:ring-0" name="room-status" id="room-status" bind:value={status}>
+            <option value="Public" selected>Public</option>
+            <option value="Private">Private</option>
+            <option value="Protected">Protected</option>
+        </select>
+        {#if err.status !== ''}
+            <p class="text-red-500 text-xs">{err.status}</p>
         {/if}
-    {/if}
-    <div class="flex gap-8 flex-row">
-        <Button style="" shadow="green" gradient color="green" on:click={() => createRoom()}>Create</Button>
-        <Button style="" shadow="green" gradient color="green" on:click={() => close()}>Close</Button>
+        {#if status === "Protected"}
+            <div class="flex flex-col justify-between mt-6">
+                <label for="room-pass">Password</label>
+                <input class="focus:outline-none focus:ring-0" type="password" bind:value={roomPass} id="room-pass">
+                {#if err.pass !== ''}
+                    <p class="text-red-500 text-xs">{err.pass}</p>
+                {/if}
+                <label for="room-cpass">Confirm password</label>
+                <input class="focus:outline-none focus:ring-0" type="password" bind:value={roomCPass} id="room-cpass">
+                {#if err.cpass !== ''}
+                    <p class="text-red-500 text-xs">{err.cpass}</p>
+                {/if}
+            </div>
+        {/if}
+    </div>
+
+    <div class="flex justify-between">
+        <button on:click={() => close()} class="button-actions">Close</button>
+        <button on:click={() => createRoom()} class="button-actions">Create</button>
     </div>
 </Modal>
 

@@ -77,6 +77,9 @@ export class UserService {
 
 	async getAll() {
 		return await this.prisma.user.findMany({
+			orderBy : {
+				activity : "desc"
+			},
 			include : {
 				notification: true,
 				RoomToUser: true,

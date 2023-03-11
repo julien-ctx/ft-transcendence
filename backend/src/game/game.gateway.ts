@@ -114,13 +114,12 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 			game.rightClient.socket.emit('scoresData', {leftScore: game.rightClient.leftPaddle.score, rightScore: game.rightClient.rightPaddle.score});
 		}
 		if (game.playerNumber == 1)
-			this.gameService.updateBot(game.leftClient.ball, game.leftClient.rightPaddle, game.leftClient.canvas);
+			this.gameService.updateBot(game.leftClient.ball, game.leftClient.rightPaddle, game.leftClient.canvas, game.botLevel);
 	}
 
 	@SubscribeMessage('ready')
-	startGame(socket: Socket, data: {width, height, playerNumber}) {
+	startGame(socket: Socket, data: {width, height, playerNumber, botLevel}) {
 		let waitingClient = this.queue.find(waitingClient => waitingClient.socket === socket);
-	
 		if (socket === waitingClient.socket) {
 			this.removeFromQueue(socket);
 		}
@@ -138,7 +137,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		let game: Game | null = null;
 		if (data.playerNumber === 1) {
 			client.side = -1;
-			this.games.push(new Game(client, null, 1, MAX_SCORE));
+			this.games.push(new Game(client, null, 1, MAX_SCORE, data.botLevel));
 			gameReady = true;
 		} else if (this.games.find(game => game.playerNumber === 2 && game.rightClient === null)) {
 			game = this.games.find(game => game.playerNumber === 2 && game.rightClient === null
@@ -148,7 +147,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 			gameReady = true;
 		} else {
 			client.side = -1;
-			this.games.push(new Game(client, null, 2, MAX_SCORE));
+			this.games.push(new Game(client, null, 2, MAX_SCORE, data.botLevel));
 		}
 		socket.on('resize',  ({width, height}) => {
 			this.gameService.handleResize(

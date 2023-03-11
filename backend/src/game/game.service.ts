@@ -49,10 +49,8 @@ export class GameService {
 				y: 2,
 			},
 			{
-				// x: (canvas.width + canvas.height) * 0.002,
+				x: (canvas.width + canvas.height) * 0.002,
 				// y: (canvas.width + canvas.height) * 0.002,
-				x: 2,
-				y: 2
 			},
 		);
 		return ball;
@@ -110,18 +108,28 @@ export class GameService {
 		client.ball.direction.y = randomBallDirection < 0 ? client.ball.direction.y : -client.ball.direction.y;
 	}
 
-	updateBot(ball: Ball, paddle: Paddle, canvas: GameCanvas) {
+	updateBot(ball: Ball, paddle: Paddle, canvas: GameCanvas, botLevel: number) {
 		if (ball.y < paddle.y + paddle.height / 2) {
-			if (paddle.y - (paddle.speed / 1.3) < 0)
+			if (paddle.y - (paddle.speed / 1.3) < 0) {
 				paddle.y = 0;
-			else
-				paddle.y -= (paddle.speed / 1.3);
+			}
+			else {
+				const random = Math.random();
+				if (random <= botLevel) {
+					paddle.y -= (paddle.speed / 1.3);
+				}
+			}
 		}
 		else if (ball.y > paddle.y + paddle.height / 2) {
-			if (paddle.y + paddle.height + (paddle.speed / 1.3) > canvas.height)
+			if (paddle.y + paddle.height + (paddle.speed / 1.3) > canvas.height) {
 				paddle.y = canvas.height - paddle.height;
-			else
-				paddle.y += (paddle.speed / 1.3);
+			}
+			else {
+				const random = Math.random();
+				if (random <= botLevel) {
+					paddle.y += (paddle.speed / 1.3);
+				}
+			}
 		}
 	}
 

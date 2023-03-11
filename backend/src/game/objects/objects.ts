@@ -25,6 +25,7 @@ export class Game {
 		public rightClient: Client | null,
 		public playerNumber: number,
 		public maxScore: number,
+		public botLevel: number,
 	) {}
 };
 

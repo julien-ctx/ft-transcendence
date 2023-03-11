@@ -84,7 +84,6 @@
 		}
 	}
 
-	
 	function handleMouseMove(e: any) {
 		mouseY = e.clientY - canvas.offsetTop;
 		socket.emit('mousemove', {mouseY});	
@@ -265,7 +264,7 @@
 				dataInit = true;
 				startGame(login);
 			});
-			socket.emit('ready', { width: canvas.width, height: canvas.height, playerNumber });
+			socket.emit('ready', { width: canvas.width, height: canvas.height, playerNumber, botLevel });
 			if (playerNumber === 2) {
 				drawWaitingForOpponent();
 			}
@@ -278,7 +277,10 @@
 
 	function createCanvas(userNb: number) {
 		if (userNb === 1) {
-			botLevel = document.getElementById('custom-slider').value;
+			const slider = document.getElementById('custom-slider') as HTMLInputElement;
+			if (slider) {
+				botLevel = parseInt(slider.value) / 100;
+			}
 		}
 		clickMode = true;
 		canvas = document.createElement("canvas");
@@ -314,7 +316,7 @@
 			<div class="play-with-bot">
 				{#if playAlone}
 				  <label for="bot-level" class="bot-level">Bot level</label>
-				  <input type="range" name="bot-level" id="custom-slider" class="custom-slider appearance-none" min="0" max="100">
+				  <input type="range" name="bot-level" id="custom-slider" class="custom-slider appearance-none" min="30" max="100">
 				  <button class="button-mode" id="play-alone-button" on:click={() => createCanvas(1)}>Play now</button>
 				{/if}
 			</div>

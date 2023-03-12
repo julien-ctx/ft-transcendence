@@ -32,7 +32,7 @@ export class GameService {
 			canvas.height * 0.15,
 			0,
 			0,
-			canvas.height * 0.0015,
+			canvas.height * 0.0018,
 		);
 		return paddle;	
 	}
@@ -43,14 +43,12 @@ export class GameService {
 			canvas.height * 0.5,
 			canvas.width * 0.02,
 			{
-				// x: (canvas.width + canvas.height) * 0.0009,
-				// y: (canvas.width + canvas.height) * 0.0010,
 				x: 2,
 				y: 2,
 			},
 			{
-				x: (canvas.width + canvas.height) * 0.002,
-				// y: (canvas.width + canvas.height) * 0.002,
+				x: (canvas.width + canvas.height) * 0.0002,
+				y: (canvas.width + canvas.height) * 0.0002,
 			},
 		);
 		return ball;
@@ -79,20 +77,20 @@ export class GameService {
 		client.rightPaddle.width =  client.canvas.width * 0.005;
 		client.rightPaddle.height = client.canvas.height * 0.15;
 		client.rightPaddle.y = client.rightPaddle.y * client.canvas.height / height;
-		client.rightPaddle.speed = client.canvas.height * 0.0015;
+		client.rightPaddle.speed = client.canvas.height * 0.0018;
 
 		client.leftPaddle.x = client.canvas.width * 0.015;
 		client.leftPaddle.width = client.canvas.width * 0.005;
 		client.leftPaddle.height = client.canvas.height * 0.15;
 		client.leftPaddle.y = client.leftPaddle.y * client.canvas.height / height;
-		client.leftPaddle.speed = client.canvas.height * 0.015;
+		client.leftPaddle.speed = client.canvas.height * 0.0018;
 
 		client.ball.size = client.canvas.width * 0.02;
 		client.ball.x = client.ball.x * client.canvas.width / width;
 		client.ball.y = client.ball.y * client.canvas.height / height;
 		client.ball.speed = {
-			x: 2,
-			y: 2,
+			x: (client.canvas.width + client.canvas.height) * 0.0002,
+			y: (client.canvas.width + client.canvas.height) * 0.0002,
 		};
 		client.socket.emit('paddlesData', {leftPaddle: client.leftPaddle, rightPaddle: client.rightPaddle})
 		client.socket.emit('ballData', {ball: client.ball})
@@ -110,24 +108,24 @@ export class GameService {
 
 	updateBot(ball: Ball, paddle: Paddle, canvas: GameCanvas, botLevel: number) {
 		if (ball.y < paddle.y + paddle.height / 2) {
-			if (paddle.y - (paddle.speed / 1.3) < 0) {
+			if (paddle.y - (paddle.speed) < 0) {
 				paddle.y = 0;
 			}
 			else {
 				const random = Math.random();
 				if (random <= botLevel) {
-					paddle.y -= (paddle.speed / 1.3);
+					paddle.y -= (paddle.speed);
 				}
 			}
 		}
 		else if (ball.y > paddle.y + paddle.height / 2) {
-			if (paddle.y + paddle.height + (paddle.speed / 1.3) > canvas.height) {
+			if (paddle.y + paddle.height + (paddle.speed) > canvas.height) {
 				paddle.y = canvas.height - paddle.height;
 			}
 			else {
 				const random = Math.random();
 				if (random <= botLevel) {
-					paddle.y += (paddle.speed / 1.3);
+					paddle.y += (paddle.speed);
 				}
 			}
 		}
@@ -155,10 +153,17 @@ export class GameService {
 		}
 	}
 
-	checkBallPosition(game: Game, randomBallDirection: number): string {
+	resetPaddles(client: Client) {
+		client.leftPaddle.y = client.canvas.height / 2 - client.leftPaddle.height / 2;
+		client.rightPaddle.y = client.canvas.height / 2 - client.rightPaddle.height / 2;
+	}
+
+	checkBallPosition(game: Game, randomBallDirection: number) {
 		if (game.leftClient.ball.x < 0) {
+			this.resetPaddles(game.leftClient);
 			this.resetBall(game.leftClient, -1, randomBallDirection);
 			if (game.playerNumber == 2) {
+				this.resetPaddles(game.rightClient);
 				this.resetBall(game.rightClient, -1, randomBallDirection);
 			}
 			game.leftClient.rightPaddle.score++;
@@ -170,8 +175,10 @@ export class GameService {
 			}
 		}
 		else if (game.leftClient.ball.x > game.leftClient.canvas.width - game.leftClient.ball.size) {
+			this.resetPaddles(game.leftClient);
 			this.resetBall(game.leftClient, 1, randomBallDirection);
 			if (game.playerNumber == 2) {
+				this.resetPaddles(game.rightClient);
 				this.resetBall(game.rightClient, 1, randomBallDirection);
 			}
 			game.leftClient.leftPaddle.score++;
@@ -191,9 +198,9 @@ export class GameService {
 		return (deltaX * deltaX + deltaY * deltaY) < (ball.size * ball.size);
 	}
 
-	updateBall(client: Client) {
-		client.ball.x += client.ball.direction.x / 2;
-		client.ball.y += client.ball.direction.y / 2;
+	async updateBall(client: Client) {
+		client.ball.x += (client.ball.direction.x) * client.ball.speed.x;
+		client.ball.y += (client.ball.direction.y) * client.ball.speed.y;
 		if (client.ball.y < 0) {
 			client.ball.y = 0;
 			client.ball.direction.y = -client.ball.direction.y;

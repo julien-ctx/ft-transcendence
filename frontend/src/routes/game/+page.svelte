@@ -316,7 +316,7 @@
 			<div class="play-with-bot">
 				{#if playAlone}
 				  <label for="bot-level" class="bot-level">Bot level</label>
-				  <input type="range" name="bot-level" id="custom-slider" class="custom-slider appearance-none" min="30" max="100">
+				  <input type="range" name="bot-level" id="custom-slider" class="custom-slider appearance-none" min="30" max="70">
 				  <button class="button-mode" id="play-alone-button" on:click={() => createCanvas(1)}>Play now</button>
 				{/if}
 			</div>

@@ -21,11 +21,7 @@
 			.then(async (res) => {
 				currentUser = res.data;
 				if (currentUser.twoFaEnabled) {
-					await axios.post(`${API_URL}/auth/2fa/getQrCode`, {user : currentUser})
-					.then((res) => {
-						qrCode = res.data;
-						qrCodeModal = true;
-					})
+					qrCodeModal = true;
 				} else {
 					isSend = true;
 					io(API_URL, {
@@ -79,13 +75,14 @@
 <Modal bind:open={qrCodeModal} size="xs" autoclose={false} class="w-full !bg-primary modal-2fa" permanent={true} backdropClasses="bg-primary">
 	<div class="flex flex-col justify-center gap-5">
 		<div>
-			<img src={qrCode} alt="" class="mx-auto">
+			<!-- <img src={qrCode} alt="" class="mx-auto"> -->
+			<h2>Enter you code two factor</h2>
 		</div>	
 		<div class="flex flex-col justify-center items-center gap-5">
 			<div>
 				<Helper helperClass="mb-2 font-medium h-6 text-center" color="red">
 				{#if color == "red"}
-						Invalid code !
+					Invalid code !
 				{/if}
 				</Helper>
 				<input type="text" id="inputOne" class="focus:outline-none focus:ring-0" bind:value={code2fa} on:input={handleChangeInput2fa}/>

@@ -1,6 +1,6 @@
 <script lang="ts">
     import { UpdateProfileImg, UpdateProfileLogin, UpdateProfileToStore } from "$lib/profileUtils";
-	import { Avatar, Tooltip, Card, Dropdown } from "flowbite-svelte";
+	import { Avatar, Tooltip, Card, Dropdown, Modal, Helper } from "flowbite-svelte";
     import { myProfileDataStore, usersDataStore } from "$lib/store/user";
     import { socketFriendStore, socketUserStore } from "$lib/store/socket";
     import axios from "axios";
@@ -14,6 +14,7 @@
     import Svg2faDisabled from "../../modules/htmlComponent/svgComponent/svg2faDisabled.svelte";
     import TabUser from "../../modules/htmlComponent/tabUser.svelte";
     import { API_URL } from "$lib/env";
+    import Header from "../Header.svelte";
 
 	let fileInput : any;
 	let isEditLogin : boolean = false;
@@ -24,6 +25,11 @@
 	let socketUser : any;
 	let errorLogin : boolean = false;
 	let errorImage : boolean = false;
+	let qrCode : string;
+	let code2fa : string;
+	let qrCodeModal : boolean = false;
+	let color : any = "base"
+
 	myProfileDataStore.subscribe(val => {
 		myProfile = val;
 		loginTmp = myProfile.login;
@@ -72,13 +78,10 @@
 	}
 
 	async function enbaledTwoFA() {
-		await axios.post(`${API_URL}/auth/2fa/enable`, "" ,{
-			headers : {
-				Authorization : `Bearer ${getJwt()}`
-			}
-		})
+		await axios.post(`${API_URL}/auth/2fa/getQrCode`, {user : myProfile})
 		.then((res) => {
-			UpdateProfileToStore(res.data);
+			qrCode = res.data;
+			qrCodeModal = true;
 		})
 	}
 
@@ -93,6 +96,37 @@
 		})
 	}
 
+	async function submit2fa() {
+		await axios.post(`${API_URL}/auth/2fa/login`, {
+			code2fa : code2fa,
+			user : myProfile
+		})
+		.then(async (res) => {
+			await axios.post(`${API_URL}/auth/2fa/enable`, "" ,{
+				headers : {
+					Authorization : `Bearer ${getJwt()}`
+				}
+			})
+			.then((res) => {
+				qrCodeModal = false;
+				myProfile.twoFaEnabled = true;
+				myProfile.twoFaAuth = true;
+				code2fa = "";
+				myProfileDataStore.set(myProfile);
+			})
+		})
+		.catch((err) => {
+			setTimeout(() => {
+				code2fa = "";
+			}, 1000)
+			color = "red";
+		})
+	}
+
+	function handleChangeInput2fa() {
+		if (code2fa.length == 6)
+			submit2fa();
+	}
 
 </script>
 {#if myProfile && myProfile.first_name}
@@ -159,3 +193,25 @@
 		<TabUser user={myProfile} />
 	</div>
 {/if}
+
+<Modal bind:open={qrCodeModal} size="xs" autoclose={false} class="w-full !bg-primary modal-2fa" permanent={true} backdropClasses="bg-primary">
+	<div class="flex flex-col justify-center gap-5">
+		<div>
+			<h2>Save this qrcode in google authenticator</h2>
+			<img src={qrCode} alt="" class="mx-auto">
+		</div>	
+		<div class="flex flex-col justify-center items-center gap-5">
+			<div>
+				<Helper helperClass="mb-2 font-medium h-6 text-center" color="red">
+					{#if color == "red"}
+						Invalid code !
+					{/if}
+				</Helper>
+				<div class="flex flex-col gap-2">
+					<label for="inputOne">Your code</label>
+					<input type="text" id="inputOne" class="focus:outline-none focus:ring-0" bind:value={code2fa} on:input={handleChangeInput2fa}/>
+				</div>
+			</div>
+		</div>
+	</div>
+</Modal>

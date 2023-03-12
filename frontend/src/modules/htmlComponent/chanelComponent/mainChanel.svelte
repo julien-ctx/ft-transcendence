@@ -54,6 +54,8 @@
     // CurrentRoom //
     let currentRoom : any;
     let usersCurrentRoom : any [];
+    let modalUsersRoom : boolean = false;
+    let usersInModalRoom : any;
 
     currentRoomStore.subscribe((val) => currentRoom = val);
     usersDataStore.subscribe((val) => allUsers = val);
@@ -200,6 +202,18 @@
         goto(`/user?id=${id}`);
     }
 
+    async function handleUserInModalRoom(room : any) {
+        await axios.get(`${API_URL}/Chat/AllUsers/${room.name}`, {
+            headers: {
+                Authorization: `Bearer ${getJwt()}`
+            }
+        })
+        .then((res) => {
+            usersInModalRoom = res.data;
+            modalUsersRoom = true;
+        })
+    }
+
 </script>
 <div class="div-chan flex items-end">
     {#if currentRoom}
@@ -236,6 +250,11 @@
                                         </DropdownItem>
                                     {/if}
                                     <DropdownItem  defaultClass="button-rooms">
+                                        <button class="bg-primary border-none rounded-none p-2 font-sm hover:bg-secondary text-sm w-full text-left" on:click={() => {dropdownAdminOpen = false; handleUserInModalRoom(room);}}>
+                                            Users in room
+                                        </button>
+                                    </DropdownItem>
+                                    <DropdownItem  defaultClass="button-rooms">
                                         <button class="bg-primary border-none rounded-none p-2 font-sm hover:bg-secondary text-sm w-full text-left" on:click={() => {leaveRoom(room); dropdownAdminOpen = false;}}>
                                             Leave room
                                         </button>
@@ -257,28 +276,26 @@
         {:else}
             <div class="body-friend">
                 {#each allUsers as user}
-                {#if myProfile.friend_id && myProfile.friend_id.includes(user.id)}
-                <div class="user-friend">
-                    <!-- <button class="button-friend"> -->
-                        <Avatar size="xs" src={user.img_link} rounded class="object-cover"/>
-                        {#if user.activity === 0}
-                            <Indicator size="xs" color="red"/>
-                        {:else if user.activity === 1}
-                            <Indicator size="xs" color="green"/>
-                        {:else if user.activity === 2}
-                            <Indicator size="xs" color="blue"/>
-                        {/if}
-                        <p>{user.login}</p>
-                        <button class="button-svg" on:click={() => socketMp.emit("create-room", {user_send : myProfile, user_receive : user})}>
-                            <SvgMsg />
-                        </button>
-                        <button>
-                            <img src="./game-battle.png" alt="" width="20">
-                        </button>
-                </div>
-
-                {/if}
-            {/each}
+                    {#if myProfile.friend_id && myProfile.friend_id.includes(user.id)}
+                        <div class="user-friend">
+                            <Avatar size="xs" src={user.img_link} rounded class="object-cover"/>
+                            {#if user.activity === 0}
+                                <Indicator size="xs" color="red"/>
+                            {:else if user.activity === 1}
+                                <Indicator size="xs" color="green"/>
+                            {:else if user.activity === 2}
+                                <Indicator size="xs" color="blue"/>
+                            {/if}
+                            <p>{user.login}</p>
+                            <button class="button-svg" on:click={() => socketMp.emit("create-room", {user_send : myProfile, user_receive : user})}>
+                                <SvgMsg />
+                            </button>
+                            <button>
+                                <img src="./game-battle.png" alt="" width="20">
+                            </button>
+                        </div>
+                    {/if}
+                {/each}
             </div>
         {/if}
     </div>
@@ -356,6 +373,39 @@
     <div class="flex justify-between">
         <button class="button-actions" on:click={() => close()}>Close</button>
         <button class="button-actions" on:click={() => joinRoom()}>Join</button>
+    </div>
+</Modal>
+
+<Modal bind:open={modalUsersRoom} title="Users in room" class="bg-primary modal-user-room">
+    <div class="container-user">
+        {#each usersInModalRoom as user}
+            <div class="content-user">
+                <Avatar size="md" src={user.img_link} rounded class="object-cover"/>
+                {#if user.activity === 0}
+                    <Indicator size="xs" color="red"/>
+                {:else if user.activity === 1}
+                    <Indicator size="xs" color="green"/>
+                {:else if user.activity === 2}
+                    <Indicator size="xs" color="blue"/>
+                {/if}
+                <p>{user.login}</p>
+                {#if myProfile.id != user.id}
+                    <button class="button-svg" on:click={() => socketMp.emit("create-room", {user_send : myProfile, user_receive : user})}>
+                        <SvgMsg />
+                    </button>
+                    <button class="button-svg" on:click={() => socketMp.emit("create-room", {user_send : myProfile, user_receive : user})}>
+                        <SvgProfile />
+                    </button>
+                    <button>
+                        <img src="./game-battle.png" alt="" width="20">
+                    </button>
+                {:else}
+                <button class="button-svg" on:click={() => {goto("/profile"); modalUsersRoom = false;}}>
+                    <SvgProfile />
+                </button>
+                {/if}
+            </div>
+        {/each}
     </div>
 </Modal>
 

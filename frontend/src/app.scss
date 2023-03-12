@@ -475,6 +475,27 @@ button,
 	max-width: 200px;
 }
 
+.modal-user-room {
+	.container-user {
+		display: flex;
+		gap: 10px;
+		.content-user {
+			display: flex;
+			align-items: center;
+			p {
+				width: 100px;
+				margin-left: 5px;
+				font-size: 14px;
+				font-family: 'Audiowide';
+				color: #000;
+			}
+			.flex-shrink-0 {
+				margin-left: 10px;
+			}
+		}
+	}
+}
+
 .header-user-card {
 	font-family: "Audiowide";
 	font-weight: 700;

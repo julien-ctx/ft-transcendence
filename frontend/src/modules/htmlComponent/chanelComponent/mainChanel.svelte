@@ -334,24 +334,28 @@
     </div>
 </Modal>
 
-<Modal bind:open={modalJoin} title="Join a room" color="third">
-    <FloatingLabelInput style="filled" id="floating_filled" name="Room Name" type="text" label="Room Name" bind:value={JoinName}/>
-    {#if err.already !== ''}
-        <p class="text-red-500 text-xs">{err.already}</p>
-    {:else if err.name !== ''}
-        <!-- {#if err.name !== ''} -->
+<Modal bind:open={modalJoin} title="Join a room" class="bg-primary modal-chan">
+    <div class="flex flex-col justify-between">
+        <label for="join-name">Room name</label>
+        <input class="focus:outline-none focus:ring-0" type="text" bind:value={JoinName} id="join-name">
+        {#if err.already !== ''}
+            <p class="text-red-500 text-xs">{err.already}</p>
+        {:else if err.name !== ''}
             <p class="text-red-500 text-xs">{err.name}</p>
-        <!-- {/if} -->
-    {/if}
-    {#if needPass === "yes"}
-        <FloatingLabelInput style="filled" id="floating_filled" name="Room Name" type="password" label="Password" bind:value={JoinPass}/>
-        {#if err.pass !== ''}
-            <p class="text-red-500 text-xs">{err.pass}</p>
         {/if}
+    </div>
+    {#if needPass === "yes"}
+        <div class="flex flex-col justify-between mt-6">
+            <label for="join-pass">Password</label>
+            <input class="focus:outline-none focus:ring-0" type="password" bind:value={JoinPass} id="join-pass">
+            {#if err.pass !== ''}
+                <p class="text-red-500 text-xs">{err.pass}</p>
+            {/if}
+        </div>
     {/if}
-    <div class="flex justify-center gap-8">
-        <Button style="" shadow="green" gradient color="green" on:click={() => joinRoom()}>Join</Button>
-        <Button style="" shadow="green" gradient color="green" on:click={() => close()}>Close</Button>
+    <div class="flex justify-between">
+        <button class="button-actions" on:click={() => close()}>Close</button>
+        <button class="button-actions" on:click={() => joinRoom()}>Join</button>
     </div>
 </Modal>
 

@@ -48,9 +48,9 @@
             <button class="button-card-user">...</button>
             <Dropdown class="w-36 !hover:bg-primary">
                 {#if myProfile.block_id && myProfile.block_id.includes(user.id)}
-                    <DropdownItem on:click={() => socketUser.emit("unblock_user", { id_user_send : myProfile.id, id_user_receive : user.id })} class="!bg-primary rounded !hover:bg-primary hover:text-third transition-colors duration-300">Unblock this user</DropdownItem>
+                    <DropdownItem on:click={() => socketUser.emit("unblock_user", { id_user_send : myProfile.id, id_user_receive : user.id })} class="!bg-primary rounded !hover:bg-primary hover:text-third transition-colors duration-300">Unblock user</DropdownItem>
                 {:else}
-                    <DropdownItem on:click={() => socketUser.emit("block_user", { id_user_send : myProfile.id, id_user_receive : user.id })} class="!bg-primary rounded !hover:bg-primary hover:text-third transition-colors duration-300">Block this user</DropdownItem>
+                    <DropdownItem on:click={() => socketUser.emit("block_user", { id_user_send : myProfile.id, id_user_receive : user.id })} class="!bg-primary rounded !hover:bg-primary hover:text-third transition-colors duration-300">Block user</DropdownItem>
                 {/if}
             </Dropdown>
         {:else}

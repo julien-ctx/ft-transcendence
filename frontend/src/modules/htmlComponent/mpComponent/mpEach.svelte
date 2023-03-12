@@ -1,8 +1,8 @@
 <script lang="ts">
     import { API_URL } from "$lib/env";
     import { getJwt } from "$lib/jwtUtils";
-    import { socketMpStore } from "$lib/store/socket";
-    import { myProfileDataStore, myRoomMpStore, usersDataStore } from "$lib/store/user";
+    import { socketMpStore, socketUserStore } from "$lib/store/socket";
+    import { myProfileDataStore, myRoomMpStore } from "$lib/store/user";
     import { io } from "socket.io-client";
     import { onMount } from "svelte";
     import MpModal from "./mpModal.svelte";
@@ -10,11 +10,13 @@
 	let myProfile : any;
 	let myRoomMp : any;
 	let socketMp : any;
+	let socketUser : any;
 	let divMp : any;
 
 	myRoomMpStore.subscribe(val => myRoomMp = val);
 	myProfileDataStore.subscribe(val => myProfile = val);
 	socketMpStore.subscribe(val => socketMp = val);
+	socketUserStore.subscribe(val => socketUser = val);
 	myRoomMpStore.subscribe(val => myRoomMp = val);
 
 	onMount(async () => {
@@ -57,7 +59,7 @@
 </script>
 <div class="div-mp" bind:this={divMp}>
 	{#each myRoomMp as room}
-		<MpModal room={room} myProfile={myProfile} socketMp={socketMp}/>
+		<MpModal room={room} myProfile={myProfile} socketMp={socketMp} socketUser={socketUser}/>
 	{/each}
 </div>
 

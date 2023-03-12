@@ -611,8 +611,9 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 			room.write = [body.login]
 		this.Client.forEach((elem : any) => {
 			for (let i = 0; i < body.user_receive.length; i++) {
-				if (elem.user.id == body.user_receive[i].id_user)
+				if (elem.user.id == body.user_receive[i].id_user) {
 					elem.client.emit('event-write', room);
+				}
 			}
 		})
 	}
@@ -629,8 +630,9 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 		}
 		this.Client.forEach((elem : any) => {
 			for (let i = 0; i < body.user_receive.length; i++) {
-				if (elem.user.id == body.user_receive[i].id_user)
+				if (elem.user.id == body.user_receive[i].id_user) {
 					elem.client.emit('event-write', room);
+				}
 			}
 		})
 	}

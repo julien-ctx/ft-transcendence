@@ -131,6 +131,11 @@ export class UserService {
 			return await this.prisma.user.findUnique({
 				where : {
 					id : userReceive.id
+				},
+				include : {
+					RoomToUser : true,
+					roomMp : true,
+					notification : true
 				}
 			})
 		} catch (error) {

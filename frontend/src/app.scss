@@ -481,6 +481,7 @@ button,
 .modal-user-room {
 	.container-user {
 		display: flex;
+		flex-direction: column;
 		gap: 10px;
 		.content-user {
 			display: flex;
@@ -502,6 +503,9 @@ button,
 			}
 			img {
 				margin: 0 5px;
+			}
+			.button-card-user {
+				transform: translateY(-11px);
 			}
 		}
 	}

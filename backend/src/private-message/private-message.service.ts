@@ -89,7 +89,7 @@ export class PrivateMessageService {
 						connect : [
 							{id : user_send.id},
 							{id : user_receive.id}
-						]
+						],
 					},
 					open_id : {
 						set : user_send.id

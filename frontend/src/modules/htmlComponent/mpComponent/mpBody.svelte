@@ -1,10 +1,7 @@
 <script lang="ts">
-    import { goto } from "$app/navigation";
     import { socketFriendStore } from "$lib/store/socket";
-import { myProfileDataStore, userProfileDataStore } from "$lib/store/user";
-    import { GetOneUser } from "$lib/userUtils";
-    import { clippingParents } from "@popperjs/core";
-    import { Avatar, Dropdown, DropdownItem } from "flowbite-svelte";
+	import { myProfileDataStore } from "$lib/store/user";
+    import { Avatar } from "flowbite-svelte";
     import { afterUpdate } from "svelte";
 
 	export let room : any;
@@ -13,7 +10,7 @@ import { myProfileDataStore, userProfileDataStore } from "$lib/store/user";
 	let divBody : any;
 	let myProfile : any;
 	let socketFriend : any;
-	let dropdownOpen : boolean = false;
+	
 
 	myProfileDataStore.subscribe(val => myProfile = val);
 	socketFriendStore.subscribe(val => socketFriend = val);

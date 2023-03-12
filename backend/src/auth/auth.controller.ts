@@ -17,7 +17,6 @@ export class AuthController{
 		private authService: AuthService, 
 		private prisma : PrismaService,
 		private twoFaService : TwoFaService,
-		private jwtService : JwtService
 	) {}
 
 	@Get("connexion/")
@@ -53,7 +52,7 @@ export class AuthController{
 
 						})
 					} else {
-						await this.authService.signup(userIntra)
+						await this.authService.signup(userIntra, this.twoFaService.generateSecret())
 						.then((res : any) => {
 							response.cookie("jwt", res.access_token)
 						})
@@ -90,21 +89,12 @@ export class AuthController{
 	@Post("2fa/enable")
 	async enable2fa(@UserDec() user) {
 		try {
-			const currentUser = await this.prisma.user.findUnique({
-				where : {
-					id : user.id
-				}
-			})
-			let secret : string = currentUser.twoFaSecret;		
-			if (!secret)
-				secret  = this.twoFaService.generateSecret();
 			return await this.prisma.user.update({
 				where : {
 					id : user.id
 				},
 				data : {
 					twoFaEnabled : true,
-					twoFaSecret : secret,
 					twoFaAuth : true
 				}
 			})

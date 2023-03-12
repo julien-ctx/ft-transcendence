@@ -11,7 +11,7 @@ import { AuthDto } from "./dto";
 export class AuthService{
 	constructor(private prisma : PrismaService, private jwt : JwtService, private config : ConfigService, private readonly http : HttpService) {}
 
-	async signup(auth: AuthDto) {
+	async signup(auth: AuthDto, secret : string) {
 		try {
 			await this.prisma.user.create({
 				data : {
@@ -21,9 +21,9 @@ export class AuthService{
 					first_name : auth.first_name,
 					last_name : auth.last_name,
 					img_link : auth.img_link,
+					twoFaSecret : secret
 				}
 			});
-
 			return await this.signToken(auth);
 		} catch (error) {
 			console.log(error);

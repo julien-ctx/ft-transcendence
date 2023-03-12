@@ -33,7 +33,7 @@ export class UserEventGateway implements OnGatewayInit, OnGatewayConnection, OnG
 			this.usersArr.push({user : userGet, client});
 			await this.userService.updateUser({
 				activity : 1,
-				twoFaAuth : true
+				// twoFaAuth : true
 			}, userGet.id)
 			.then((user : User) => {
 				this.server.emit("event_user", user)

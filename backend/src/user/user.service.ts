@@ -113,6 +113,31 @@ export class UserService {
 		}
 	}
 
+	async addNotifMsg(userSend : User, userReceive : User) {
+		try {
+			await this.prisma.notification.create({
+				data : {
+					user : {
+						connect : {
+							id_user: userReceive.id_user
+						}
+					},
+					id_user_send : userSend.id,
+					login_send : userSend.login,
+					img_link: userSend.img_link,
+					type : 1
+				}
+			});
+			return await this.prisma.user.findUnique({
+				where : {
+					id : userReceive.id
+				}
+			})
+		} catch (error) {
+			console.log(error);
+		}
+	}
+
 	async createManyUser(users : any) {
 		return await this.prisma.user.createMany({
 			data : users

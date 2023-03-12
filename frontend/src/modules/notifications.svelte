@@ -49,29 +49,29 @@
 			{#each myProfile.notification as notif}
 			<div class="notification w-full p-3">
 				{#if notif.type == 0}
-						<div class="flex gap-5">
-							<div>
-								<button class="button-card-user">...</button>
-								<Dropdown class="w-36">
-									<button on:click={() => blockUser(notif)} class="rounded p-1 !bg-primary rounded !hover:bg-primary hover:text-third transition-colors duration-300">
-										Block this user
-									</button>
-								</Dropdown>
-								<Avatar src={notif.img_link} class="object-cover bg-transparent" rounded/>
-							</div>
-							<div class="text-notif flex flex-col items-center justify-end">
-								<p>Friend request from</p>
-								<a href="/user?id={notif.id_user_send}" class="capitalize hover:text-third transition-colors duration-300">{notif.login_send}</a>
-							</div>
+					<div class="flex gap-5">
+						<div>
+							<button class="button-card-user">...</button>
+							<Dropdown class="w-36">
+								<button on:click={() => blockUser(notif)} class="rounded p-1 !bg-primary rounded !hover:bg-primary hover:text-third transition-colors duration-300">
+									Block this user
+								</button>
+							</Dropdown>
+							<Avatar src={notif.img_link} class="object-cover bg-transparent" rounded/>
 						</div>
-						<div class="flex justify-center gap-5 mt-2">
-							<button on:click={() => socketFriend.emit("accept_friend", { user : myProfile, notif})}>
-								<SvgAdd />
-							</button>
-							<button on:click={() => socketFriend.emit("refuse_friend", {user : myProfile, notif})}>
-								<SvgDelete />
-							</button>
+						<div class="text-notif flex flex-col items-center justify-end">
+							<p>Friend request from</p>
+							<a href="/user?id={notif.id_user_send}" class="capitalize hover:text-third transition-colors duration-300">{notif.login_send}</a>
 						</div>
+					</div>
+					<div class="flex justify-center gap-5 mt-2">
+						<button on:click={() => socketFriend.emit("accept_friend", { user : myProfile, notif})}>
+							<SvgAdd />
+						</button>
+						<button on:click={() => socketFriend.emit("refuse_friend", {user : myProfile, notif})}>
+							<SvgDelete />
+						</button>
+					</div>
 				{/if}
 			</div>
 			{/each}

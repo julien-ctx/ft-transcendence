@@ -15,7 +15,7 @@
 <Tabs defaultClass="w-full flex flex-row gap-2 mt-10 !border-0 tabs-item" contentClass="w-full">
 	<TabItem title="Friend" open defaultClass="w-full"> 
 		<Accordion defaultClass="w-full mt-5 accordion">
-			<AccordionItem open={user.friend_id && user.friend_id.length > 0}>
+			<AccordionItem>
 				<span slot="header">{user.friend_id.length}
 					{#if user.friend_id.length == 0} 
 						Friend

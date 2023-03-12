@@ -293,6 +293,9 @@
                             <button>
                                 <img src="./game-battle.png" alt="" width="20">
                             </button>
+                            <button class="button-svg" on:click={() => handleGotoUser(user.id)}>
+                                <SvgProfile />
+                            </button>
                         </div>
                     {/if}
                 {/each}
@@ -393,11 +396,11 @@
                     <button class="button-svg" on:click={() => socketMp.emit("create-room", {user_send : myProfile, user_receive : user})}>
                         <SvgMsg />
                     </button>
-                    <button class="button-svg" on:click={() => socketMp.emit("create-room", {user_send : myProfile, user_receive : user})}>
-                        <SvgProfile />
-                    </button>
                     <button>
-                        <img src="./game-battle.png" alt="" width="20">
+                        <img src="./game-battle.png" alt="" width="24">
+                    </button>
+                    <button class="button-svg" on:click={() => handleGotoUser(user.id)}>
+                        <SvgProfile />
                     </button>
                 {:else}
                 <button class="button-svg" on:click={() => {goto("/profile"); modalUsersRoom = false;}}>
@@ -409,9 +412,9 @@
     </div>
 </Modal>
 
-<Modal bind:open={modalAdmin} title="Admin Panel" color="third">
+<Modal bind:open={modalAdmin} title="Admin Panel" class="bg-primary">
     <Members room={admin} socket={socket} infoChannel={rooms}/>
 	<div class="flex justify-center gap-8">
-		<Button style="" gradient color="third" on:click={() => close()}>Close</Button>
+		<button class="button-actions" on:click={() => close()}>Close</button>
 	</div>
 </Modal>

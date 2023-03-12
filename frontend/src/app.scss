@@ -177,20 +177,23 @@ canvas {
 						font-size: 14px;
 					}
 					.object-cover {
-						margin-left: 25px;
+						margin-left: 15px;
 					}
 					.flex-shrink-0 {
 						margin-left: 10px;
 					}
 					p {
 						margin-left: 5px;
-						width: 100px;
+						width: 90px;
 					}
 					.button-svg {
 						margin-right: 5px;
 						svg {
 							width: 20px;
 						}
+					}
+					img {
+						margin-right: 5px;
 					}
 				}
 			}
@@ -491,6 +494,14 @@ button,
 			}
 			.flex-shrink-0 {
 				margin-left: 10px;
+			}
+			.button-svg {
+				svg {
+					width: 24px;
+				}
+			}
+			img {
+				margin: 0 5px;
 			}
 		}
 	}

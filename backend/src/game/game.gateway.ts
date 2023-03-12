@@ -7,7 +7,7 @@ import { User } from "@prisma/client";
 import { Server, Socket } from "socket.io";
 import { PrismaService } from "src/prisma/prisma.service";
 
-const MAX_SCORE = 2;
+const MAX_SCORE = 11;
 
 @WebSocketGateway({
 	cors: true,
@@ -120,6 +120,9 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	@SubscribeMessage('ready')
 	startGame(socket: Socket, data: {width, height, playerNumber, botLevel}) {
 		let waitingClient = this.queue.find(waitingClient => waitingClient.socket === socket);
+		if (!waitingClient) {
+			return console.log('waitingClient null');
+		}
 		if (socket === waitingClient.socket) {
 			this.removeFromQueue(socket);
 		}
@@ -141,7 +144,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 			gameReady = true;
 		} else if (this.games.find(game => game.playerNumber === 2 && game.rightClient === null)) {
 			game = this.games.find(game => game.playerNumber === 2 && game.rightClient === null
-			&& client.user['login'] != game.leftClient.user['login']);
+			/*&& client.user['login'] != game.leftClient.user['login']*/);
 			client.side = 1;
 			game.rightClient = client;
 			gameReady = true;

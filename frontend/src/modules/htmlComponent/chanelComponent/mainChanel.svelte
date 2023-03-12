@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { Button, Modal, FloatingLabelInput, Select, Avatar, Dropdown, DropdownItem, Indicator } from "flowbite-svelte";
+    import { Modal,Avatar, Dropdown, DropdownItem, Indicator } from "flowbite-svelte";
     import { onMount } from "svelte";
     import Arrow from '../svgComponent/svgArrow.svelte';
     import axios from 'axios';
@@ -7,12 +7,8 @@
     import { myProfileDataStore, userProfileDataStore, usersDataStore } from "$lib/store/user";
     import { io } from 'socket.io-client';
     import Members from '../../../modules/admin.svelte';
-    import SvgEdit from "../svgComponent/svgEdit.svelte";
-    import SvgTrash from "../svgComponent/svgTrash.svelte";
-    import SvgClose from "../svgComponent/svgClose.svelte";
-    import { socketMpStore } from "$lib/store/socket";
+    import { socketMpStore, socketUserStore } from "$lib/store/socket";
     import SvgMsg from "../svgComponent/svgMsg.svelte";
-    import MpModal from "../mpComponent/mpModal.svelte";
     import ChanModal from "./chanModal.svelte";
     import { API_URL } from "$lib/env";
     import { currentRoomStore } from "$lib/store/roomStore";
@@ -29,7 +25,7 @@
 	let chat : boolean = false;
     let socketMp : any;
     let active : string = "";
-    let dropdownUserOpen : boolean = false;
+    let socketUser : any;
 
     // Modal Create : //
     let roomName = '';
@@ -61,6 +57,7 @@
     usersDataStore.subscribe((val) => allUsers = val);
     myProfileDataStore.subscribe((val) => myProfile = val);
     socketMpStore.subscribe(val => socketMp = val);
+    socketUserStore.subscribe(val => socketUser = val);
 
     onMount(async () => {
         let token : string = getJwt();
@@ -210,6 +207,8 @@
         })
         .then((res) => {
             usersInModalRoom = res.data;
+            console.log(usersInModalRoom);
+            
             modalUsersRoom = true;
         })
     }
@@ -383,6 +382,18 @@
     <div class="container-user">
         {#each usersInModalRoom as user}
             <div class="content-user">
+                {#if myProfile.id != user.id}
+                    <button class="button-card-user">...</button>
+                    <Dropdown class="w-36 !hover:bg-primary">
+                        {#if myProfile.block_id && myProfile.block_id.includes(user.id)}
+                            <DropdownItem on:click={() => socketUser.emit("unblock_user", { id_user_send : myProfile.id, id_user_receive : user.id })} class="!bg-primary rounded !hover:bg-primary hover:text-third transition-colors duration-300">Unblock user</DropdownItem>
+                        {:else}
+                            <DropdownItem on:click={() => socketUser.emit("block_user", { id_user_send : myProfile.id, id_user_receive : user.id })} class="!bg-primary rounded !hover:bg-primary hover:text-third transition-colors duration-300">Block user</DropdownItem>
+                        {/if}
+                    </Dropdown>
+                {:else}
+                    <div style="width: 14.7px;"></div>
+                {/if}
                 <Avatar size="md" src={user.img_link} rounded class="object-cover"/>
                 {#if user.activity === 0}
                     <Indicator size="xs" color="red"/>
@@ -393,19 +404,19 @@
                 {/if}
                 <p>{user.login}</p>
                 {#if myProfile.id != user.id}
-                    <button class="button-svg" on:click={() => socketMp.emit("create-room", {user_send : myProfile, user_receive : user})}>
-                        <SvgMsg />
-                    </button>
-                    <button>
+                    <button on:click={() => {modalUsersRoom = false;}}>
                         <img src="./game-battle.png" alt="" width="24">
                     </button>
-                    <button class="button-svg" on:click={() => handleGotoUser(user.id)}>
+                    <button class="button-svg" on:click={() => {handleGotoUser(user.id); modalUsersRoom = false;}}>
                         <SvgProfile />
                     </button>
                 {:else}
-                <button class="button-svg" on:click={() => {goto("/profile"); modalUsersRoom = false;}}>
-                    <SvgProfile />
-                </button>
+                    <div class="button-svg">
+                        <svg  style="width: 24px; height: 24px; margin: 0 5px;"/>
+                    </div>
+                    <button class="button-svg" on:click={() => {goto("/profile"); modalUsersRoom = false;}}>
+                        <SvgProfile />
+                    </button>
                 {/if}
             </div>
         {/each}

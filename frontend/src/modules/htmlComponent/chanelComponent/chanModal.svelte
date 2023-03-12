@@ -86,6 +86,8 @@
 	function submitMp() {
 		if (inputMp != "") {
 			Endmute = null;
+			console.log(inputMp, currentRoom.name);
+			
 			socketRoom.emit('sendMessage', {
 				roomName : currentRoom.name, 
 				message : inputMp

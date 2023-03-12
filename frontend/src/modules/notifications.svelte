@@ -1,13 +1,14 @@
 <script lang="ts">
     import { Avatar, Dropdown } from "flowbite-svelte";
     import { myNotifLength, myProfileDataStore } from '$lib/store/user';
-    import { socketFriendStore, socketUserStore } from "$lib/store/socket";
-    import { GetAllUsers } from "$lib/userUtils";
+    import { socketFriendStore, socketMpStore, socketUserStore } from "$lib/store/socket";
+    import { GetAllUsers, GetOneUser } from "$lib/userUtils";
     import SvgAdd from "./htmlComponent/svgComponent/svgAdd.svelte";
     import SvgDelete from "./htmlComponent/svgComponent/svgDelete.svelte";
 
 	let socketFriend : any;
 	let socketUser : any;
+	let socketMp : any;
 	let myProfile : any;
 	let countNotif : any;
 	let openDropdown : boolean = false;
@@ -16,6 +17,7 @@
 	myNotifLength.subscribe(val => countNotif = val);
 	socketFriendStore.subscribe(val => socketFriend = val);
 	socketUserStore.subscribe(val => socketUser = val);
+	socketMpStore.subscribe(val => socketMp = val);
 
 	async function blockUser(notif : any) {
 		await GetAllUsers()
@@ -29,6 +31,18 @@
 				});
 			}
 		})
+	}
+
+	async function handleViewMp(notif : any) {
+		await GetOneUser(notif.id_user_send)
+		.then(async (res) => {
+			socketMp.emit("create-room", {user_send : myProfile, user_receive : res.data})
+			socketUser.emit("delete-notification", {id_notif : notif.id, user : myProfile});
+		})
+	}
+
+	async function handleDeleteMp(notif : any) {
+		socketUser.emit("delete-notification", {id_notif : notif.id, user : myProfile});
 	}
 
 </script>
@@ -54,7 +68,7 @@
 							<button class="button-card-user">...</button>
 							<Dropdown class="w-36">
 								<button on:click={() => blockUser(notif)} class="rounded p-1 !bg-primary rounded !hover:bg-primary hover:text-third transition-colors duration-300">
-									Block this user
+									Block user
 								</button>
 							</Dropdown>
 							<Avatar src={notif.img_link} class="object-cover bg-transparent" rounded/>
@@ -70,6 +84,30 @@
 						</button>
 						<button on:click={() => socketFriend.emit("refuse_friend", {user : myProfile, notif})}>
 							<SvgDelete />
+						</button>
+					</div>
+				{:else if notif.type == 1}
+					<div class="flex gap-5">
+						<div>
+							<button class="button-card-user">...</button>
+							<Dropdown class="w-36">
+								<button on:click={() => blockUser(notif)} class="rounded p-1 !bg-primary rounded !hover:bg-primary hover:text-third transition-colors duration-300">
+									Block user
+								</button>
+							</Dropdown>
+							<Avatar src={notif.img_link} class="object-cover bg-transparent" rounded/>
+						</div>
+						<div class="text-notif flex flex-col items-center justify-end">
+							<p>New message from</p>
+							<a href="/user?id={notif.id_user_send}" class="capitalize hover:text-third transition-colors duration-300">{notif.login_send}</a>
+						</div>
+					</div>
+					<div class="flex justify-center gap-5 mt-2">
+						<button on:click={() => handleDeleteMp(notif)}>
+							Delete
+						</button>
+						<button on:click={() => handleViewMp(notif)}>
+							View
 						</button>
 					</div>
 				{/if}

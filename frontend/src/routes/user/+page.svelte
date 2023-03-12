@@ -59,9 +59,9 @@
                         <button class="button-card-user">...</button>
                         <Dropdown class="w-36">
                             {#if myProfile.block_id && myProfile.block_id.includes(userProfile.id)}
-                                <DropdownItem on:click={() => socketUser.emit("unblock_user", { id_user_send : myProfile.id, id_user_receive : userProfile.id})} class="rounded p-1 !bg-primary rounded !hover:bg-primary hover:text-third transition-colors duration-300">Unblock this user</DropdownItem>
+                                <DropdownItem on:click={() => socketUser.emit("unblock_user", { id_user_send : myProfile.id, id_user_receive : userProfile.id})} class="rounded p-1 !bg-primary rounded !hover:bg-primary hover:text-third transition-colors duration-300">Unblock user</DropdownItem>
                             {:else}
-                                <DropdownItem on:click={() => socketUser.emit("block_user", { id_user_receive : userProfile.id, id_user_send : myProfile.id})} class="rounded p-1 !bg-primary rounded !hover:bg-primary hover:text-third transition-colors duration-300">Block this user</DropdownItem>
+                                <DropdownItem on:click={() => socketUser.emit("block_user", { id_user_receive : userProfile.id, id_user_send : myProfile.id})} class="rounded p-1 !bg-primary rounded !hover:bg-primary hover:text-third transition-colors duration-300">Block user</DropdownItem>
                             {/if}
                         </Dropdown>
                         <Avatar size="xl" src={userProfile.img_link} class="object-cover bg-transparent" rounded/>

@@ -6,11 +6,11 @@
     import { GetOneUser } from "$lib/userUtils";
     import { goto } from "$app/navigation";
     import { userProfileDataStore } from "$lib/store/user";
-    import { socketFriendStore } from "$lib/store/socket";
 
 	export let room : any;
 	export let myProfile : any;
 	export let socketMp : any;
+	export let socketUser : any;
 
 	let dropdownOpen : boolean = false;
 	let otherProfile : any;
@@ -18,10 +18,12 @@
 	let active : string = "";
 
 	afterUpdate(() => {
-		for (let i = 0; i < room.user.length; i++) {
-			if (room.user[i].id != myProfile.id) {
-				otherProfile = room.user[i];
-				break;
+		if (room && room.user) {
+			for (let i = 0; i < room.user.length; i++) {
+				if (room.user[i].id != myProfile.id) {
+					otherProfile = room.user[i];
+					break;
+				}
 			}
 		}
 	})
@@ -48,8 +50,9 @@
 		if (inputMp != "") {
 			for (let i = 0; i < room.user.length; i++) {
 				if (room.user[i].id != myProfile.id) {
-					socketMp.emit("send-mp", {id_user_send : myProfile.id, id_user_receive : room.user[i].id ,id_room : room.id, content : inputMp})
+					socketMp.emit("send-mp", {id_user_send : myProfile.id, id_user_receive : room.user[i].id , id_room : room.id, content : inputMp})
 					socketMp.emit("unwrite", {user_receive : otherProfile, room, login : myProfile.login});
+					socketUser.emit("notification_mp", {user_send : myProfile, user_receive : room.user[i] , id_room : room.id, content : inputMp})
 				}
 			}
 			inputMp = "";

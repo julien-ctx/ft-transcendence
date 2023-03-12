@@ -43,8 +43,8 @@ export class GameService {
 			canvas.height * 0.5,
 			canvas.width * 0.02,
 			{
-				x: 2,
-				y: 2,
+				x: (canvas.width + canvas.height) * 0.0005,
+				y: (canvas.width + canvas.height) * 0.0009,
 			},
 			{
 				x: (canvas.width + canvas.height) * 0.0002,
@@ -76,13 +76,11 @@ export class GameService {
 		client.rightPaddle.x = client.canvas.width - client.canvas.width * 0.015 - client.canvas.width * 0.005;
 		client.rightPaddle.width =  client.canvas.width * 0.005;
 		client.rightPaddle.height = client.canvas.height * 0.15;
-		client.rightPaddle.y = client.rightPaddle.y * client.canvas.height / height;
 		client.rightPaddle.speed = client.canvas.height * 0.0018;
 
 		client.leftPaddle.x = client.canvas.width * 0.015;
 		client.leftPaddle.width = client.canvas.width * 0.005;
 		client.leftPaddle.height = client.canvas.height * 0.15;
-		client.leftPaddle.y = client.leftPaddle.y * client.canvas.height / height;
 		client.leftPaddle.speed = client.canvas.height * 0.0018;
 
 		client.ball.size = client.canvas.width * 0.02;
@@ -92,6 +90,10 @@ export class GameService {
 			x: (client.canvas.width + client.canvas.height) * 0.0002,
 			y: (client.canvas.width + client.canvas.height) * 0.0002,
 		};
+		client.ball.direction = {
+			x: (client.canvas.width + client.canvas.height) * 0.0005,
+			y: (client.canvas.width + client.canvas.height) * 0.0009,	
+		}
 		client.socket.emit('paddlesData', {leftPaddle: client.leftPaddle, rightPaddle: client.rightPaddle})
 		client.socket.emit('ballData', {ball: client.ball})
 		client.socket.emit('scoresData', {leftScore: client.leftPaddle.score, rightScore: client.rightPaddle.score})
@@ -134,6 +136,10 @@ export class GameService {
 	syncObjects(leftClient: Client, rightClient: Client) {
 		leftClient.rightPaddle.y = rightClient.rightPaddle.y * leftClient.canvas.height / rightClient.canvas.height;
 		rightClient.leftPaddle.y = leftClient.leftPaddle.y * rightClient.canvas.height / leftClient.canvas.height;
+		rightClient.ball.x = leftClient.ball.x * rightClient.canvas.width / leftClient.canvas.width;
+		leftClient.ball.x = rightClient.ball.x * leftClient.canvas.width / rightClient.canvas.width;
+		rightClient.ball.y = leftClient.ball.y * rightClient.canvas.height / leftClient.canvas.height;
+		leftClient.ball.y = rightClient.ball.y * leftClient.canvas.height / rightClient.canvas.height;
 	}
 
 	movePaddles(paddle: Paddle, canvas: GameCanvas) {

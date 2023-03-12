@@ -3,6 +3,7 @@ import { JwtService } from "@nestjs/jwt";
 import { WebSocketGateway, WebSocketServer, OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, MessageBody, ConnectedSocket } from "@nestjs/websockets";
 import { User, RoomMessagePrivate, MessagePrivate } from "@prisma/client";
 import { Server, Socket } from "socket.io";
+import { PrismaService } from "src/prisma/prisma.service";
 import { UserGuardGateway } from "src/user/guard/user.guard.gateway";
 import { UserGatewayInterface } from "src/user/interface/user.gateway.interface";
 import { UserService } from "src/user/user.service";
@@ -15,7 +16,7 @@ import { PrivateMessageService } from "./private-message.service";
 export class PrivateMessageGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
 	private usersArr : UserGatewayInterface [] = [];
 	
-	constructor(private pmService : PrivateMessageService, private jwt : JwtService, private userService : UserService) {}
+	constructor(private pmService : PrivateMessageService, private jwt : JwtService, private userService : UserService, private prisma : PrismaService) {}
 	@WebSocketServer() server: Server;
 
 

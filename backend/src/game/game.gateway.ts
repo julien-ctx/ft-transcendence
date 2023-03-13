@@ -7,7 +7,7 @@ import { User } from "@prisma/client";
 import { Server, Socket } from "socket.io";
 import { PrismaService } from "src/prisma/prisma.service";
 
-const MAX_SCORE = 2;
+const MAX_SCORE = 20;
 
 @WebSocketGateway({
 	cors: true,
@@ -126,12 +126,12 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 				game.leftClient.socket.emit('winner', {winner: winner, side: 1, forfeit: false});
 			} else if (winner === game.leftClient.user.login) {
 				this.storeGameInDB(game, game.leftClient);
-				await new Promise(r => setTimeout(r, 100));
+				// await new Promise(r => setTimeout(r, 100));
 				game.leftClient.socket.emit('winner', {winner: winner, side: -1, forfeit: false});
 				game.rightClient.socket.emit('winner', {winner: winner, side: -1, forfeit: false});
 			} else {
 				this.storeGameInDB(game, game.rightClient);
-				await new Promise(r => setTimeout(r, 100));
+				// await new Promise(r => setTimeout(r, 100));
 				game.leftClient.socket.emit('winner', {winner: winner, side: 1, forfeit: false});
 				game.rightClient.socket.emit('winner', {winner: winner, side: 1, forfeit: false});
 			}
@@ -183,7 +183,10 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 			gameReady = true;
 		} else if (this.games.find(game => game.playerNumber === 2 && game.rightClient === null)) {
 			game = this.games.find(game => game.playerNumber === 2 && game.rightClient === null
-			&& client.user.login != game.leftClient.user.login);
+					&& client.user.login != game.leftClient.user.login);
+			if (!game) {
+				return console.log('game null');
+			}
 			client.side = 1;
 			game.rightClient = client;
 			gameReady = true;
@@ -197,20 +200,6 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 				width,
 				height,
 			);
-		});
-		socket.on('keydown', ({move}) => {
-			let paddle = client.side < 0 ? client.leftPaddle : client.rightPaddle;
-			if (move === 'ArrowUp') {
-				paddle.direction = -1;
-			} else if (move === 'ArrowDown') {
-				paddle.direction = 1;
-			}
-		});
-		socket.on('keyup', ({move}) => {
-			let paddle = client.side < 0 ? client.leftPaddle : client.rightPaddle;
-			if (move === 'ArrowUp' || move === 'ArrowDown') {
-				paddle.direction = 0;
-			}
 		});
 		socket.on('mousemove', ({mouseY}) => {
 			let paddle = client.side < 0 ? client.leftPaddle : client.rightPaddle;

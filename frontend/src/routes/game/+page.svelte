@@ -64,7 +64,6 @@
 		});
 
 		socket.on("user_update", (data : any) => {
-			console.log('data: ', data);
 			if (data.id && userProfile.id && data.id == userProfile.id)
 				userProfileDataStore.set(data);
 			if (allUsers && allUsers.length != 0) {
@@ -120,20 +119,8 @@
 		socket.emit('mousemove', {mouseY});	
 	}
 	
-	function handleKeyDown(e: any) {
-		const move: string = e.key;
-		socket.emit('keydown', {move});
-	}
-	
-	function handleKeyUp(e: any) {
-		const move: string = e.key;
-		socket.emit('keyup', {move});
-	}
-
 	function removeEvents() {
 		canvas.removeEventListener('mousemove', handleMouseMove);
-		window.removeEventListener("keydown", handleKeyDown);
-		window.removeEventListener("keyup", handleKeyUp);
 	}
 	
 	function drawPaddles(leftPaddle: any, rightPaddle: any) {
@@ -354,7 +341,5 @@
 <div bind:this={containerCanvas} />
 
 <svelte:window
-	on:keydown|preventDefault={handleKeyDown}
-	on:keyup|preventDefault={handleKeyUp}
 	on:resize={handleResize}
 />

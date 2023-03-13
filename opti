@@ -5,7 +5,11 @@ palier exp
 4 = 2400
 5 = 4800
 
-game:	fix resize speed
+game:	
 		leave game running
-		bot levels
+		then Promise
+		protectection rightclient
+		time before ball launch
+		donner cote
 		randomBallDirection ?
+		

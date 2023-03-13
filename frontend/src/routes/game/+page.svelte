@@ -5,6 +5,7 @@
     import { getJwt, removeJwt } from "$lib/jwtUtils";
 	import io, { Socket } from 'socket.io-client';
     import { API_URL } from "$lib/env";
+    import { userProfileDataStore, usersDataStore } from "$lib/store/user";
 
 	const OBJ_COLOR: string = "#dcd3bc";
 	const BALL_COLOR: string = "#e36c5d";
@@ -42,6 +43,9 @@
 	let gameLeftPaddle: Paddle;
 	let gameRightPaddle: Paddle;
 	let gameBall: Ball;
+	let gameOpponentLogin: string = '';
+	let gamePlayerLogin: string = '';
+	let gamePlayerSide: number = 0;
 	
 	let playerNumber: number = 0;
 
@@ -49,6 +53,40 @@
 	let jwt: any;
 	let animationFrame: any;
 	let currMsg: any;
+
+	let userProfile : any;
+	let allUsers : any;
+
+	usersDataStore.subscribe(val => allUsers = val);
+	userProfileDataStore.subscribe(val => userProfile = val);
+
+	function connectSocket() {
+		socket = io(API_URL, {
+			path: '/pong',
+			query: { token: jwt}
+		});
+
+		socket.on("user_update", (data : any) => {
+			console.log(data);
+			if (data.id && userProfile.id && data.id == userProfile.id)
+				userProfileDataStore.set(data);
+			if (allUsers && allUsers.length != 0) {
+				let arrId : number [] = [];
+				for (let i = 0; i < allUsers.length; i++) {
+					if (allUsers[i].id == data.id) {
+						allUsers[i] = data;
+						usersDataStore.set(allUsers)
+						arrId.push(data.id);
+					}
+				}
+				if (arrId && !arrId.includes(data.id)) {
+					allUsers.push(data)
+					usersDataStore.set(allUsers);
+				}
+			}
+			socket.emit('gameStoredInDB', ({}));
+		})
+	}
 
 	onMount(async () => {
 		AuthGuard()
@@ -60,17 +98,17 @@
 			goto("/login")
 		})
 		jwt = getJwt();
-		socket = io(API_URL, {
-				path: '/pong',
-				query: { token: jwt}
-			});
-		});
+		connectSocket();
+	});	
 	
 	function handleResize() {
 		socket.emit('resize', {
 			width: window.innerWidth,
 			height: window.innerHeight,
 		});
+		if (!canvas) {
+			return console.log('canvas undefined');
+		}
 		canvas.width = window.innerWidth * 0.7;
 		canvas.height = window.innerHeight * 0.8;
 		ctx.fillStyle = OBJ_COLOR;
@@ -78,7 +116,7 @@
 			if (currMsg == 1 || currMsg == 2 || currMsg == 3)
 				ctx.font = 'bold ' + canvas.width * 0.1 + 'px Audiowide';
 			else
-				ctx.font = 'bold ' + canvas.width * 0.03 + 'px Audiowide';
+				ctx.font = 'bold ' + canvas.width * 0.04 + 'px Audiowide';
 			clearCanvas();
 			ctx.fillText(currMsg, canvas.width / 2 - ctx.measureText(currMsg).width / 2, canvas.height / 2);
 		}
@@ -89,20 +127,8 @@
 		socket.emit('mousemove', {mouseY});	
 	}
 	
-	function handleKeyDown(e: any) {
-		const move: string = e.key;
-		socket.emit('keydown', {move});
-	}
-	
-	function handleKeyUp(e: any) {
-		const move: string = e.key;
-		socket.emit('keyup', {move});
-	}
-
 	function removeEvents() {
 		canvas.removeEventListener('mousemove', handleMouseMove);
-		window.removeEventListener("keydown", handleKeyDown);
-		window.removeEventListener("keyup", handleKeyUp);
 	}
 	
 	function drawPaddles(leftPaddle: any, rightPaddle: any) {
@@ -135,7 +161,7 @@
 	}
 		
 	function drawScores(leftScore: number, rightScore: number) {
-		ctx.font = 'bold ' + canvas.width * 0.03 + 'px Audiowide';
+		ctx.font = 'bold ' + canvas.width * 0.04 + 'px Audiowide';
 		ctx.fillText(leftScore, canvas.width * 0.4, canvas.height * 0.1);
 		ctx.fillText(rightScore, canvas.width * 0.6 - ctx.measureText(rightScore).width, canvas.height * 0.1);
 	}
@@ -150,7 +176,7 @@
 			clearCanvas();
 		}
 		currMsg = null;
-		ctx.font = 'bold ' + canvas.width * 0.03 + 'px Audiowide';
+		ctx.font = 'bold ' + canvas.width * 0.04 + 'px Audiowide';
 	}
 
 	function drawWaitingForOpponent() {
@@ -162,7 +188,7 @@
 		);
 	}
 
-	async function drawOpponent(opponentMsg: string, image: string) {
+	async function drawOpponent(opponentMsg: string) {
 		clearCanvas();
 		currMsg = opponentMsg;
 		ctx.fillText(
@@ -170,11 +196,6 @@
 			canvas.width / 2 - ctx.measureText(currMsg).width / 2,
 			canvas.height / 2 
 		);
-		var img = new Image();
-		img.src = image;
-		img.onload = function () {
-			ctx.drawImage(img, canvas.width / 2 - 50, canvas.height / 2 + 20, 100, 100);
-		};
 		await new Promise(r => setTimeout(r, 2000));
 		currMsg = null;
 	}
@@ -213,7 +234,19 @@
 		animationFrame = requestAnimationFrame(gameLoop);
 	}
 
-	async function startGame(login: string, image: string) {
+	async function drawSide(side: number) {
+		clearCanvas();
+		currMsg = side < 0 ? 'You play on the left' : 'You play on the right';
+		ctx.fillText(
+			currMsg,
+			canvas.width / 2 - ctx.measureText(currMsg).width / 2,
+			canvas.height / 2 
+		);
+		await new Promise(r => setTimeout(r, 2000));
+		currMsg = null;	
+	}
+
+	async function startGame() {
 		socket.on('paddlesData', ({leftPaddle, rightPaddle}) => {
 			gameLeftPaddle = leftPaddle;
 			gameRightPaddle = rightPaddle;
@@ -230,16 +263,13 @@
 			dataInit = false;
 			if (side === 1) {
 				gameRightPaddle.score++;
-			} else {
+			} else if (side === -1) {
 				gameLeftPaddle.score++;
 			}
 			clearCanvas();
 			removeEvents();
 			socket.disconnect();
-			socket = io(API_URL, {
-				path: '/pong',
-				query: { token: jwt}
-			});
+			connectSocket();
 			drawScores(gameLeftPaddle.score, gameRightPaddle.score);
 			gameLeftPaddle.score = 0;	
 			gameRightPaddle.score = 0;
@@ -251,7 +281,11 @@
 			await drawWinner(winMsg);
 			playAgain();
 		});
-		await drawOpponent('Your opponent is ' + login, image);
+		if (gamePlayerSide === -1) {
+			await drawOpponent(`${gamePlayerLogin} VS ${gameOpponentLogin}`);
+		} else {
+			await drawOpponent(`${gameOpponentLogin} VS ${gamePlayerLogin}`);
+		}
 		await drawCounter();
 		canvas.addEventListener('mousemove', handleMouseMove);
 		socket.emit('gameLoop', {});
@@ -261,15 +295,18 @@
 	async function isReady() {
 		if (!gameStarted) {
 			gameStarted = true;
-			socket.on('foundOpponent', ({login, image, leftPaddle, rightPaddle, ball}) => {
+			socket.on('foundOpponent', ({opponentLogin, playerLogin, leftPaddle, rightPaddle, ball, playerSide}) => {
 				currMsg = null;
 				gameLeftPaddle = leftPaddle;
 				gameRightPaddle = rightPaddle;
 				gameBall = ball;
-				dataInit = true;
-				startGame(login, image);
+				gameOpponentLogin = opponentLogin;
+				gamePlayerLogin = playerLogin;
+				gamePlayerSide = playerSide
+				dataInit = true;	
+				startGame();
 			});
-			socket.emit('ready', { width: canvas.width, height: canvas.height, playerNumber, botLevel });
+			socket.emit('ready', {width: canvas.width, height: canvas.height, playerNumber, botLevel});
 			if (playerNumber === 2) {
 				drawWaitingForOpponent();
 			}
@@ -295,7 +332,7 @@
 		canvas.height = window.innerHeight * 0.8;
 		ctx = canvas.getContext('2d');
 		if (!ctx) return;
-		ctx.font = canvas.width * 0.03 + 'px Audiowide';
+		ctx.font = canvas.width * 0.04 + 'px Audiowide';
 		ctx.fillStyle = OBJ_COLOR;
 	
 		containerCanvas.appendChild(canvas)
@@ -331,7 +368,5 @@
 <div bind:this={containerCanvas} />
 
 <svelte:window
-	on:keydown|preventDefault={handleKeyDown}
-	on:keyup|preventDefault={handleKeyUp}
 	on:resize={handleResize}
 />

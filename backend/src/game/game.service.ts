@@ -62,41 +62,41 @@ export class GameService {
 		return canvas;
 	}
 
-	handleResize(
-		client: Client,
-		winWidth: number,
-		winHeight: number,
-	) {
-		const width = client.canvas.width;
-		const height = client.canvas.height;
-
-		client.canvas.width = winWidth * 0.7;
-		client.canvas.height = winHeight * 0.8;
-
-		client.rightPaddle.x = client.canvas.width - client.canvas.width * 0.015 - client.canvas.width * 0.005;
-		client.rightPaddle.width =  client.canvas.width * 0.005;
-		client.rightPaddle.height = client.canvas.height * 0.15;
-		client.rightPaddle.speed = client.canvas.height * 0.0018;
-
-		client.leftPaddle.x = client.canvas.width * 0.015;
-		client.leftPaddle.width = client.canvas.width * 0.005;
-		client.leftPaddle.height = client.canvas.height * 0.15;
-		client.leftPaddle.speed = client.canvas.height * 0.0018;
-
-		client.ball.size = client.canvas.width * 0.02;
-		client.ball.x = client.ball.x * client.canvas.width / width;
-		client.ball.y = client.ball.y * client.canvas.height / height;
-		client.ball.direction = {
-			x: (client.canvas.width + client.canvas.height) * 0.0005,
-			y: (client.canvas.width + client.canvas.height) * 0.0007,	
+	handleResize( client: Client, winWidth: number, winHeight: number) {
+		try {
+			const width = client.canvas.width;
+			const height = client.canvas.height;
+	
+			client.canvas.width = winWidth * 0.7;
+			client.canvas.height = winHeight * 0.8;
+	
+			client.rightPaddle.x = client.canvas.width - client.canvas.width * 0.015 - client.canvas.width * 0.005;
+			client.rightPaddle.width =  client.canvas.width * 0.005;
+			client.rightPaddle.height = client.canvas.height * 0.15;
+			client.rightPaddle.speed = client.canvas.height * 0.0018;
+	
+			client.leftPaddle.x = client.canvas.width * 0.015;
+			client.leftPaddle.width = client.canvas.width * 0.005;
+			client.leftPaddle.height = client.canvas.height * 0.15;
+			client.leftPaddle.speed = client.canvas.height * 0.0018;
+	
+			client.ball.size = client.canvas.width * 0.02;
+			client.ball.x = client.ball.x * client.canvas.width / width;
+			client.ball.y = client.ball.y * client.canvas.height / height;
+			client.ball.direction = {
+				x: (client.canvas.width + client.canvas.height) * 0.0005,
+				y: (client.canvas.width + client.canvas.height) * 0.0007,	
+			}
+			client.ball.speed = {
+				x: (client.canvas.width + client.canvas.height) * 0.0003,
+				y: (client.canvas.width + client.canvas.height) * 0.0003,
+			};
+			client.socket.emit('paddlesData', {leftPaddle: client.leftPaddle, rightPaddle: client.rightPaddle});
+			client.socket.emit('ballData', {ball: client.ball});
+			client.socket.emit('scoresData', {leftScore: client.leftPaddle.score, rightScore: client.rightPaddle.score});
+		} catch(error) {
+			return console.log(error);
 		}
-		client.ball.speed = {
-			x: (client.canvas.width + client.canvas.height) * 0.0003,
-			y: (client.canvas.width + client.canvas.height) * 0.0003,
-		};
-		client.socket.emit('paddlesData', {leftPaddle: client.leftPaddle, rightPaddle: client.rightPaddle})
-		client.socket.emit('ballData', {ball: client.ball})
-		client.socket.emit('scoresData', {leftScore: client.leftPaddle.score, rightScore: client.rightPaddle.score})
 	}
 
 	resetBall(client: Client, side: number, randomBallDirection: number) {
@@ -110,24 +110,24 @@ export class GameService {
 
 	updateBot(ball: Ball, paddle: Paddle, canvas: GameCanvas, botLevel: number) {
 		if (ball.y < paddle.y + paddle.height / 2) {
-			if (paddle.y - (paddle.speed) < 0) {
+			if (paddle.y - paddle.speed < 0) {
 				paddle.y = 0;
 			}
 			else {
 				const random = Math.random();
 				if (random <= botLevel) {
-					paddle.y -= (paddle.speed);
+					paddle.y -= paddle.speed;
 				}
 			}
 		}
 		else if (ball.y > paddle.y + paddle.height / 2) {
-			if (paddle.y + paddle.height + (paddle.speed) > canvas.height) {
+			if (paddle.y + paddle.height + paddle.speed > canvas.height) {
 				paddle.y = canvas.height - paddle.height;
 			}
 			else {
 				const random = Math.random();
 				if (random <= botLevel) {
-					paddle.y += (paddle.speed);
+					paddle.y += paddle.speed;
 				}
 			}
 		}
@@ -177,7 +177,7 @@ export class GameService {
 				game.rightClient.rightPaddle.score++;
 			}
 			if (game.leftClient.rightPaddle.score === game.maxScore) {
-				return game.playerNumber === 1 ? 'Bot' : game.rightClient.user['login'];
+				return game.playerNumber === 1 ? 'Bot' : game.rightClient.user.login;
 			}
 		}
 		else if (game.leftClient.ball.x > game.leftClient.canvas.width - game.leftClient.ball.size) {
@@ -192,7 +192,7 @@ export class GameService {
 				game.rightClient.leftPaddle.score++;
 			}
 			if (game.leftClient.leftPaddle.score === game.maxScore) {
-				return game.leftClient.user['login'];
+				return game.leftClient.user.login;
 			}
 		}
 		return 'NoWinner';

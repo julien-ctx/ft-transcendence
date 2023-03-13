@@ -5,11 +5,7 @@ palier exp
 4 = 2400
 5 = 4800
 
-probleme sur les status en ligne, deco et en game !
-	
 game:	fix resize speed
 		leave game running
 		bot levels
 		randomBallDirection ?
-
-faire les notifications pour le chat et le responsive pour le chat

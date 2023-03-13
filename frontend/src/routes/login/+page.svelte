@@ -20,7 +20,6 @@
 			console.log(urlParams.get("code"));
 			await axios.post(`${API_URL}/auth/connexion`, {code : urlParams.get("code")})
 			.then(async (res) => {
-				console.log(res);
 				setJwt(res.data.access_token);
 				await axios.get(`${API_URL}/auth/me`, {headers : { Authorization : `Bearer ${getJwt()}` }})
 				.then(async (res) => {

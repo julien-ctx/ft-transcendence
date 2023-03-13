@@ -43,6 +43,9 @@
 	let gameLeftPaddle: Paddle;
 	let gameRightPaddle: Paddle;
 	let gameBall: Ball;
+	let gameOpponentLogin: string = '';
+	let gamePlayerLogin: string = '';
+	let gamePlayerSide: number = 0;
 	
 	let playerNumber: number = 0;
 
@@ -113,7 +116,7 @@
 			if (currMsg == 1 || currMsg == 2 || currMsg == 3)
 				ctx.font = 'bold ' + canvas.width * 0.1 + 'px Audiowide';
 			else
-				ctx.font = 'bold ' + canvas.width * 0.03 + 'px Audiowide';
+				ctx.font = 'bold ' + canvas.width * 0.04 + 'px Audiowide';
 			clearCanvas();
 			ctx.fillText(currMsg, canvas.width / 2 - ctx.measureText(currMsg).width / 2, canvas.height / 2);
 		}
@@ -158,7 +161,7 @@
 	}
 		
 	function drawScores(leftScore: number, rightScore: number) {
-		ctx.font = 'bold ' + canvas.width * 0.03 + 'px Audiowide';
+		ctx.font = 'bold ' + canvas.width * 0.04 + 'px Audiowide';
 		ctx.fillText(leftScore, canvas.width * 0.4, canvas.height * 0.1);
 		ctx.fillText(rightScore, canvas.width * 0.6 - ctx.measureText(rightScore).width, canvas.height * 0.1);
 	}
@@ -173,7 +176,7 @@
 			clearCanvas();
 		}
 		currMsg = null;
-		ctx.font = 'bold ' + canvas.width * 0.03 + 'px Audiowide';
+		ctx.font = 'bold ' + canvas.width * 0.04 + 'px Audiowide';
 	}
 
 	function drawWaitingForOpponent() {
@@ -243,7 +246,7 @@
 		currMsg = null;	
 	}
 
-	async function startGame(login: string, side: number) {
+	async function startGame() {
 		socket.on('paddlesData', ({leftPaddle, rightPaddle}) => {
 			gameLeftPaddle = leftPaddle;
 			gameRightPaddle = rightPaddle;
@@ -278,8 +281,11 @@
 			await drawWinner(winMsg);
 			playAgain();
 		});
-		await drawOpponent('Your opponent is ' + login);
-		await drawSide(side);
+		if (gamePlayerSide === -1) {
+			await drawOpponent(`${gamePlayerLogin} VS ${gameOpponentLogin}`);
+		} else {
+			await drawOpponent(`${gameOpponentLogin} VS ${gamePlayerLogin}`);
+		}
 		await drawCounter();
 		canvas.addEventListener('mousemove', handleMouseMove);
 		socket.emit('gameLoop', {});
@@ -289,15 +295,18 @@
 	async function isReady() {
 		if (!gameStarted) {
 			gameStarted = true;
-			socket.on('foundOpponent', ({login, leftPaddle, rightPaddle, ball, side}) => {
+			socket.on('foundOpponent', ({opponentLogin, playerLogin, leftPaddle, rightPaddle, ball, playerSide}) => {
 				currMsg = null;
 				gameLeftPaddle = leftPaddle;
 				gameRightPaddle = rightPaddle;
 				gameBall = ball;
-				dataInit = true;
-				startGame(login, side);
+				gameOpponentLogin = opponentLogin;
+				gamePlayerLogin = playerLogin;
+				gamePlayerSide = playerSide
+				dataInit = true;	
+				startGame();
 			});
-			socket.emit('ready', { width: canvas.width, height: canvas.height, playerNumber, botLevel });
+			socket.emit('ready', {width: canvas.width, height: canvas.height, playerNumber, botLevel});
 			if (playerNumber === 2) {
 				drawWaitingForOpponent();
 			}
@@ -323,7 +332,7 @@
 		canvas.height = window.innerHeight * 0.8;
 		ctx = canvas.getContext('2d');
 		if (!ctx) return;
-		ctx.font = canvas.width * 0.03 + 'px Audiowide';
+		ctx.font = canvas.width * 0.04 + 'px Audiowide';
 		ctx.fillStyle = OBJ_COLOR;
 	
 		containerCanvas.appendChild(canvas)

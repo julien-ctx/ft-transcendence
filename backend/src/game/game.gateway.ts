@@ -129,13 +129,17 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 			} else if (winner === game.leftClient.user.login) {
 				// game.leftClient.socket.on('gameStoredInDB', ({}) => {
 					game.leftClient.socket.emit('winner', {winner: winner, side: -1, forfeit: false});
-					game.rightClient.socket.emit('winner', {winner: winner, side: -1, forfeit: false});
+					if (game.rightClient) {
+						game.rightClient.socket.emit('winner', {winner: winner, side: -1, forfeit: false});
+					}
 				// });
 				// await this.storeGameInDB(game, game.leftClient);
 			} else if (winner === game.rightClient.user.login){
 				// game.leftClient.socket.on('gameStoredInDB', ({}) => {
 					game.leftClient.socket.emit('winner', {winner: winner, side: 1, forfeit: false});
-					game.rightClient.socket.emit('winner', {winner: winner, side: 1, forfeit: false});
+					if (game.rightClient) {
+						game.rightClient.socket.emit('winner', {winner: winner, side: 1, forfeit: false});
+					}
 				// });
 				// await this.storeGameInDB(game, game.rightClient);
 			}
@@ -219,29 +223,29 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		if (gameReady) {
 			if (data.playerNumber == 2) {
 				game.leftClient.socket.emit('foundOpponent', {
-					login: game.rightClient.user.login,
+					opponentLogin: game.rightClient.user.login,
+					playerLogin: game.leftClient.user.login,
 					leftPaddle: game.leftClient.leftPaddle,
 					rightPaddle: game.leftClient.rightPaddle,
 					ball: game.leftClient.ball,
-					side: -1,
-					maxScore: MAX_SCORE
+					playerSide: -1,
 				});
 				game.rightClient.socket.emit('foundOpponent', {
-					login: game.leftClient.user.login,
+					opponentLogin: game.leftClient.user.login,
+					playerLogin: game.rightClient.user.login,
 					leftPaddle: game.rightClient.leftPaddle,
 					rightPaddle: game.rightClient.rightPaddle,
 					ball: game.rightClient.ball,
-					side: 1,
-					maxScore: MAX_SCORE
+					playerSide: 1,
 				});
 			} else if (data.playerNumber === 1) {
 				socket.emit('foundOpponent', {
-					login: 'the bot',
+					opponentLogin: 'Bot',
+					playerLogin: client.user.login,
 					leftPaddle: client.leftPaddle,
 					rightPaddle: client.rightPaddle,
 					ball: client.ball,
-					side: -1,
-					maxScore: MAX_SCORE
+					playerSide: -1,
 				});
 			}	
 		}

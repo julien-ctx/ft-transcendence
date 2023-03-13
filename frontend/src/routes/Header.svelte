@@ -12,6 +12,7 @@
     import { io } from 'socket.io-client';
     import Notifications from '../modules/notifications.svelte';
     import { API_URL } from '$lib/env';
+    import axios from 'axios';
 	
 
 	let myProfile : any;
@@ -42,7 +43,13 @@
 				goto("/login")
 			}
 		})
-
+		await axios.get(`${API_URL}/users/get10GameHistory`, { headers : {
+				Authorization : `Bearer ${getJwt()}`
+			}
+		})
+		.then((res) => {
+			console.log(res);
+		})
 		await GetAllUsers()
 		.then((res) => {
 			usersDataStore.set(res.data);

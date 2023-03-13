@@ -511,6 +511,27 @@ button,
 	}
 }
 
+.container-home {
+	margin: 50px auto;
+	h2 {
+		font-size: 32px;
+		font-family: 'Audiowide';
+	}
+	.container-game {
+		margin: 20px auto;
+		max-width: 800px;
+		.content-game {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			gap: 20px;
+			>.shadow-md {
+				width: 100%;
+			}
+		}
+	}
+}
+
 .header-user-card {
 	font-family: "Audiowide";
 	font-weight: 700;

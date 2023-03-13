@@ -23,6 +23,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	private queue: WaitingClient[] = [];
 	private games: Game[] = [];
 	private interval: any = null;
+	private tests: boolean = false;
 
 	@WebSocketServer() server: Server;
 
@@ -119,20 +120,26 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		});
 	}
 	
+	
 	async gameLoop(game: Game) {
 		const winner = this.gameService.checkBallPosition(game, this.gameService.randomBallDirection());
 		if (winner !== 'NoWinner') {
 			if (winner === 'Bot') {
 				game.leftClient.socket.emit('winner', {winner: winner, side: 1, forfeit: false});
 			} else if (winner === game.leftClient.user.login) {
-				this.storeGameInDB(game, game.leftClient);
-				game.leftClient.socket.emit('winner', {winner: winner, side: -1, forfeit: false});
-				game.rightClient.socket.emit('winner', {winner: winner, side: -1, forfeit: false});
-			} else {
-				this.storeGameInDB(game, game.rightClient);
-				game.leftClient.socket.emit('winner', {winner: winner, side: 1, forfeit: false});
-				game.rightClient.socket.emit('winner', {winner: winner, side: 1, forfeit: false});
+				// game.leftClient.socket.on('gameStoredInDB', ({}) => {
+					game.leftClient.socket.emit('winner', {winner: winner, side: -1, forfeit: false});
+					game.rightClient.socket.emit('winner', {winner: winner, side: -1, forfeit: false});
+				// });
+				// await this.storeGameInDB(game, game.leftClient);
+			} else if (winner === game.rightClient.user.login){
+				// game.leftClient.socket.on('gameStoredInDB', ({}) => {
+					game.leftClient.socket.emit('winner', {winner: winner, side: 1, forfeit: false});
+					game.rightClient.socket.emit('winner', {winner: winner, side: 1, forfeit: false});
+				// });
+				// await this.storeGameInDB(game, game.rightClient);
 			}
+			return;
 		}
 
 		this.gameService.updateBall(game.leftClient);
@@ -216,14 +223,16 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 					leftPaddle: game.leftClient.leftPaddle,
 					rightPaddle: game.leftClient.rightPaddle,
 					ball: game.leftClient.ball,
-					side: -1
+					side: -1,
+					maxScore: MAX_SCORE
 				});
 				game.rightClient.socket.emit('foundOpponent', {
 					login: game.leftClient.user.login,
 					leftPaddle: game.rightClient.leftPaddle,
 					rightPaddle: game.rightClient.rightPaddle,
 					ball: game.rightClient.ball,
-					side: 1
+					side: 1,
+					maxScore: MAX_SCORE
 				});
 			} else if (data.playerNumber === 1) {
 				socket.emit('foundOpponent', {
@@ -231,7 +240,8 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 					leftPaddle: client.leftPaddle,
 					rightPaddle: client.rightPaddle,
 					ball: client.ball,
-					side: -1
+					side: -1,
+					maxScore: MAX_SCORE
 				});
 			}	
 		}

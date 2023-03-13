@@ -43,7 +43,6 @@
 	let gameLeftPaddle: Paddle;
 	let gameRightPaddle: Paddle;
 	let gameBall: Ball;
-	let gameSide: number = 0;
 	
 	let playerNumber: number = 0;
 
@@ -81,7 +80,8 @@
 					allUsers.push(data)
 					usersDataStore.set(allUsers);
 				}
-			} 
+			}
+			socket.emit('gameStoredInDB', ({}));
 		})
 	}
 
@@ -103,6 +103,9 @@
 			width: window.innerWidth,
 			height: window.innerHeight,
 		});
+		if (!canvas) {
+			return console.log('canvas undefined');
+		}
 		canvas.width = window.innerWidth * 0.7;
 		canvas.height = window.innerHeight * 0.8;
 		ctx.fillStyle = OBJ_COLOR;
@@ -257,7 +260,7 @@
 			dataInit = false;
 			if (side === 1) {
 				gameRightPaddle.score++;
-			} else {
+			} else if (side === -1) {
 				gameLeftPaddle.score++;
 			}
 			clearCanvas();
@@ -291,7 +294,6 @@
 				gameLeftPaddle = leftPaddle;
 				gameRightPaddle = rightPaddle;
 				gameBall = ball;
-				gameSide = side;
 				dataInit = true;
 				startGame(login, side);
 			});

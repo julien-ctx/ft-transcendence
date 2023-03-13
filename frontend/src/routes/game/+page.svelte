@@ -5,6 +5,7 @@
     import { getJwt, removeJwt } from "$lib/jwtUtils";
 	import io, { Socket } from 'socket.io-client';
     import { API_URL } from "$lib/env";
+    import { userProfileDataStore, usersDataStore } from "$lib/store/user";
 
 	const OBJ_COLOR: string = "#dcd3bc";
 	const BALL_COLOR: string = "#e36c5d";
@@ -50,6 +51,39 @@
 	let animationFrame: any;
 	let currMsg: any;
 
+	let userProfile : any;
+	let allUsers : any;
+
+	usersDataStore.subscribe(val => allUsers = val);
+	userProfileDataStore.subscribe(val => userProfile = val);
+
+	function connectSocket() {
+		socket = io(API_URL, {
+			path: '/pong',
+			query: { token: jwt}
+		});
+
+		socket.on("user_update", (data : any) => {
+			console.log('data: ', data);
+			if (data.id && userProfile.id && data.id == userProfile.id)
+				userProfileDataStore.set(data);
+			if (allUsers && allUsers.length != 0) {
+				let arrId : number [] = [];
+				for (let i = 0; i < allUsers.length; i++) {
+					if (allUsers[i].id == data.id) {
+						allUsers[i] = data;
+						usersDataStore.set(allUsers)
+						arrId.push(data.id);
+					}
+				}
+				if (arrId && !arrId.includes(data.id)) {
+					allUsers.push(data)
+					usersDataStore.set(allUsers);
+				}
+			} 
+		})
+	}
+
 	onMount(async () => {
 		AuthGuard()
 		.then((res) => {
@@ -60,11 +94,8 @@
 			goto("/login")
 		})
 		jwt = getJwt();
-		socket = io(API_URL, {
-				path: '/pong',
-				query: { token: jwt}
-			});
-		});
+		connectSocket();
+	});	
 	
 	function handleResize() {
 		socket.emit('resize', {
@@ -162,7 +193,7 @@
 		);
 	}
 
-	async function drawOpponent(opponentMsg: string, image: string) {
+	async function drawOpponent(opponentMsg: string) {
 		clearCanvas();
 		currMsg = opponentMsg;
 		ctx.fillText(
@@ -170,11 +201,6 @@
 			canvas.width / 2 - ctx.measureText(currMsg).width / 2,
 			canvas.height / 2 
 		);
-		var img = new Image();
-		img.src = image;
-		img.onload = function () {
-			ctx.drawImage(img, canvas.width / 2 - 50, canvas.height / 2 + 20, 100, 100);
-		};
 		await new Promise(r => setTimeout(r, 2000));
 		currMsg = null;
 	}
@@ -213,7 +239,7 @@
 		animationFrame = requestAnimationFrame(gameLoop);
 	}
 
-	async function startGame(login: string, image: string) {
+	async function startGame(login: string) {
 		socket.on('paddlesData', ({leftPaddle, rightPaddle}) => {
 			gameLeftPaddle = leftPaddle;
 			gameRightPaddle = rightPaddle;
@@ -236,10 +262,7 @@
 			clearCanvas();
 			removeEvents();
 			socket.disconnect();
-			socket = io(API_URL, {
-				path: '/pong',
-				query: { token: jwt}
-			});
+			connectSocket();
 			drawScores(gameLeftPaddle.score, gameRightPaddle.score);
 			gameLeftPaddle.score = 0;	
 			gameRightPaddle.score = 0;
@@ -251,7 +274,7 @@
 			await drawWinner(winMsg);
 			playAgain();
 		});
-		await drawOpponent('Your opponent is ' + login, image);
+		await drawOpponent('Your opponent is ' + login);
 		await drawCounter();
 		canvas.addEventListener('mousemove', handleMouseMove);
 		socket.emit('gameLoop', {});
@@ -267,7 +290,7 @@
 				gameRightPaddle = rightPaddle;
 				gameBall = ball;
 				dataInit = true;
-				startGame(login, image);
+				startGame(login);
 			});
 			socket.emit('ready', { width: canvas.width, height: canvas.height, playerNumber, botLevel });
 			if (playerNumber === 2) {

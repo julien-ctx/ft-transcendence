@@ -177,7 +177,7 @@ export class GameService {
 				game.rightClient.rightPaddle.score++;
 			}
 			if (game.leftClient.rightPaddle.score === game.maxScore) {
-				return game.playerNumber === 1 ? 'Bot' : game.rightClient.user['login'];
+				return game.playerNumber === 1 ? 'Bot' : game.rightClient.user.login;
 			}
 		}
 		else if (game.leftClient.ball.x > game.leftClient.canvas.width - game.leftClient.ball.size) {
@@ -192,7 +192,7 @@ export class GameService {
 				game.rightClient.leftPaddle.score++;
 			}
 			if (game.leftClient.leftPaddle.score === game.maxScore) {
-				return game.leftClient.user['login'];
+				return game.leftClient.user.login;
 			}
 		}
 		return 'NoWinner';

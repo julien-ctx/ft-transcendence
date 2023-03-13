@@ -44,7 +44,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		if (!this.removeFromQueue(socket)) {
 			const WinnerByForfeit: any = this.removeFromGame(socket);
 			if (WinnerByForfeit.client) {
-				WinnerByForfeit.client.socket.emit('winner', {winner: WinnerByForfeit.client.user['login'], side: WinnerByForfeit.side, forfeit: true});
+				WinnerByForfeit.client.socket.emit('winner', {winner: WinnerByForfeit.client.user.login, side: WinnerByForfeit.side, forfeit: true});
 			}
 			if (this.interval) {
 				clearInterval(this.interval);
@@ -79,93 +79,61 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		});
 		return {client: client, side: side};
 	}
+
+	async storeGameInDB(game: Game, winnerClient: Client) {
+		await this.prismaService.gameHistory.create({
+			data : {
+				user : {
+					connect : [
+						{id : game.leftClient.user.id},
+						{id : game.rightClient.user.id},
+					]
+				},
+				score_user1 : game.leftClient.leftPaddle.score,
+				score_user2 : game.rightClient.rightPaddle.score,
+				id_user_winner : winnerClient.user.id
+			},
+			include : {
+				user : true
+			}
+		});
+		await this.prismaService.user.update({
+			where : {
+				id : winnerClient.user.id
+			},
+			data : {
+				totalGames : winnerClient.user.totalGames + 1,
+				totalGamesWin : winnerClient.user.totalGamesWin + 1,
+				level : winnerClient.user.level + 0.42,
+				winrate : winnerClient.user.totalGamesWin * 100 / winnerClient.user.totalGames,	
+			},
+			include : {
+				gameHistory : true,
+				notification : true,
+				roomMp : true,
+				RoomToUser : true
+			}
+		})
+		.then((userUpdate : User) => {
+			this.server.emit("user_update", userUpdate);
+		});
+	}
 	
 	async gameLoop(game: Game) {
 		const winner = this.gameService.checkBallPosition(game, this.gameService.randomBallDirection());
 		if (winner !== 'NoWinner') {
 			if (winner === 'Bot') {
-				game.leftClient.socket.emit('winner', {winner: winner, side: 1});
-			} else if (winner === game.leftClient.user['login']) {
-				await this.prismaService.gameHistory.create({
-					data : {
-						user : {
-							connect : [
-								{id : game.leftClient.user.id},
-								{id : game.rightClient.user.id},
-							]
-						},
-						score_user1 : game.leftClient.leftPaddle.score,
-						score_user2 : game.rightClient.rightPaddle.score,
-						id_user_winner : game.leftClient.user.id
-					},
-					include : {
-						user : true
-					}
-				})
-				// Calculer le winrate, voir si le user vas depasser le level actuel, actualiser le ranking si les lp depasse le palier
-				await this.prismaService.user.update({
-					where : {
-						id : game.leftClient.user.id
-					},
-					data : {
-						totalGames : game.leftClient.user.totalGames + 1,
-						totalGamesWin : game.leftClient.user.totalGamesWin + 1,
-					},
-					include : {
-						gameHistory : true,
-						notification : true,
-						roomMp : true,
-						RoomToUser : true
-					}
-				})
-				.then((userUpdate : User) => {
-					this.server.emit("user_update", userUpdate);
-				})	
-				game.leftClient.socket.emit('winner', {winner: winner, side: -1});
-				if (game.rightClient) {
-					game.rightClient.socket.emit('winner', {winner: winner, side: -1});
-				}
+				game.leftClient.socket.emit('winner', {winner: winner, side: 1, forfeit: false});
+			} else if (winner === game.leftClient.user.login) {
+				this.storeGameInDB(game, game.leftClient);
+				await new Promise(r => setTimeout(r, 100));
+				game.leftClient.socket.emit('winner', {winner: winner, side: -1, forfeit: false});
+				game.rightClient.socket.emit('winner', {winner: winner, side: -1, forfeit: false});
 			} else {
-				await this.prismaService.gameHistory.create({
-					data : {
-						user : {
-							connect : [
-								{id : game.rightClient.user.id},
-								{id : game.leftClient.user.id},
-							]
-						},
-						score_user1 : game.rightClient.leftPaddle.score,
-						score_user2 : game.leftClient.rightPaddle.score,
-						id_user_winner : game.rightClient.user.id
-					},
-					include : {
-						user : true
-					}
-				})
-				// Calculer le winrate, voir si le user vas depasser le level actuel, actualiser le ranking si les lp depasse le palier
-				await this.prismaService.user.update({
-					where : {
-						id : game.rightClient.user.id
-					},
-					data : {
-						totalGames : game.rightClient.user.totalGames + 1,
-						totalGamesWin : game.rightClient.user.totalGamesWin + 1,
-					},
-					include : {
-						gameHistory : true,
-						notification : true,
-						roomMp : true,
-						RoomToUser : true
-					}
-				})
-				.then((userUpdate : User) => {
-					this.server.emit("user_update", userUpdate);
-				})
-				
-				game.leftClient.socket.emit('winner', {winner: winner, side: 1});
-				if (game.rightClient) {
-					game.rightClient.socket.emit('winner', {winner: winner, side: 1});
-				}
+				this.storeGameInDB(game, game.rightClient);
+				await new Promise(r => setTimeout(r, 100));
+				game.leftClient.socket.emit('winner', {winner: winner, side: 1, forfeit: false});
+				game.rightClient.socket.emit('winner', {winner: winner, side: 1, forfeit: false});
 			}
 		}
 
@@ -175,7 +143,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		game.leftClient.socket.emit('paddlesData', {leftPaddle: game.leftClient.leftPaddle, rightPaddle: game.leftClient.rightPaddle});
 		game.leftClient.socket.emit('ballData', {ball: game.leftClient.ball});
 		game.leftClient.socket.emit('scoresData', {leftScore: game.leftClient.leftPaddle.score, rightScore: game.leftClient.rightPaddle.score});
-		if (game.playerNumber === 2) {	
+		if (game.playerNumber === 2) {
 			this.gameService.updateBall(game.rightClient);
 			this.gameService.movePaddles(game.rightClient.leftPaddle, game.rightClient.canvas);
 			this.gameService.syncObjects(game.leftClient, game.rightClient);
@@ -215,7 +183,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 			gameReady = true;
 		} else if (this.games.find(game => game.playerNumber === 2 && game.rightClient === null)) {
 			game = this.games.find(game => game.playerNumber === 2 && game.rightClient === null
-			&& client.user['login'] != game.leftClient.user['login']);
+			&& client.user.login != game.leftClient.user.login);
 			client.side = 1;
 			game.rightClient = client;
 			gameReady = true;
@@ -223,7 +191,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 			client.side = -1;
 			this.games.push(new Game(client, null, 2, MAX_SCORE, data.botLevel));
 		}
-		socket.on('resize',  ({width, height}) => {
+		socket.on('resize', ({width, height}) => {
 			this.gameService.handleResize(
 				client,
 				width,
@@ -257,15 +225,13 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		if (gameReady) {
 			if (data.playerNumber == 2) {
 				game.leftClient.socket.emit('foundOpponent', {
-					login: game.rightClient.user['login'],
-					image: game.rightClient.user['img_link'],
+					login: game.rightClient.user.login,
 					leftPaddle: game.leftClient.leftPaddle,
 					rightPaddle: game.leftClient.rightPaddle,
 					ball: game.leftClient.ball,
 				});
 				game.rightClient.socket.emit('foundOpponent', {
-					login: game.leftClient.user['login'],
-					image: game.leftClient.user['img_link'],
+					login: game.leftClient.user.login,
 					leftPaddle: game.rightClient.leftPaddle,
 					rightPaddle: game.rightClient.rightPaddle,
 					ball: game.rightClient.ball,
@@ -273,7 +239,6 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 			} else if (data.playerNumber === 1) {
 				socket.emit('foundOpponent', {
 					login: 'the bot',
-					image: 'https://cdn-icons-png.flaticon.com/512/4711/4711987.png',
 					leftPaddle: client.leftPaddle,
 					rightPaddle: client.rightPaddle,
 					ball: client.ball,

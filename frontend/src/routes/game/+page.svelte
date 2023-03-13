@@ -43,6 +43,7 @@
 	let gameLeftPaddle: Paddle;
 	let gameRightPaddle: Paddle;
 	let gameBall: Ball;
+	let gameSide: number = 0;
 	
 	let playerNumber: number = 0;
 
@@ -64,6 +65,7 @@
 		});
 
 		socket.on("user_update", (data : any) => {
+			console.log(data);
 			if (data.id && userProfile.id && data.id == userProfile.id)
 				userProfileDataStore.set(data);
 			if (allUsers && allUsers.length != 0) {
@@ -226,7 +228,19 @@
 		animationFrame = requestAnimationFrame(gameLoop);
 	}
 
-	async function startGame(login: string) {
+	async function drawSide(side: number) {
+		clearCanvas();
+		currMsg = side < 0 ? 'You play on the left' : 'You play on the right';
+		ctx.fillText(
+			currMsg,
+			canvas.width / 2 - ctx.measureText(currMsg).width / 2,
+			canvas.height / 2 
+		);
+		await new Promise(r => setTimeout(r, 2000));
+		currMsg = null;	
+	}
+
+	async function startGame(login: string, side: number) {
 		socket.on('paddlesData', ({leftPaddle, rightPaddle}) => {
 			gameLeftPaddle = leftPaddle;
 			gameRightPaddle = rightPaddle;
@@ -262,6 +276,7 @@
 			playAgain();
 		});
 		await drawOpponent('Your opponent is ' + login);
+		await drawSide(side);
 		await drawCounter();
 		canvas.addEventListener('mousemove', handleMouseMove);
 		socket.emit('gameLoop', {});
@@ -271,13 +286,14 @@
 	async function isReady() {
 		if (!gameStarted) {
 			gameStarted = true;
-			socket.on('foundOpponent', ({login, image, leftPaddle, rightPaddle, ball}) => {
+			socket.on('foundOpponent', ({login, leftPaddle, rightPaddle, ball, side}) => {
 				currMsg = null;
 				gameLeftPaddle = leftPaddle;
 				gameRightPaddle = rightPaddle;
 				gameBall = ball;
+				gameSide = side;
 				dataInit = true;
-				startGame(login);
+				startGame(login, side);
 			});
 			socket.emit('ready', { width: canvas.width, height: canvas.height, playerNumber, botLevel });
 			if (playerNumber === 2) {

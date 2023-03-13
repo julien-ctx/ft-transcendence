@@ -11,5 +11,6 @@ game:
 		protectection rightclient
 		time before ball launch
 		donner cote
+		ball rebond
 		randomBallDirection ?
 		

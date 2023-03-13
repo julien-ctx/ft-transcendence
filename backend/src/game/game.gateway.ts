@@ -7,7 +7,7 @@ import { User } from "@prisma/client";
 import { Server, Socket } from "socket.io";
 import { PrismaService } from "src/prisma/prisma.service";
 
-const MAX_SCORE = 20;
+const MAX_SCORE = 2;
 
 @WebSocketGateway({
 	cors: true,
@@ -126,12 +126,10 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 				game.leftClient.socket.emit('winner', {winner: winner, side: 1, forfeit: false});
 			} else if (winner === game.leftClient.user.login) {
 				this.storeGameInDB(game, game.leftClient);
-				// await new Promise(r => setTimeout(r, 100));
 				game.leftClient.socket.emit('winner', {winner: winner, side: -1, forfeit: false});
 				game.rightClient.socket.emit('winner', {winner: winner, side: -1, forfeit: false});
 			} else {
 				this.storeGameInDB(game, game.rightClient);
-				// await new Promise(r => setTimeout(r, 100));
 				game.leftClient.socket.emit('winner', {winner: winner, side: 1, forfeit: false});
 				game.rightClient.socket.emit('winner', {winner: winner, side: 1, forfeit: false});
 			}
@@ -218,12 +216,14 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 					leftPaddle: game.leftClient.leftPaddle,
 					rightPaddle: game.leftClient.rightPaddle,
 					ball: game.leftClient.ball,
+					side: -1
 				});
 				game.rightClient.socket.emit('foundOpponent', {
 					login: game.leftClient.user.login,
 					leftPaddle: game.rightClient.leftPaddle,
 					rightPaddle: game.rightClient.rightPaddle,
 					ball: game.rightClient.ball,
+					side: 1
 				});
 			} else if (data.playerNumber === 1) {
 				socket.emit('foundOpponent', {
@@ -231,6 +231,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 					leftPaddle: client.leftPaddle,
 					rightPaddle: client.rightPaddle,
 					ball: client.ball,
+					side: -1
 				});
 			}	
 		}

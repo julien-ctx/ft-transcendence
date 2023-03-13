@@ -7,7 +7,7 @@
     import { myProfileDataStore, userProfileDataStore, usersDataStore } from "$lib/store/user";
     import { io } from 'socket.io-client';
     import Members from '../../../modules/admin.svelte';
-    import { socketMpStore, socketUserStore } from "$lib/store/socket";
+    import { socketMpStore, socketRoomStore, socketUserStore } from "$lib/store/socket";
     import SvgMsg from "../svgComponent/svgMsg.svelte";
     import ChanModal from "./chanModal.svelte";
     import { API_URL } from "$lib/env";
@@ -60,7 +60,6 @@
     socketUserStore.subscribe(val => socketUser = val);
 
     onMount(async () => {
-        let token : string = getJwt();
         try {
             await axios.get(`${API_URL}/Chat/getRooms`, {
                 headers: {
@@ -76,7 +75,7 @@
         socket = io(`${API_URL}`, {
             path : '/chat',
             query : {
-                token : token,
+                token : getJwt(),
             }
         });
 
@@ -84,7 +83,9 @@
                 close();
         })
 
-        socket.on('rooms', (receivedRoom : string) => {
+        socket.on('rooms', (receivedRoom : any) => {
+            console.log(receivedRoom);
+            
             rooms = [...rooms, receivedRoom];
         });
 
@@ -101,6 +102,11 @@
 		})
 
 		socket.on('deletedRoom', (receivedRoom : string) => {
+            console.log(currentRoom, receivedRoom);
+            
+            if (chat && currentRoom.name == receivedRoom) {
+                currentRoom = null;
+            }
 			rooms = rooms.filter((room : any) => room.name !== receivedRoom);
 		});
 
@@ -112,6 +118,8 @@
                 return room;
             });
         })
+
+        socketRoomStore.set(socket);
     })
 
     function createRoom() {
@@ -166,9 +174,12 @@
     }
 
 	function leaveRoom(room : any) {
-		socket.emit('leaveRoom', {
-			roomName : room.name,
-		});
+        if (room && room.name) {
+            socket.emit('leaveRoom', {
+			    roomName : room.name,
+		    });
+        }
+        dropdownAdminOpen = false;
 	}
 
     async function updateCurrentRoom(room : any) {
@@ -254,7 +265,7 @@
                                         </button>
                                     </DropdownItem>
                                     <DropdownItem  defaultClass="button-rooms">
-                                        <button class="bg-primary border-none rounded-none p-2 font-sm hover:bg-secondary text-sm w-full text-left" on:click={() => {leaveRoom(room); dropdownAdminOpen = false;}}>
+                                        <button class="bg-primary border-none rounded-none p-2 font-sm hover:bg-secondary text-sm w-full text-left" on:click={() => {leaveRoom(room);}}>
                                             Leave room
                                         </button>
                                     </DropdownItem>

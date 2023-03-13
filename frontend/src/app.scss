@@ -511,11 +511,33 @@ button,
 	}
 }
 
+.card-private {
+	display: flex;
+	align-items: center;
+	p {
+		margin: 0 20px;
+		width: 100px;
+	}
+	button {
+		background-color: $secondary;
+		padding: 5px 10px;
+		font-size: 14px;
+		border-radius: 7px;
+		transition: 300ms all ease-in-out;
+		margin: 0 auto;
+		&:hover {
+			color: $third;
+			background-color: $primary;
+		}
+	}
+}
+
 .container-home {
 	margin: 50px auto;
 	h2 {
 		font-size: 32px;
 		font-family: 'Audiowide';
+		margin-bottom: 20px;
 	}
 	.container-game {
 		margin: 20px auto;

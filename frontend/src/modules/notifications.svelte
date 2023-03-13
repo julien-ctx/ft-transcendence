@@ -1,14 +1,19 @@
 <script lang="ts">
     import { Avatar, Dropdown } from "flowbite-svelte";
     import { myNotifLength, myProfileDataStore } from '$lib/store/user';
-    import { socketFriendStore, socketMpStore, socketUserStore } from "$lib/store/socket";
+    import { socketFriendStore, socketMpStore, socketRoomStore, socketUserStore } from "$lib/store/socket";
     import { GetAllUsers, GetOneUser } from "$lib/userUtils";
     import SvgAdd from "./htmlComponent/svgComponent/svgAdd.svelte";
     import SvgDelete from "./htmlComponent/svgComponent/svgDelete.svelte";
+    import { onMount } from "svelte";
+    import { io } from "socket.io-client";
+    import { API_URL } from "$lib/env";
+    import { getJwt } from "$lib/jwtUtils";
 
 	let socketFriend : any;
 	let socketUser : any;
 	let socketMp : any;
+	let socketRoom : any;
 	let myProfile : any;
 	let countNotif : any;
 	let openDropdown : boolean = false;
@@ -18,6 +23,7 @@
 	socketFriendStore.subscribe(val => socketFriend = val);
 	socketUserStore.subscribe(val => socketUser = val);
 	socketMpStore.subscribe(val => socketMp = val);
+	socketRoomStore.subscribe(val => socketRoom = val);
 
 	async function blockUser(notif : any) {
 		await GetAllUsers()
@@ -43,6 +49,12 @@
 
 	async function handleDeleteMp(notif : any) {
 		socketUser.emit("delete-notification", {id_notif : notif.id, user : myProfile});
+	}
+
+	async function handleViewRoomPrivate(notif : any) {
+		socketRoom.emit("joinInvite", {roomName : notif.name_room_private})
+		socketUser.emit("delete-notification", {id_notif : notif.id, user : myProfile});
+
 	}
 
 </script>
@@ -110,8 +122,32 @@
 							View
 						</button>
 					</div>
+				{:else if notif.type == 2}
+					<div class="flex gap-5">
+						<div>
+							<button class="button-card-user">...</button>
+							<Dropdown class="w-36">
+								<button on:click={() => blockUser(notif)} class="rounded p-1 !bg-primary rounded !hover:bg-primary hover:text-third transition-colors duration-300">
+									Block user
+								</button>
+							</Dropdown>
+							<Avatar src={notif.img_link} class="object-cover bg-transparent" rounded/>
+						</div>
+						<div class="text-notif flex flex-col items-center justify-end">
+							<p>New invite to join channel {notif.name_room_private} from</p>
+							<a href="/user?id={notif.id_user_send}" class="capitalize hover:text-third transition-colors duration-300">{notif.login_send}</a>
+						</div>
+					</div>
+					<div class="flex justify-center gap-5 mt-2">
+						<button on:click={() => handleDeleteMp(notif)}>
+							Delete
+						</button>
+						<button on:click={() => handleViewRoomPrivate(notif)}>
+							View
+						</button>
+					</div>
 				{/if}
-			</div>
+				</div>
 			{/each}
 	</Dropdown>
 {/if}

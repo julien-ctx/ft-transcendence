@@ -239,8 +239,26 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 						id: User.id,
 					}
 				},
+			},
+			include : {
+				user : true
 			}
 		});
+		this.Client.forEach((elem) => {
+			if (elem.user.id === User.id_user) {
+				elem.client.emit('rooms', {
+					name : Room.name,
+					owner : false,
+					status : Room.status,
+					admin : false,
+				})
+			}
+		})
+		this.server.emit('newMembers', {
+			member : createRelation,
+			roomName : Room.name,
+		});
+
 	}
 
 	@SubscribeMessage('leaveRoom')
@@ -262,33 +280,43 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 				id_room: room.id,
 			}
 		});
-		
-		if (relation.length === 1) {
-			await this.prisma.roomToUser.delete({
-				where: {
-					id: relation[0].id,
+		if (relation[0].owner === true) {
+			await this.prisma.roomToUser.deleteMany({
+				where : {
+					id_room : room.id,
 				}
-			});
+			})
 			await this.prisma.banned.deleteMany({
-				where: {
-					id_room: room.id,
+				where : {
+					id_room : room.id,
 				}
-			});
+			})
+			await this.prisma.messageRoom.deleteMany({
+				where : {
+					id_room : room.id,
+				}
+			})
 			await this.prisma.room.delete({
 				where: {
 					id: room.id,
 				}
 			});
-		}
-		else if (relation.length > 1) {
+			this.server.emit('deletedRoom', data.roomName);
+			return ;
+		} else {
 			await this.prisma.roomToUser.delete({
 				where: {
 					id: relation[0].id,
 				}
 			});
+			await this.prisma.messageRoom.deleteMany({
+				where : {
+					id_user : User.id_user
+				}
+			})
 		}
-		
 		client.emit('deletedRoom', data.roomName);
+		
 	}
 
 	@SubscribeMessage('Message')

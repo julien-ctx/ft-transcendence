@@ -4,6 +4,7 @@
     import HeaderUserCard from "../../modules/htmlComponent/headerUserCard.svelte";
     import { myProfileDataStore, userProfileDataStore, usersDataStore } from "$lib/store/user";
     import { onMount } from "svelte";
+    import GameHistory from "./gameHistory.svelte";
 
 	export let user : any;
 	let allUsers : any;
@@ -79,26 +80,7 @@
 	<TabItem title="History" defaultClass="w-full">
 		<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
 			{#if user.gameHistory}
-				{#each user.gameHistory as game}
-					<div class="flex justify-between items-center max-w-lg shadow-md p-5 rounded">
-						<div>
-							<Avatar size="lg" src={game.user[0].img_link} class="object-cover bg-transparent" rounded/>
-							<p class="capitalize font-medium text-center">{game.user[0].login}</p>
-						</div>
-						<div class="flex flex-col items-center">
-							<p class="font-bold text-3xl">VS</p>
-							{#if game.id_user_winner == game.user[0].id}
-								<p class="font-medium text-2xl"><span class="text-green-500">{game.score_user1}</span> - <span class="text-red-500">{game.score_user2}</span></p>
-							{:else}
-								<p class="font-medium text-2xl"><span class="text-green-500">{game.score_user1}</span> - <span class="text-red-500">{game.score_user2}</span></p>
-							{/if}
-						</div>
-						<div>
-							<Avatar size="lg" src={game.user[1].img_link} class="object-cover bg-transparent" rounded/>
-							<p class="capitalize font-medium text-center">{game.user[1].login}</p>
-						</div>
-					</div>
-				{/each}
+				<GameHistory gameHistory={user.gameHistory} />
 			{/if}
 		</div>
 	</TabItem>

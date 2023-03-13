@@ -205,6 +205,14 @@ export class UserService {
 		});
 	}
 
+	async get10GameHistory() {
+		return await this.prisma.gameHistory.findMany({
+			include : {
+				user : true
+			}
+		});
+	}
+
 	filterId(arr : number [], id : number) {
 		for (let i = 0; i < arr.length; i++) {
 			if (arr[i] === id)

@@ -10,6 +10,11 @@ import { User } from "@prisma/client";
 export class UserController{
 	constructor(private userService : UserService) {}
 
+	@Get("get10GameHistory")
+	async get10GameHistory(@UserDec() userReq : User) {
+		return await this.userService.get10GameHistory();
+	}
+
 	@Get("me")
 	async getMe(@UserDec() userReq : User) {
 		return await this.userService.getOne(userReq.id);

@@ -22,6 +22,8 @@ model User {
 	ranking Int @default(0)
 	winrate Float @default(0)
 	lp Int @default(0)
+	totalGames Int @default(0)
+	totalGamesWin Int @default(0)
 	notification Notification[]
 	block_id Int[]
 	friend_id Int[]
@@ -34,6 +36,16 @@ model User {
 	twoFaAuth Boolean @default(false)
 	banned Banned[]
 	roomMp RoomMessagePrivate[] @relation("RoomUserMessagePrivate")
+	gameHistory GameHistory[] @relation("GameHistoryRelation")
+}
+
+model GameHistory {
+	id Int @id @default(autoincrement())
+	createdAt DateTime @default(now())
+	user User[] @relation("GameHistoryRelation")
+	score_user1 Int
+	score_user2 Int
+	id_user_winner Int
 }
 
 model Room {

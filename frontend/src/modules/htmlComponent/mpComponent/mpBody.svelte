@@ -42,7 +42,7 @@
 				<div class="avatar">
 					<Avatar src={getUser(mp.id_user_send).img_link} rounded class="object-cover" />
 					<p>{getUser(mp.id_user_send).login}</p>
-					<p>{getDate(mp)}</p>
+					<p style="font-size: 10px;transform: translateY(6px);">{getDate(mp)}</p>
 				</div>
 				<p class="msg">
 					{mp.content}
@@ -53,7 +53,7 @@
 				<div class="avatar">
 					<Avatar src={getUser(mp.id_user_send).img_link} rounded class="object-cover" />
 					<p>{getUser(mp.id_user_send).login}</p>
-					<p>{getDate(mp)}</p>
+					<p style="font-size: 10px;transform: translateY(6px);">{getDate(mp)}</p>
 				</div>
 				<p class="msg">
 					{mp.content}

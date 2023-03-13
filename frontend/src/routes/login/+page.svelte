@@ -8,7 +8,6 @@
     import { Modal,  Helper} from "flowbite-svelte";
     import { API_URL } from "$lib/env";
 
-	let qrCode : string;
 	let currentUser : any;
 	let code2fa : string;
 	let qrCodeModal : boolean = false;
@@ -16,21 +15,28 @@
 	let color : any = "base"
 
 	onMount(async () => {
-		if (getJwt() != undefined) {
-			await axios.get(`${API_URL}/auth/me`, {headers : { Authorization : `Bearer ${getJwt()}` }})
+		const urlParams = new URLSearchParams(window.location.search);
+		if (urlParams.has("code")) {
+			console.log(urlParams.get("code"));
+			await axios.post(`${API_URL}/auth/connexion`, {code : urlParams.get("code")})
 			.then(async (res) => {
-				currentUser = res.data;
-				if (currentUser.twoFaEnabled) {
-					qrCodeModal = true;
-				} else {
-					isSend = true;
-					io(API_URL, {
-						path: "/event_user",
-						query : { token : getJwt()}
-					});
-					myProfileDataStore.set(currentUser);
-					goto("/");
-				}
+				console.log(res);
+				setJwt(res.data.access_token);
+				await axios.get(`${API_URL}/auth/me`, {headers : { Authorization : `Bearer ${getJwt()}` }})
+				.then(async (res) => {
+					currentUser = res.data;
+					if (currentUser.twoFaEnabled) {
+						qrCodeModal = true;
+					} else {
+						isSend = true;
+						io(API_URL, {
+							path: "/event_user",
+							query : { token : getJwt()}
+						});
+						myProfileDataStore.set(currentUser);
+						goto("/");
+					}
+				})
 			})
 		}
 	})
@@ -66,7 +72,7 @@
 <div class="h-full flex flex-col justify-center items-center gap-40">
 	{#if !qrCodeModal && !isSend}
 		<h1 class="text-center">TRANSCENDENCE</h1>
-		<a class="a-login" href="https://api.intra.42.fr/oauth/authorize?client_id=u-s4t2ud-30852b8b9a7314be3ebf1c95396eaf181b1395e1320bd92b2dc092f4ffbb8aa6&redirect_uri=http%3A%2F%2Flocalhost%3A4000%2Fauth%2Fconnexion%2F&response_type=code">
+		<a class="a-login" href={import.meta.env.VITE_CLIENT_LINK_INTRA}>
 			<span>Login</span>
 			<svg aria-hidden="true" class="ml-3 w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
 		</a>

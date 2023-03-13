@@ -154,7 +154,7 @@
 											</DropdownItem>
 										</Dropdown>
 										<p>{getUser(mp.id_user).login}</p>
-										<p>{getDate(mp)}</p>
+										<p style="font-size: 10px;transform: translateY(6px);">{getDate(mp)}</p>
 									</div>
 									<p class="msg">
 										{mp.content}
@@ -165,7 +165,7 @@
 									<div class="avatar">
 										<Avatar src={getUser(mp.id_user).img_link} rounded class="object-cover" />
 										<p>{getUser(mp.id_user).login}</p>
-										<p>{getDate(mp)}</p>
+										<p style="font-size: 10px;transform: translateY(6px);">{getDate(mp)}</p>
 									</div>
 									<p class="msg">
 										{mp.content}
@@ -186,7 +186,7 @@
 											</DropdownItem>
 										</Dropdown>
 										<p>{getUser(mp.id_user).login}</p>
-										<p>{getDate(mp)}</p>
+										<p style="font-size: 10px;transform: translateY(6px);">{getDate(mp)}</p>
 									</div>
 									<p class="msg end">
 										{mp.content}
@@ -197,7 +197,7 @@
 									<div class="avatar">
 										<Avatar src={getUser(mp.id_user).img_link} rounded class="object-cover" />
 										<p>{getUser(mp.id_user).login}</p>
-										<p>{getDate(mp)}</p>
+										<p style="font-size: 10px;transform: translateY(6px);">{getDate(mp)}</p>
 									</div>
 									<p class="msg end">
 										{mp.content}

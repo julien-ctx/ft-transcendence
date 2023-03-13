@@ -62,7 +62,7 @@
     onMount(async () => {
         let token : string = getJwt();
         try {
-            await axios.get('http://localhost:4000/Chat/getRooms', {
+            await axios.get(`${API_URL}/Chat/getRooms`, {
                 headers: {
                     Authorization: `Bearer ${getJwt()}`
                 }
@@ -73,7 +73,7 @@
             console.log(error);
         }
 
-        socket = io('http://localhost:4000', {
+        socket = io(`${API_URL}`, {
             path : '/chat',
             query : {
                 token : token,

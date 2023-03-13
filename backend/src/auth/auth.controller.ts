@@ -19,9 +19,8 @@ export class AuthController{
 		private twoFaService : TwoFaService,
 	) {}
 
-	@Get("connexion/")
-	@Redirect("http://localhost:5173/login")
-	async connexion(@Query("code") code, @Res({passthrough : true}) response : Response) {
+	@Post("connexion")
+	async connexion(@Body("code") code, @Res({ passthrough: true }) response: Response) {
 		await this.authService.getAccessToken(code)
 		.then(async (res) => {
 			await this.authService.getUser42(res.data.access_token)
@@ -46,16 +45,11 @@ export class AuthController{
 						}
 					});
 					if (user) {
-						await this.authService.signin(userIntra)
-						.then((res : any) => {
-							response.cookie("jwt", res.access_token)
-
-						})
+						const access_token = await this.authService.signin(userIntra)
+						response.send(access_token)								
 					} else {
-						await this.authService.signup(userIntra, this.twoFaService.generateSecret())
-						.then((res : any) => {
-							response.cookie("jwt", res.access_token)
-						})
+						const access_token = await this.authService.signup(userIntra, this.twoFaService.generateSecret())
+						response.send(access_token)
 					}
 				} catch (err) {
 					throw err;

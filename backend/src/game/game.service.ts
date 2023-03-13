@@ -44,11 +44,11 @@ export class GameService {
 			canvas.width * 0.02,
 			{
 				x: (canvas.width + canvas.height) * 0.0005,
-				y: (canvas.width + canvas.height) * 0.0009,
+				y: (canvas.width + canvas.height) * 0.0007,
 			},
 			{
-				x: (canvas.width + canvas.height) * 0.0002,
-				y: (canvas.width + canvas.height) * 0.0002,
+				x: (canvas.width + canvas.height) * 0.0003,
+				y: (canvas.width + canvas.height) * 0.0003,
 			},
 		);
 		return ball;
@@ -86,14 +86,14 @@ export class GameService {
 		client.ball.size = client.canvas.width * 0.02;
 		client.ball.x = client.ball.x * client.canvas.width / width;
 		client.ball.y = client.ball.y * client.canvas.height / height;
-		client.ball.speed = {
-			x: (client.canvas.width + client.canvas.height) * 0.0002,
-			y: (client.canvas.width + client.canvas.height) * 0.0002,
-		};
 		client.ball.direction = {
 			x: (client.canvas.width + client.canvas.height) * 0.0005,
-			y: (client.canvas.width + client.canvas.height) * 0.0009,	
+			y: (client.canvas.width + client.canvas.height) * 0.0007,	
 		}
+		client.ball.speed = {
+			x: (client.canvas.width + client.canvas.height) * 0.0003,
+			y: (client.canvas.width + client.canvas.height) * 0.0003,
+		};
 		client.socket.emit('paddlesData', {leftPaddle: client.leftPaddle, rightPaddle: client.rightPaddle})
 		client.socket.emit('ballData', {ball: client.ball})
 		client.socket.emit('scoresData', {leftScore: client.leftPaddle.score, rightScore: client.rightPaddle.score})
@@ -204,7 +204,7 @@ export class GameService {
 		return (deltaX * deltaX + deltaY * deltaY) < (ball.size * ball.size);
 	}
 
-	async updateBall(client: Client) {
+	updateBall(client: Client) {
 		client.ball.x += (client.ball.direction.x) * client.ball.speed.x;
 		client.ball.y += (client.ball.direction.y) * client.ball.speed.y;
 		if (client.ball.y < 0) {

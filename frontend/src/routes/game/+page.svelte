@@ -162,7 +162,7 @@
 		);
 	}
 
-	async function drawOpponent(opponentMsg: string) {
+	async function drawOpponent(opponentMsg: string, image: string) {
 		clearCanvas();
 		currMsg = opponentMsg;
 		ctx.fillText(
@@ -170,6 +170,11 @@
 			canvas.width / 2 - ctx.measureText(currMsg).width / 2,
 			canvas.height / 2 
 		);
+		var img = new Image();
+		img.src = image;
+		img.onload = function () {
+			ctx.drawImage(img, canvas.width / 2 - 50, canvas.height / 2 + 20, 100, 100);
+		};
 		await new Promise(r => setTimeout(r, 2000));
 		currMsg = null;
 	}
@@ -208,7 +213,7 @@
 		animationFrame = requestAnimationFrame(gameLoop);
 	}
 
-	async function startGame(login: string) {
+	async function startGame(login: string, image: string) {
 		socket.on('paddlesData', ({leftPaddle, rightPaddle}) => {
 			gameLeftPaddle = leftPaddle;
 			gameRightPaddle = rightPaddle;
@@ -246,7 +251,7 @@
 			await drawWinner(winMsg);
 			playAgain();
 		});
-		await drawOpponent('Your opponent is ' + login);	
+		await drawOpponent('Your opponent is ' + login, image);
 		await drawCounter();
 		canvas.addEventListener('mousemove', handleMouseMove);
 		socket.emit('gameLoop', {});
@@ -256,13 +261,13 @@
 	async function isReady() {
 		if (!gameStarted) {
 			gameStarted = true;
-			socket.on('foundOpponent', ({login, leftPaddle, rightPaddle, ball}) => {
+			socket.on('foundOpponent', ({login, image, leftPaddle, rightPaddle, ball}) => {
 				currMsg = null;
 				gameLeftPaddle = leftPaddle;
 				gameRightPaddle = rightPaddle;
 				gameBall = ball;
 				dataInit = true;
-				startGame(login);
+				startGame(login, image);
 			});
 			socket.emit('ready', { width: canvas.width, height: canvas.height, playerNumber, botLevel });
 			if (playerNumber === 2) {

@@ -183,16 +183,19 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 			paddle.y = mouseY;
 		});
 		
+		console.log(game.rightClient.user)
 		if (gameReady) {
 			if (data.playerNumber == 2) {
 				game.leftClient.socket.emit('foundOpponent', {
 					login: game.rightClient.user['login'],
+					image: game.rightClient.user['img_link'],
 					leftPaddle: game.leftClient.leftPaddle,
 					rightPaddle: game.leftClient.rightPaddle,
 					ball: game.leftClient.ball,
 				});
 				game.rightClient.socket.emit('foundOpponent', {
 					login: game.leftClient.user['login'],
+					image: game.leftClient.user['img_link'],
 					leftPaddle: game.rightClient.leftPaddle,
 					rightPaddle: game.rightClient.rightPaddle,
 					ball: game.rightClient.ball,
@@ -200,6 +203,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 			} else if (data.playerNumber === 1) {
 				socket.emit('foundOpponent', {
 					login: 'the bot',
+					image: 'https://cdn-icons-png.flaticon.com/512/4711/4711987.png',
 					leftPaddle: client.leftPaddle,
 					rightPaddle: client.rightPaddle,
 					ball: client.ball,

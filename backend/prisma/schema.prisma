@@ -118,6 +118,7 @@ model Notification {
   user  User @relation(fields: [id_user_receive], references: [id])
   id_user_receive Int
   id_user_send Int
+  name_room_private String @default("")
   is_read Boolean @default(false)
   login_send String
   img_link String

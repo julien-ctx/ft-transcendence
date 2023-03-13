@@ -52,10 +52,6 @@
 				aObj = a.winrate;
 				bObj = b.winrate;
 				break;
-			case "ranking":
-				aObj = a.ranking;
-				bObj = b.ranking;
-				break;
 			case "level":
 				aObj = a.level;
 				bObj = b.level;
@@ -95,7 +91,6 @@
 			<select class="focus:outline-none focus-visible:ring-transparent focus:ring-transparent" id="filter" bind:value={selectFilter} on:change={updateUserComponent}>
 				<option value="activity">Activity</option>
 				<option value="winrate">Win rate</option>
-				<option value="ranking">Ranking</option>
 				<option value="level">Level</option>
 			</select>
 		</div>

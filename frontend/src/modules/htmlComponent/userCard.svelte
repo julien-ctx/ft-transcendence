@@ -42,7 +42,7 @@
 
 </script>
 
-<div class="grid grid-cols-2 gap-5 grid-flow-row sm:grid-cols-7 bg-primary p-3 rounded sm:pb-3 pb-5 div-card-user shadow-md">
+<div class="grid grid-cols-2 gap-5 grid-flow-row sm:grid-cols-6 bg-primary p-3 rounded sm:pb-3 pb-5 div-card-user shadow-md">
     <div class="flex items-center sm:items-start justify-center sm:justify-start sm:flex-row flex-col gap-2">
         {#if myProfile.id != user.id}
             <button class="button-card-user">...</button>
@@ -85,15 +85,6 @@
             <p>{user.winrate}%</p>
         </div>
     {/if}
-    <div class="flex items-center justify-center">
-        {#if user.ranking == 0}
-            <img src="/badge-bronze.png" alt="" width="48">
-        {:else if user.ranking == 1}
-            <img src="/badge-silver.png" alt="" width="48">
-        {:else if user.ranking == 2}
-            <img src="/badge-gold.png" alt="" width="48">
-        {/if}
-    </div>
     <div class="flex items-center justify-center gap-3 col-span-2 md:col-span-1">
         {#if myProfile.id != user.id}
             {#if myProfile.block_id && !myProfile.block_id.includes(user.id) && user.block_id && !user.block_id.includes(myProfile.id)}

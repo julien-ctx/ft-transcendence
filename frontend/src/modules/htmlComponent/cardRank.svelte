@@ -16,40 +16,32 @@
 				percent = (Math.trunc((user.exp / levelObj[user.level]) * 100)).toString();
 				xpMatch = user.exp + "/" + levelObj[user.level];
 			}
-
 		}
+		console.log(user);
+		
 	})
 </script>
 
 <Card padding="none" class="!bg-primary !border-none p-10 justify-between gap-5">
-		<div class="flex flex-col gap-5 justify-center items-center mb-5">
-			{#if user.ranking == 0}
-				<img src="/badge-bronze.png" alt="" width="90">
-			{:else if user.ranking == 1}
-				<img src="/badge-silver.png" alt="" width="90">
-			{:else if user.ranking == 2}
-				<img src="/badge-gold.png" alt="" width="90">
-			{/if}
-		</div>
-		<div class="flex justify-between">
+		<div class="flex justify-center">
 			{#if user.winrate <= 50.0}
-				<div class="flex items-center justify-center text-red-700 flex-wrap gap-2">
-					<p class="font-medium block">WR :</p>
+				<div class="flex items-center justify-center text-red-700">
+					<p class="font-medium block mr-1">WR :</p>
 					<p>{user.winrate}%</p>
 				</div>
 			{:else if user.winrate <= 65.0}
-				<div class="flex items-center justify-center text-orange-400 flex-wrap gap-2">
-					<p class="font-medium block">WR :</p>
+				<div class="flex items-center justify-center text-orange-400">
+					<p class="font-medium block mr-1">WR :</p>
 					<p>{user.winrate}%</p>
 				</div>
 			{:else}
-				<div class="flex items-center justify-center text-green-600 flex-wrap gap-2">
-					<p class="font-medium block">WR :</p>
+				<div class="flex items-center justify-center text-green-600">
+					<p class="font-medium block mr-1">WR :</p>
 					<p>{user.winrate}%</p>
 				</div>
 			{/if}
-			<p class="font-medium">105 Games</p>
 		</div>
+		<p class="font-medium text-center">105 Games</p>
 		<div>
 			<Progressbar id="progress" progress={percent} labelOutside="Level {user.level} - {xpMatch}" class="progress-label"/>
 		</div>

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from "svelte";
 	import axios from "axios";
-	import { Modal, Select, Button, Chevron, Dropdown, DropdownItem } from 'flowbite-svelte';
+	import { Modal, Select, Button, Chevron, Dropdown, DropdownItem, Avatar } from 'flowbite-svelte';
 	import { getJwt } from "$lib/jwtUtils";
 	import { API_URL } from "$lib/env";
 	import Hammer from './htmlComponent/svgComponent/svgHammer.svelte';
@@ -9,12 +9,14 @@
 	import Close from './htmlComponent/svgComponent/svgClose.svelte';
 	import Door from './htmlComponent/svgComponent/svgDoor.svelte';
 	import Upgrade from './htmlComponent/svgComponent/svgUpgrade.svelte';
-	import { usersDataStore } from "$lib/store/user";
+	import { myProfileDataStore, usersDataStore } from "$lib/store/user";
+    import { socketUserStore } from "$lib/store/socket";
 
 	export let socket : any;
 	export let room : string;
 	export let infoChannel : any;
 	let members : any = [];
+	let allMembers : any;
 	let current : any = {};
 
 	// Change password
@@ -25,26 +27,26 @@
 	let passError : string = '';
 
 	let users : any;
+	let socketUser : any;
+	let myProfile : any;
 
 	usersDataStore.subscribe(val => users = val);
+	socketUserStore.subscribe(val => socketUser = val);
+	myProfileDataStore.subscribe(val => myProfile = val);
 
 	onMount(async () => {
 		current = infoChannel.filter((Chan : any) => Chan.name === room)[0];
 		// console.log('Current ->', current);
-		try {
-			// console.log(room);
-			await axios.get(`${API_URL}/Chat/getMembers/${room}`, {
-				headers: {
-					Authorization: `Bearer ${getJwt()}`,
-				},
-			})
-			.then((res) => {
-				members = res.data;
-				console.log(members);
-			});
-		} catch (error) {
-			console.log(error);
-		}
+		// console.log(room);
+		await axios.get(`${API_URL}/Chat/getMembers/${room}`, {
+			headers: {
+				Authorization: `Bearer ${getJwt()}`,
+			},
+		})
+		.then((res) => {
+			members = res.data;
+			allMembers = res.data;			
+		});
 		// console.log('Members ->', members)
 
 		socket.on('deletedMember', (data : any) => {
@@ -56,7 +58,25 @@
 			}
 			members = newMembers;
 		});
-
+		socket.on('newMembers', (data : any) => {
+			// console.log("members", data.member);
+			
+			if (data.roomName !== room) return;
+			members.push(data.member);
+			members = members;
+			// allMembers.filter(elem => elem.id_user != data.member.user.id_user);
+			// console.log("ici", data.member.user, allMembers);
+			
+			for (let i = 0; i < allMembers.length; i++) {
+				if (allMembers.user.id == data.member.user.id)
+					allMembers.splice(i, 1);
+				console.log(allMembers.id_user == data.member.user.id_user, allMembers.id_user, data.member.user.id_user);
+				
+			}
+			allMembers = allMembers;
+			console.log(allMembers);
+			
+		});
 		socket.on('successVerify', () => {
 			validatePass = true;
 		});
@@ -90,6 +110,7 @@
 				return mem;
 			});
 		});
+		// console.log(room, members, current);
 	});
 
 	function admin(sanction : string, Punished : any) {
@@ -171,10 +192,21 @@
 		}
 	}
 	
+	function userIsInRoomPrivate(user : any) {
+		for (let i = 0; i < allMembers.length; i++) {
+			if (allMembers[i].id_user == user.id_user)
+				return true;			
+		}
+		return false;
+	}
 
 	function resetTime() {
 		time = '';
 		duration = '';
+	}
+
+	function sendNotifPrivate(user : any) {
+		socketUser.emit("notification_room", {user_send : myProfile, user_receive : user , room_name : room})
 	}
 </script>
 
@@ -349,6 +381,17 @@
 		There is no members
 	</div>
 {/if}
+{#if current.status === 'Private' && allMembers}
+	{#each users as user}
+		{#if !userIsInRoomPrivate(user) && user.id != myProfile.id}
+			<div class="card-private">
+				<Avatar src={user.img_link} class="object-cover" rounded/>
+				<p>{user.login}</p>
+				<button on:click={() => sendNotifPrivate(user)}>Invite</button>
+			</div>
+		{/if}
+	{/each}
+{/if}
 {#if current.status === 'Protected'}
 	<div class="flex justify-center">Change password</div>
 	<div class="flex flex-col">
@@ -367,8 +410,3 @@
 		{/if}
 	</div>
 {/if}
-<!-- {#if current.status === 'Private'}
-	{#each users as user}
-		<button></button>
-	{/each}
-{/if} -->

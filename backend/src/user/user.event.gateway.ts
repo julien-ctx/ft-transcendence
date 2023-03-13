@@ -39,21 +39,6 @@ export class UserEventGateway implements OnGatewayInit, OnGatewayConnection, OnG
 				this.server.emit("event_user", user)
 			})
 		})
-		
-		// await this.userService.getAll()
-		// .then(async (allUsers : User []) => {
-		// 	allUsers.forEach(async (elem : User) => {
-		// 		if (this.usersArr.some((e) => e.user.id != elem.id) && elem.activity != 0) {
-		// 			await this.userService.updateUser({
-		// 				activity : 0,
-		// 				twoFaAuth : false
-		// 			}, elem.id)
-		// 			.then((userUpdate) => {
-		// 				this.server.emit("event_user", userUpdate)
-		// 			})
-		// 		}
-		// 	})
-		// })
 	}
 
 	async handleDisconnect(@ConnectedSocket() client: Socket) {
@@ -222,6 +207,24 @@ export class UserEventGateway implements OnGatewayInit, OnGatewayConnection, OnG
 		})
 		if (!notif) {
 			await this.userService.addNotifMsg(body.user_send, body.user_receive)
+			.then((userUpdate) => {
+				this.emitToClient(userUpdate, "update_me");
+			})
+		}
+	}
+
+	@UseGuards(UserGuardGateway)
+	@SubscribeMessage("notification_room")
+	async notificationRoom(@MessageBody() body : {user_send : User, user_receive : User , room_name : string}) {
+		const notif = await this.prisma.notification.findFirst({
+			where : {
+				id_user_send : body.user_send.id,
+				id_user_receive : body.user_receive.id,
+				type : 2
+			}
+		})
+		if (!notif) {
+			await this.userService.addNotifRoom(body.user_send, body.user_receive, body.room_name)
 			.then((userUpdate) => {
 				this.emitToClient(userUpdate, "update_me");
 			})

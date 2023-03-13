@@ -199,6 +199,45 @@ export class UserService {
 		}
 	}
 
+	async addNotifRoom(userSend : User, userReceive : User, roomName : string) {
+		try {
+			await this.prisma.notification.create({
+				data : {
+					user : {
+						connect : {
+							id_user: userReceive.id_user
+						}
+					},
+					id_user_send : userSend.id,
+					login_send : userSend.login,
+					img_link: userSend.img_link,
+					type : 2,
+					name_room_private : roomName
+				}
+			});
+			return await this.prisma.user.findUnique({
+				where : {
+					id : userReceive.id
+				},
+				include : {
+					notification: true,
+					RoomToUser: true,
+					roomMp : true,
+					gameHistory : {
+						select : {
+							user : true,
+							score_user1 : true,
+							score_user2 : true,
+							id_user_winner : true
+						}
+					}
+				}
+			})
+		} catch (error) {
+			console.log(error);
+		}
+	}
+
 	async createManyUser(users : any) {
 		return await this.prisma.user.createMany({
 			data : users

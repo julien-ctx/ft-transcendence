@@ -3,6 +3,7 @@
     import UserCard from "../../modules/htmlComponent/userCard.svelte";
     import HeaderUserCard from "../../modules/htmlComponent/headerUserCard.svelte";
     import { myProfileDataStore, userProfileDataStore, usersDataStore } from "$lib/store/user";
+    import { onMount } from "svelte";
 
 	export let user : any;
 	let allUsers : any;
@@ -10,6 +11,9 @@
 
 	usersDataStore.subscribe(val => allUsers = val);
 	myProfileDataStore.subscribe(val => myProfile = val);
+	onMount(async () => {
+		console.log(user);
+	})
 </script>
 
 <Tabs defaultClass="w-full flex flex-row gap-2 mt-10 !border-0 tabs-item" contentClass="w-full">
@@ -74,50 +78,28 @@
 	</TabItem>
 	<TabItem title="History" defaultClass="w-full">
 		<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-			<div class="flex justify-between items-center max-w-lg shadow-md p-5 rounded">
-				<div>
-					<Avatar size="lg" src={user.img_link} class="object-cover bg-transparent" rounded/>
-					<p class="capitalize font-medium text-center">{user.login}</p>
-				</div>
-				<div class="flex flex-col items-center">
-					<p class="font-bold text-3xl">VS</p>
-					<p class="font-medium text-2xl"><span class="text-green-500">2</span> - <span class="text-red-500">0</span></p>
-				</div>
-				<div>
-					<Avatar size="lg" src={user.img_link} class="object-cover bg-transparent" rounded/>
-					<p class="capitalize font-medium text-center">{user.login}</p>
-				</div>
-			</div>
-
-			<div class="flex justify-between items-center max-w-lg shadow-md p-5 rounded">
-				<div>
-					<Avatar size="lg" src={user.img_link} class="object-cover bg-transparent" rounded/>
-					<p class="capitalize font-medium text-center">{user.login}</p>
-				</div>
-				<div class="flex flex-col items-center">
-					<p class="font-bold text-3xl">VS</p>
-					<p class="font-medium text-2xl"><span class="text-green-500">2</span> - <span class="text-red-500">0</span></p>
-				</div>
-				<div>
-					<Avatar size="lg" src={user.img_link} class="object-cover bg-transparent" rounded/>
-					<p class="capitalize font-medium text-center">{user.login}</p>
-				</div>
-			</div>
-
-			<div class="flex justify-between items-center max-w-lg shadow-md p-5 rounded">
-				<div>
-					<Avatar size="lg" src={user.img_link} class="object-cover bg-transparent" rounded/>
-					<p class="capitalize font-medium text-center">{user.login}</p>
-				</div>
-				<div class="flex flex-col items-center">
-					<p class="font-bold text-3xl">VS</p>
-					<p class="font-medium text-2xl"><span class="text-green-500">2</span> - <span class="text-red-500">0</span></p>
-				</div>
-				<div>
-					<Avatar size="lg" src={user.img_link} class="object-cover bg-transparent" rounded/>
-					<p class="capitalize font-medium text-center">{user.login}</p>
-				</div>
-			</div>
+			{#if user.gameHistory}
+				{#each user.gameHistory as game}
+					<div class="flex justify-between items-center max-w-lg shadow-md p-5 rounded">
+						<div>
+							<Avatar size="lg" src={game.user[0].img_link} class="object-cover bg-transparent" rounded/>
+							<p class="capitalize font-medium text-center">{game.user[0].login}</p>
+						</div>
+						<div class="flex flex-col items-center">
+							<p class="font-bold text-3xl">VS</p>
+							{#if game.id_user_winner == game.user[0].id}
+								<p class="font-medium text-2xl"><span class="text-green-500">{game.score_user1}</span> - <span class="text-red-500">{game.score_user2}</span></p>
+							{:else}
+								<p class="font-medium text-2xl"><span class="text-green-500">{game.score_user1}</span> - <span class="text-red-500">{game.score_user2}</span></p>
+							{/if}
+						</div>
+						<div>
+							<Avatar size="lg" src={game.user[1].img_link} class="object-cover bg-transparent" rounded/>
+							<p class="capitalize font-medium text-center">{game.user[1].login}</p>
+						</div>
+					</div>
+				{/each}
+			{/if}
 		</div>
 	</TabItem>
 	<TabItem title="Achievement" defaultClass="w-full">

@@ -17,7 +17,15 @@ export class UserService {
 			include : {
 				notification: true,
 				RoomToUser: true,
-				roomMp : true
+				roomMp : true,
+				gameHistory : {
+					select : {
+						user : true,
+						score_user1 : true,
+						score_user2 : true,
+						id_user_winner : true
+					}
+				}
 			}
 		});
 	}
@@ -30,7 +38,15 @@ export class UserService {
 			include : {
 				notification: true,
 				RoomToUser: true,
-				roomMp : true
+				roomMp : true,
+				gameHistory : {
+					select : {
+						user : true,
+						score_user1 : true,
+						score_user2 : true,
+						id_user_winner : true
+					}
+				}
 			}
 		});
 	}
@@ -44,7 +60,15 @@ export class UserService {
 			include : {
 				notification: true,
 				RoomToUser: true,
-				roomMp : true
+				roomMp : true,
+				gameHistory : {
+					select : {
+						user : true,
+						score_user1 : true,
+						score_user2 : true,
+						id_user_winner : true
+					}
+				}
 			}
 		});
 	}
@@ -57,7 +81,15 @@ export class UserService {
 			include : {
 				notification: true,
 				RoomToUser: true,
-				roomMp : true
+				roomMp : true,
+				gameHistory : {
+					select : {
+						user : true,
+						score_user1 : true,
+						score_user2 : true,
+						id_user_winner : true
+					}
+				}
 			}
 		});
 	}
@@ -71,6 +103,14 @@ export class UserService {
 				notification: true,
 				RoomToUser: true,
 				roomMp : true,
+				gameHistory : {
+					select : {
+						user : true,
+						score_user1 : true,
+						score_user2 : true,
+						id_user_winner : true
+					}
+				}
 			}
 		})
 	}
@@ -83,7 +123,15 @@ export class UserService {
 			include : {
 				notification: true,
 				RoomToUser: true,
-				roomMp : true
+				roomMp : true,
+				gameHistory : {
+					select : {
+						user : true,
+						score_user1 : true,
+						score_user2 : true,
+						id_user_winner : true
+					}
+				}
 			}
 		});
 	}
@@ -133,9 +181,17 @@ export class UserService {
 					id : userReceive.id
 				},
 				include : {
-					RoomToUser : true,
+					notification: true,
+					RoomToUser: true,
 					roomMp : true,
-					notification : true
+					gameHistory : {
+						select : {
+							user : true,
+							score_user1 : true,
+							score_user2 : true,
+							id_user_winner : true
+						}
+					}
 				}
 			})
 		} catch (error) {

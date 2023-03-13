@@ -29,7 +29,7 @@ export class UserController{
 	@Post("updateImg")
 	@UseInterceptors(FileInterceptor('file'))
 	async uploadFile(@UploadedFile() file: Express.Multer.File, @UserDec() user : User) {
-		const allowedMimeTypes = ['image/png', 'image/jpeg', 'image/bmp', 'image/gif', 'image/x-icon', 'image/svg+xml', 'image/webp']
+		const allowedMimeTypes = ['image/png', 'image/jpeg', 'image/bmp', 'image/x-icon', 'image/svg+xml', 'image/webp']
 		const bytes = file.buffer;
 		const mimetype = file.mimetype;
 		const buffer = Buffer.from(bytes);

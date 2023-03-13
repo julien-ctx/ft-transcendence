@@ -41,7 +41,8 @@ export class AuthController{
 						include : {
 							notification: true,
 							RoomToUser: true,
-							roomMp : true
+							roomMp : true,
+							gameHistory : true
 						}
 					});
 					if (user) {

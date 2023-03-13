@@ -18,10 +18,10 @@ export class JwtStrategy extends PassportStrategy(Strategy, "jwt-two-factor"){
 				id_user: payload.id
 			},
 			include : {
+				notification: true,
+				RoomToUser: true,
 				roomMp : true,
-				RoomToUser : true,
-				notification : true,
-				banned : true
+				gameHistory : true
 			}
 		})
 		if (!user)

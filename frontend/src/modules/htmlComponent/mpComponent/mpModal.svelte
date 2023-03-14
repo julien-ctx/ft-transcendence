@@ -5,7 +5,7 @@
     import { Dropdown, DropdownItem } from "flowbite-svelte";
     import { GetOneUser } from "$lib/userUtils";
     import { goto } from "$app/navigation";
-    import { userProfileDataStore } from "$lib/store/user";
+    import { userProfileDataStore, usersDataStore } from "$lib/store/user";
 
 	export let room : any;
 	export let myProfile : any;
@@ -16,13 +16,18 @@
 	let otherProfile : any;
 	let inputMp : any;
 	let active : string = "";
+	let allUsers : any;
+
+	usersDataStore.subscribe(val => allUsers = val);
 
 	afterUpdate(() => {
 		if (room && room.user) {
-			for (let i = 0; i < room.user.length; i++) {
-				if (room.user[i].id != myProfile.id) {
-					otherProfile = room.user[i];
-					break;
+			for (let i = 0; i < allUsers.length; i++) {
+				for (let j = 0; j < room.user.length; j++) {
+					if (room.user[j].id != myProfile.id && room.user[j].id == allUsers[i].id) {
+						otherProfile = allUsers[i];
+						break;
+					}
 				}
 			}
 		}
@@ -74,7 +79,7 @@
         goto(`/user?id=${id}`);
     }
 </script>
-{#if otherProfile && myProfile && room.open_id && room.open_id.includes(myProfile.id) && !otherProfile.block_id.includes(myProfile.id) && !myProfile.block_id.includes(otherProfile.id)}
+{#if otherProfile && myProfile && room.open_id && room.open_id.includes(myProfile.id) && otherProfile.block_id && !otherProfile.block_id.includes(myProfile.id) && myProfile.block_id && !myProfile.block_id.includes(otherProfile.id)}
 	<div class="mp-modal">
 		<button class="header {active}">
 			<button class="button-card-user">...</button>
@@ -97,4 +102,3 @@
 		</div>
 	</div>
 {/if}
-

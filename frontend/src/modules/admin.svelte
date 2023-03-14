@@ -92,7 +92,6 @@
 		});
 
 		socket.on("memberLeaveRoom", async (data : any) => {
-			console.log("received socket");
 				await axios.get(`${API_URL}/Chat/getMembers/${room}`, {
 				headers: {
 					Authorization: `Bearer ${getJwt()}`,
@@ -118,6 +117,7 @@
 	}
 
 	function Kick(Punished : any) {
+		// console.log(Punished)
 		socket.emit('sanction', {
 			roomName: room,
 			sanction: 'kick',

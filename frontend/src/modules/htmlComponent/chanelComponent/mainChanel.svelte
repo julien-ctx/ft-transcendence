@@ -84,8 +84,6 @@
         })
 
         socket.on('rooms', (receivedRoom : any) => {
-            console.log(receivedRoom);
-            
             rooms = [...rooms, receivedRoom];
         });
 
@@ -102,9 +100,7 @@
 		})
 
 		socket.on('deletedRoom', (receivedRoom : string) => {
-            console.log(currentRoom, receivedRoom);
-            
-            if (chat && currentRoom.name == receivedRoom) {
+            if (chat && currentRoom && currentRoom.name == receivedRoom) {
                 currentRoom = null;
             }
 			rooms = rooms.filter((room : any) => room.name !== receivedRoom);
@@ -218,8 +214,6 @@
         })
         .then((res) => {
             usersInModalRoom = res.data;
-            console.log(usersInModalRoom);
-            
             modalUsersRoom = true;
         })
     }

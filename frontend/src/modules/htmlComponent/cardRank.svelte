@@ -16,9 +16,7 @@
 				percent = (Math.trunc((user.exp / levelObj[user.level]) * 100)).toString();
 				xpMatch = user.exp + "/" + levelObj[user.level];
 			}
-		}
-		console.log(user);
-		
+		}		
 	})
 </script>
 

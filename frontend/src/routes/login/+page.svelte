@@ -17,7 +17,6 @@
 	onMount(async () => {
 		const urlParams = new URLSearchParams(window.location.search);
 		if (urlParams.has("code")) {
-			console.log(urlParams.get("code"));
 			await axios.post(`${API_URL}/auth/connexion`, {code : urlParams.get("code")})
 			.then(async (res) => {
 				setJwt(res.data.access_token);

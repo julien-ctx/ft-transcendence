@@ -43,13 +43,7 @@
 				goto("/login")
 			}
 		})
-		await axios.get(`${API_URL}/users/get10GameHistory`, { headers : {
-				Authorization : `Bearer ${getJwt()}`
-			}
-		})
-		.then((res) => {
-			console.log(res);
-		})
+	
 		await GetAllUsers()
 		.then((res) => {
 			usersDataStore.set(res.data);
@@ -88,7 +82,7 @@
 					allUsers.push(data)
 					usersDataStore.set(allUsers);
 				}
-			}                                                                                                                              
+			}                                                                                            
 		})
 		socketUser.on("room-unblock", (data : any) => {
 			if (myRoomMp && myRoomMp.length != 0) {
@@ -128,7 +122,6 @@
 	<Navbar let:hidden let:toggle navClass="!bg-primary !border-secondary border-b w-full px-2 sm:px-4 py-2.5">
 	<NavBrand href="/">
 		<h2 class="title-nav">PONG</h2>
-		<!-- <img src="https://flowbite.com/docs/images/logo.svg" class="mr-3 h-6 sm:h-9" alt="Flowbite Logo"/> -->
 	</NavBrand>
 	<div class="flex items-center md:order-2 gap-4">
 		<Notifications/>

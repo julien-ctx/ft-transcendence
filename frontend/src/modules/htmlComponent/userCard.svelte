@@ -109,7 +109,7 @@
                     <SvgMsg />
                 </button>
             {/if}
-            <button>
+            <button on:click={() => {socketUser.emit("notification_game", {user_send : myProfile, user_receive : user}); goto(`/game?id_send=${myProfile.id}&id_receive=${user.id}`)}}>
                 <img src="./game-battle.png" alt="" style="max-width: none;">
             </button>
             <button on:click={handleGotoUser}>

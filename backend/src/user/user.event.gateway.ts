@@ -232,6 +232,24 @@ export class UserEventGateway implements OnGatewayInit, OnGatewayConnection, OnG
 	}
 
 	@UseGuards(UserGuardGateway)
+	@SubscribeMessage("notification_game")
+	async notificationGame(@MessageBody() body : {user_send : User, user_receive : User}) {
+		const notif = await this.prisma.notification.findFirst({
+			where : {
+				id_user_send : body.user_send.id,
+				id_user_receive : body.user_receive.id,
+				type : 3
+			}
+		})
+		if (!notif) {
+			await this.userService.addNotifGame(body.user_send, body.user_receive)
+			.then((userUpdate) => {
+				this.emitToClient(userUpdate, "update_me");
+			})
+		}
+	}
+
+	@UseGuards(UserGuardGateway)
 	@SubscribeMessage("delete-notification")
 	async deleteNotificiation(@MessageBody() body : {id_notif : number, user : User}) {
 		await this.prisma.notification.delete({

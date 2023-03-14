@@ -12,9 +12,7 @@
 
 	usersDataStore.subscribe(val => allUsers = val);
 	myProfileDataStore.subscribe(val => myProfile = val);
-	onMount(async () => {
-		console.log(user);
-	})
+
 </script>
 
 <Tabs defaultClass="w-full flex flex-row gap-2 mt-10 !border-0 tabs-item" contentClass="w-full">

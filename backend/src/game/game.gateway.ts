@@ -6,6 +6,7 @@ import { WebSocketGateway, WebSocketServer, OnGatewayInit, OnGatewayConnection, 
 import { User } from "@prisma/client";
 import { Server, Socket } from "socket.io";
 import { PrismaService } from "src/prisma/prisma.service";
+import e from 'express';
 
 const MAX_SCORE = 2;
 
@@ -166,9 +167,11 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	}
 
 	@SubscribeMessage('ready')
-	startGame(socket: Socket, data: {width, height, playerNumber, botLevel}) {
+	startGame(socket: Socket, data: {width, height, playerNumber, botLevel, leftPlayerID, rightPlayerID}) {
 		let waitingClient = this.queue.find(waitingClient => waitingClient.socket === socket);
 		if (!waitingClient) {
+			console.log(this.queue);
+			
 			return console.log('waitingClient null');
 		}
 		if (socket === waitingClient.socket) {
@@ -188,20 +191,26 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		let game: Game | null = null;
 		if (data.playerNumber === 1) {
 			client.side = -1;
-			this.games.push(new Game(client, null, 1, MAX_SCORE, data.botLevel));
+			this.games.push(new Game(client, null, 1, MAX_SCORE, data.botLevel, data.leftPlayerID, data.rightPlayerID));
 			gameReady = true;
-		} else if (this.games.find(game => game.playerNumber === 2 && game.rightClient === null)) {
+		} else if (this.games.find(game => game.playerNumber === 2 && game.rightClient === null
+			&& client.user.login != game.leftClient.user.login)) {
+			
 			game = this.games.find(game => game.playerNumber === 2 && game.rightClient === null
-					&& client.user.login != game.leftClient.user.login);
+			&& client.user.login != game.leftClient.user.login);
 			if (!game) {
 				return console.log('game null');
 			}
-			client.side = 1;
-			game.rightClient = client;
-			gameReady = true;
-		} else {
+			if ((data.leftPlayerID === game.leftClient.user.id && data.rightPlayerID === client.user.id)
+				|| (!data.leftPlayerID && !data.rightPlayerID)) {
+				client.side = 1;
+				game.rightClient = client;
+				gameReady = true;
+			}
+		}
+		else {
 			client.side = -1;
-			this.games.push(new Game(client, null, 2, MAX_SCORE, data.botLevel));
+			this.games.push(new Game(client, null, 2, MAX_SCORE, data.botLevel, data.leftPlayerID, data.rightPlayerID));
 		}
 		socket.on('resize', ({width, height}) => {
 			this.gameService.handleResize(
@@ -253,15 +262,19 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	
 	@SubscribeMessage('gameLoop')
 	launchGameLoop(socket: Socket) {
-		const game = this.games[this.games.length - 1];
-		let randomBallDirectionX = this.gameService.randomBallDirection();
-		let randomBallDirectionY = this.gameService.randomBallDirection();
-		game.leftClient.ball.direction.x *= randomBallDirectionX;
-		game.leftClient.ball.direction.y *= randomBallDirectionY;
-		if (game.playerNumber === 2) {
-			game.rightClient.ball.direction.x *= randomBallDirectionX;
-			game.rightClient.ball.direction.y *= randomBallDirectionY;
+		try {
+			const game = this.games[this.games.length - 1];
+			let randomBallDirectionX = this.gameService.randomBallDirection();
+			let randomBallDirectionY = this.gameService.randomBallDirection();
+			game.leftClient.ball.direction.x *= randomBallDirectionX;
+			game.leftClient.ball.direction.y *= randomBallDirectionY;
+			if (game.playerNumber === 2) {
+				game.rightClient.ball.direction.x *= randomBallDirectionX;
+				game.rightClient.ball.direction.y *= randomBallDirectionY;
+			}
+			this.interval = setInterval(this.gameLoop, 1, game);
+		} catch (error) {
+			console.log(error);
 		}
-		this.interval = setInterval(this.gameLoop, 1, game);
 	}
 };

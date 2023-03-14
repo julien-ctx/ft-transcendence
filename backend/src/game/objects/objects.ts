@@ -27,6 +27,8 @@ export class Game {
 		public playerNumber: number,
 		public maxScore: number,
 		public botLevel: number,
+		public leftPlayerID: number | null,
+		public rightPlayerID: number | null,
 	) {}
 };
 

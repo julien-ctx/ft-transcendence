@@ -15,8 +15,7 @@
 	export let socket : any;
 	export let room : string;
 	export let infoChannel : any;
-	let members : any = [];
-	let allMembers : any;
+	let members : any;
 	let current : any = {};
 
 	// Change password
@@ -36,19 +35,14 @@
 
 	onMount(async () => {
 		current = infoChannel.filter((Chan : any) => Chan.name === room)[0];
-		// console.log('Current ->', current);
-		// console.log(room);
 		await axios.get(`${API_URL}/Chat/getMembers/${room}`, {
 			headers: {
 				Authorization: `Bearer ${getJwt()}`,
 			},
 		})
 		.then((res) => {
-			members = res.data;
-			allMembers = res.data;			
+			members = res.data;		
 		});
-		// console.log('Members ->', members)
-
 		socket.on('deletedMember', (data : any) => {
 			let newMembers = [];
 			for (let i = 0; i < members.length; i++) {
@@ -59,30 +53,16 @@
 			members = newMembers;
 		});
 		socket.on('newMembers', (data : any) => {
-			// console.log("members", data.member);
-			
 			if (data.roomName !== room) return;
+
 			members.push(data.member);
-			members = members;
-			// allMembers.filter(elem => elem.id_user != data.member.user.id_user);
-			// console.log("ici", data.member.user, allMembers);
-			
-			for (let i = 0; i < allMembers.length; i++) {
-				if (allMembers.user.id == data.member.user.id)
-					allMembers.splice(i, 1);
-				console.log(allMembers.id_user == data.member.user.id_user, allMembers.id_user, data.member.user.id_user);
-				
-			}
-			allMembers = allMembers;
-			console.log(allMembers);
-			
+			members = members;			
 		});
 		socket.on('successVerify', () => {
 			validatePass = true;
 		});
 
 		socket.on('newRight', (data : any) => {
-			// console.log('New right ->', {data});
 			members = members.map((mem : any) => {
 				if (mem.user.id_user === data.id_user) {
 					mem.admin = data.admin;
@@ -92,7 +72,6 @@
 		});
 
 		socket.on('unmute', (data : any) => {
-			// console.log('Unmute ->', {data});
 			members = members.map((mem : any) => {
 				if (mem.user.id_user === data.id_user) {
 					mem.Muted = false;
@@ -110,7 +89,18 @@
 				return mem;
 			});
 		});
-		// console.log(room, members, current);
+
+		socket.on("memberLeaveRoom", async (data : any) => {
+			console.log("received socket");
+				await axios.get(`${API_URL}/Chat/getMembers/${room}`, {
+				headers: {
+					Authorization: `Bearer ${getJwt()}`,
+				},
+			})
+			.then((res) => {
+				members = res.data;		
+			});
+		})
 	});
 
 	function admin(sanction : string, Punished : any) {
@@ -193,9 +183,11 @@
 	}
 	
 	function userIsInRoomPrivate(user : any) {
-		for (let i = 0; i < allMembers.length; i++) {
-			if (allMembers[i].id_user == user.id_user)
-				return true;			
+		if (!members)
+			return false;
+		for (let i = 0; i < members.length; i++) {
+			if (members[i].id_user == user.id_user)
+				return true;		
 		}
 		return false;
 	}
@@ -211,7 +203,7 @@
 </script>
 
 
-{#if members.length > 0}
+{#if members && members.length > 0}
 	<div>
 		{#each members as member}
 			<div class="flex justify-between gap-2">
@@ -381,9 +373,9 @@
 		There is no members
 	</div>
 {/if}
-{#if current.status === 'Private' && allMembers}
+{#key members}
 	{#each users as user}
-		{#if !userIsInRoomPrivate(user) && user.id != myProfile.id}
+		{#if current.status === 'Private' && !userIsInRoomPrivate(user) && user.id != myProfile.id}
 			<div class="card-private">
 				<Avatar src={user.img_link} class="object-cover" rounded/>
 				<p>{user.login}</p>
@@ -391,7 +383,8 @@
 			</div>
 		{/if}
 	{/each}
-{/if}
+{/key}
+
 {#if current.status === 'Protected'}
 	<div class="flex justify-center">Change password</div>
 	<div class="flex flex-col">

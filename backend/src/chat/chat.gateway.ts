@@ -316,7 +316,7 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 			})
 		}
 		client.emit('deletedRoom', data.roomName);
-		
+		this.server.emit("memberLeaveRoom", "ok")
 	}
 
 	@SubscribeMessage('Message')

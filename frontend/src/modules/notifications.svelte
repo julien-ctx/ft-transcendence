@@ -54,7 +54,6 @@
 	async function handleViewRoomPrivate(notif : any) {
 		socketRoom.emit("joinInvite", {roomName : notif.name_room_private})
 		socketUser.emit("delete-notification", {id_notif : notif.id, user : myProfile});
-
 	}
 
 </script>
@@ -140,10 +139,10 @@
 					</div>
 					<div class="flex justify-center gap-5 mt-2">
 						<button on:click={() => handleDeleteMp(notif)}>
-							Delete
+							Refuse
 						</button>
 						<button on:click={() => handleViewRoomPrivate(notif)}>
-							View
+							Accept
 						</button>
 					</div>
 				{/if}

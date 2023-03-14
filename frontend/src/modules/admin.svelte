@@ -205,7 +205,7 @@
 
 
 {#if members && members.length > 0}
-	<div>
+	<div class="flex flex-col gap-3">
 		{#each members as member}
 			<div class="flex justify-between items-center gap-2">
 				<Avatar src={member.user.img_link} class="object-cover" rounded/>

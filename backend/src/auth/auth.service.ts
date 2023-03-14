@@ -62,8 +62,8 @@ export class AuthService{
 		};
 		const body = {
 			grant_type: 'authorization_code',
-			client_id: 'u-s4t2ud-30852b8b9a7314be3ebf1c95396eaf181b1395e1320bd92b2dc092f4ffbb8aa6',
-			client_secret: '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',
+			client_id: this.config.get("CLIENT_ID"),
+			client_secret: this.config.get("CLIENT_SECRET"),
 			code,
 			redirect_uri: this.config.get("REDIRECT_LOGIN"),
 		};

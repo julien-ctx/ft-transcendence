@@ -510,6 +510,18 @@ button,
 		}
 	}
 }
+.button-admin {
+	background-color: $secondary;
+	padding: 5px 10px;
+	font-size: 14px;
+	border-radius: 7px;
+	transition: 300ms all ease-in-out;
+	margin: 0 auto;
+	&:hover {
+		color: $third;
+		background-color: $primary;
+	}
+}
 
 .card-private {
 	display: flex;
@@ -517,18 +529,6 @@ button,
 	p {
 		margin: 0 20px;
 		width: 100px;
-	}
-	button {
-		background-color: $secondary;
-		padding: 5px 10px;
-		font-size: 14px;
-		border-radius: 7px;
-		transition: 300ms all ease-in-out;
-		margin: 0 auto;
-		&:hover {
-			color: $third;
-			background-color: $primary;
-		}
 	}
 }
 

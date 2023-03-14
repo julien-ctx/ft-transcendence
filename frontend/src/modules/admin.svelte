@@ -11,6 +11,7 @@
 	import Upgrade from './htmlComponent/svgComponent/svgUpgrade.svelte';
 	import { myProfileDataStore, usersDataStore } from "$lib/store/user";
     import { socketUserStore } from "$lib/store/socket";
+    import SvgSettings from "./htmlComponent/svgComponent/svgSettings.svelte";
 
 	export let socket : any;
 	export let room : string;
@@ -206,59 +207,66 @@
 {#if members && members.length > 0}
 	<div>
 		{#each members as member}
-			<div class="flex justify-between gap-2">
+			<div class="flex justify-between items-center gap-2">
+				<Avatar src={member.user.img_link} class="object-cover" rounded/>
 				{member.user.login}
 				{#if member.admin && member.owner === false}
-					<div class="bg-light_yellow rounded border">
+					<div class="bg-light_yellow rounded border text-xs p-1">
 						Admin
 					</div>
 				{:else if member.owner === true}
-					<div class="!bg-light_blue rounded border">
+					<div class="!bg-light_blue rounded border text-xs p-1">
 						Owner
 					</div>
 				{:else}
-					<div class="bg-light_green rounded border">
+					<div class="bg-light_green rounded border text-xs p-1">
 						Member
 					</div>
 				{/if}
-				{#if current.owner === true}
-					{#if member.admin === false}
-						<Upgrade />
-						<Dropdown class="w-full">
-							<DropdownItem>
-								<div class="flex justify-center">
-									<button on:click={() => OP(member.user)}>
-										<div>OP {member.user.login}</div>
-									</button>
-								</div>
-							</DropdownItem>
-						</Dropdown>
-					{:else}
-						<div class="transform rotate-180">
-							<Upgrade />
-						</div>
-						<Dropdown class="w-full">
-							<DropdownItem>
-								<div class="flex justify-center">
-									<button on:click={() => DEOP(member.user)}>
-										<div>DE-OP {member.user.login}</div>
-									</button>
-								</div>
-							</DropdownItem>
-						</Dropdown>
-					{/if}
-					<Close />
-					<Dropdown class="w-full">
-						<DropdownItem>
-							<div class="flex justify-center">
-								<button on:click={() => Kick(member.user)}>
-									<div>Kick {member.user.login}</div> 
-								</button>
-							</div>
-						</DropdownItem>
-					</Dropdown>
-					<Mute />
-					{#if member.Muted === false}
+				{#if current.owner === true || current.admin === true && member.owner === false && member.admin === false}
+					<button class="button-admin" on:click={() => Kick(member.user)}>Kick</button>
+					<button>
+						<SvgSettings />
+					</button>
+					<Dropdown>
+						<DropdownItem>Mute</DropdownItem>
+						{#if member.Muted === false}
+							<Dropdown class="w-full">
+								<DropdownItem>
+									<div class="flex justify-between">
+										<input type="number" id="tentacles" name="tentacles" min="1" max="60" bind:value={time}>
+										<select bind:value={duration}>
+											<option value="Second">Second</option>
+											<option value="Minutes">Minutes</option>
+											<option value="Hour">Hour</option>
+											<option value="Day">Day</option>
+											<option value="Month">Month</option>
+										</select>
+										<div class="justify-center">
+											<button on:click={() => Muted(member.user)}>
+												<Door />
+											</button>
+										</div>
+									</div>
+								</DropdownItem>
+							</Dropdown>
+						{:else}
+							<Dropdown class="w-full">
+								<DropdownItem>
+									<div class="flex justify-between">
+										<button on:click={() => unmute(member)}>
+											Unmute {member.user.login}
+										</button>
+									</div>
+								</DropdownItem>
+							</Dropdown>
+						{/if}
+						{#if member.admin === false}
+							<DropdownItem on:click={() => OP(member.user)}>OP</DropdownItem>
+						{:else}
+							<DropdownItem on:click={() => DEOP(member.user)}>DE-OP</DropdownItem>
+						{/if}
+						<DropdownItem>Ban</DropdownItem>
 						<Dropdown class="w-full">
 							<DropdownItem>
 								<div class="flex justify-between">
@@ -270,99 +278,12 @@
 										<option value="Day">Day</option>
 										<option value="Month">Month</option>
 									</select>
-									<div class="justify-center">
-										<button on:click={() => Muted(member.user)}>
-											<Door />
-										</button>
-									</div>
-								</div>
-							</DropdownItem>
-						</Dropdown>
-					{:else}
-						<Dropdown class="w-full">
-							<DropdownItem>
-								<div class="flex justify-between">
-									<button on:click={() => unmute(member)}>
-										Unmute {member.user.login}
-									</button>
-								</div>
-							</DropdownItem>
-						</Dropdown>
-					{/if}
-					<Hammer />
-					<Dropdown class="w-full">
-						<DropdownItem>
-							<div class="flex justify-between">
-								<input type="number" id="tentacles" name="tentacles" min="1" max="60" bind:value={time}>
-								<select bind:value={duration}>
-									<option value="Second">Second</option>
-									<option value="Minutes">Minutes</option>
-									<option value="Hour">Hour</option>
-									<option value="Day">Day</option>
-									<option value="Month">Month</option>
-								</select>
-								<button on:click={() => admin('ban', member.user)}>
-									<Door />
-								</button>
-							</div>
-						</DropdownItem>
-					</Dropdown>
-				{:else if current.admin === true && member.owner === false && member.admin === false}
-					<Upgrade />
-					<Dropdown class="w-full">
-						<DropdownItem>
-							<div class="flex justify-center">
-								<div>OP {member.user.login}</div> 
-							</div>
-						</DropdownItem>
-					</Dropdown>
-					<Close />
-					<Dropdown class="w-full">
-						<DropdownItem>
-							<div class="flex justify-center">
-								<button on:click={() => Kick(member.user)}>
-									<div>Kick {member.user.login}</div> 
-								</button>
-							</div>
-						</DropdownItem>
-					</Dropdown>
-					<Mute />
-					<Dropdown class="w-full">
-						<DropdownItem>
-							<div class="flex justify-between">
-								<input type="number" id="tentacles" name="tentacles" min="1" max="60">
-								<select>
-									<option value="Second">Second</option>
-									<option value="Minutes">Minutes</option>
-									<option value="Hour">Hour</option>
-									<option value="Day">Day</option>
-									<option value="Month">Month</option>
-								</select>
-								<div class="justify-center">
-									<button on:click={() => Muted(member.user)}>
+									<button on:click={() => admin('ban', member.user)}>
 										<Door />
 									</button>
 								</div>
-							</div>
-						</DropdownItem>
-					</Dropdown>
-					<Hammer />
-					<Dropdown class="w-full">
-						<DropdownItem>
-							<div class="flex justify-between">
-								<input type="number" id="tentacles" name="tentacles" min="1" max="60">
-								<select>
-									<option value="Second">Second</option>
-									<option value="Minutes">Minutes</option>
-									<option value="Hour">Hour</option>
-									<option value="Day">Day</option>
-									<option value="Month">Month</option>
-								</select>
-								<div class="justify-center">
-									<Door on:click={() => admin('ban', member.user)}/>
-								</div>
-							</div>
-						</DropdownItem>
+							</DropdownItem>
+						</Dropdown>
 					</Dropdown>
 				{/if}
 			</div>
@@ -373,17 +294,21 @@
 		There is no members
 	</div>
 {/if}
-{#key members}
-	{#each users as user}
-		{#if current.status === 'Private' && !userIsInRoomPrivate(user) && user.id != myProfile.id}
-			<div class="card-private">
-				<Avatar src={user.img_link} class="object-cover" rounded/>
-				<p>{user.login}</p>
-				<button on:click={() => sendNotifPrivate(user)}>Invite</button>
-			</div>
-		{/if}
-	{/each}
-{/key}
+{#if current.status === 'Private'}
+	<div>Invite another user</div>
+	{#key members}
+		{#each users as user}
+			{#if !userIsInRoomPrivate(user) && user.id != myProfile.id}
+				<div class="card-private">
+					<Avatar src={user.img_link} class="object-cover" rounded/>
+					<p>{user.login}</p>
+					<button class="button-admin" on:click={() => sendNotifPrivate(user)}>Invite</button>
+				</div>
+			{/if}
+		{/each}
+	{/key}
+{/if}
+
 
 {#if current.status === 'Protected'}
 	<div class="flex justify-center">Change password</div>

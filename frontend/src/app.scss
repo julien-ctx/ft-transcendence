@@ -9,6 +9,11 @@
 body {
 	color: rgb(63, 63, 70);
 	font-family: 'Ubuntu', sans-serif;
+	height: 100%;
+    margin: 0;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+	background-image : url("./bg-body.jpg");
 }
 
 h1 {

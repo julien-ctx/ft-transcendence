@@ -178,12 +178,12 @@
 					{#if !myProfile.twoFaEnabled}
 						<button on:click={enbaledTwoFA} id="enabledTwoFa">
 							<Svg2faDisabled />
-							<Tooltip triggeredBy="#enabledTwoFa">Enabled 2FA</Tooltip>
+							<Tooltip triggeredBy="#enabledTwoFa">Enable 2FA</Tooltip>
 						</button>
 					{:else}
 						<button on:click={disabledTwoFA} id="disabledTwoFA">
 							<Svg2faEnable />
-							<Tooltip triggeredBy="#disabledTwoFA">Disabled 2FA</Tooltip>
+							<Tooltip triggeredBy="#disabledTwoFA">Disable 2FA</Tooltip>
 						</button>
 					{/if}
                 </div>

@@ -163,7 +163,7 @@
 							<Avatar src={notif.img_link} class="object-cover bg-transparent" rounded/>
 						</div>
 						<div class="text-notif flex flex-col items-center justify-end">
-							<p>New invite to game from</p>
+							<p>New invite to play with</p>
 							<a href="/user?id={notif.id_user_send}" class="capitalize hover:text-third transition-colors duration-300">{notif.login_send}</a>
 						</div>
 					</div>

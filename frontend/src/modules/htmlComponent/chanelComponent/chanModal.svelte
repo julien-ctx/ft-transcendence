@@ -1,7 +1,7 @@
 <script lang="ts">
     import { goto } from "$app/navigation";
     import { currentRoomStore } from "$lib/store/roomStore";
-    import { socketFriendStore } from "$lib/store/socket";
+    import { socketFriendStore, socketUserStore } from "$lib/store/socket";
     import { userProfileDataStore, usersDataStore } from "$lib/store/user";
     import { GetOneUser } from "$lib/userUtils";
     import { Avatar, Dropdown, DropdownItem } from "flowbite-svelte";
@@ -21,11 +21,13 @@
 	let Endmute : any = null;	
 	let allUsers : any;
 	let socketFriend : any;
+	let socketUser : any;
 	let dropdownOpen : boolean = false;
 
 	currentRoomStore.subscribe((val) => currentRoom = val);
 	usersDataStore.subscribe((val) => allUsers = val);
 	socketFriendStore.subscribe((val) => socketFriend = val);
+	socketUserStore.subscribe(val => socketUser = val);
 
 	onMount(async () => {
 		socketRoom.on("event-write", (data : any) => {
@@ -146,7 +148,7 @@
 									<div class="avatar">
 										<Avatar src={getUser(mp.id_user).img_link} rounded class="object-cover cursor-pointer" />
 										<Dropdown open={dropdownOpen} class="bg-primary rounded">
-											<DropdownItem defaultClass="bg-primary border-none rounded-none p-2 font-sm hover:bg-secondary text-sm">
+											<DropdownItem defaultClass="bg-primary border-none rounded-none p-2 font-sm hover:bg-secondary text-sm" on:click={() => {socketUser.emit("notification_game", {user_send : myProfile, user_receive : getUser(mp.id_user)}); goto(`/game?id_send=${myProfile.id}&id_receive=${getUser(mp.id_user).id}`)}}>
 												Invite game
 											</DropdownItem>
 											<DropdownItem defaultClass="bg-primary border-none rounded-none p-2 font-sm hover:bg-secondary text-sm" on:click={() => handleGotoUser(returnIdUser(mp.id_user))}>
@@ -178,7 +180,7 @@
 									<div class="avatar">
 										<Avatar src={getUser(mp.id_user).img_link} rounded class="object-cover cursor-pointer" />
 										<Dropdown open={dropdownOpen}  class="bg-primary rounded">
-											<DropdownItem defaultClass="bg-primary border-none rounded-none p-2 font-sm hover:bg-secondary text-sm">
+											<DropdownItem defaultClass="bg-primary border-none rounded-none p-2 font-sm hover:bg-secondary text-sm"  on:click={() => {socketUser.emit("notification_game", {user_send : myProfile, user_receive : getUser(mp.id_user)}); goto(`/game?id_send=${myProfile.id}&id_receive=${getUser(mp.id_user).id}`)}}>
 												Invite game
 											</DropdownItem>
 											<DropdownItem defaultClass="bg-primary border-none rounded-none p-2 font-sm hover:bg-secondary text-sm" on:click={() => handleGotoUser(returnIdUser(mp.id_user))}>

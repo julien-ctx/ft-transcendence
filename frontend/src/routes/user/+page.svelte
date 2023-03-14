@@ -12,6 +12,7 @@
     import SvgDelete from '../../modules/htmlComponent/svgComponent/svgDelete.svelte';
     import UserActivity from '../../modules/htmlComponent/userActivity.svelte';
     import TabUser from '../../modules/htmlComponent/tabUser.svelte';
+    import { goto } from '$app/navigation';
 
     let allUsers : any;
     let myProfile : any;
@@ -90,7 +91,7 @@
                                 <SvgAdd />
                             </button>
                         {/if}
-                        <button>
+                        <button on:click={() => {socketUser.emit("notification_game", {user_send : myProfile, user_receive : userProfile}); goto(`/game?id_send=${myProfile.id}&id_receive=${userProfile.id}`)}}>
                             <img src="./game-battle.png" alt="" style="max-width: none;">
                         </button>
                         <button on:click={() => {socketMp.emit("create-room", {user_send : myProfile, user_receive : userProfile})}}>

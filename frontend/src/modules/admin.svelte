@@ -16,7 +16,7 @@
 	export let socket : any;
 	export let room : string;
 	export let infoChannel : any;
-	export let modalAdmin : boolean;
+	// export let modalAdmin : boolean;
 
 	let members : any;
 	let current : any = {};

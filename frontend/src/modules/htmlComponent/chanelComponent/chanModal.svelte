@@ -1,18 +1,21 @@
 <script lang="ts">
     import { goto } from "$app/navigation";
+    import { API_URL } from "$lib/env";
+    import { getJwt } from "$lib/jwtUtils";
     import { currentRoomStore } from "$lib/store/roomStore";
-    import { socketFriendStore, socketUserStore } from "$lib/store/socket";
+    import { socketFriendStore, socketRoomStore, socketUserStore } from "$lib/store/socket";
     import { userProfileDataStore, usersDataStore } from "$lib/store/user";
     import { GetOneUser } from "$lib/userUtils";
+    import axios from "axios";
     import { Avatar, Dropdown, DropdownItem } from "flowbite-svelte";
 	import { afterUpdate, onDestroy, onMount } from "svelte";
     import { element } from "svelte/internal";
     import SvgCancel from "../svgComponent/svgCancel.svelte";
 
 	export let myProfile : any;
-	export let socketRoom : any;
 	export let usersRoom : any;
 
+	let socketRoom : any;
 	let currentRoom : any;
 	let active : string = "";
 	let divBody : any;
@@ -28,7 +31,7 @@
 	usersDataStore.subscribe((val) => allUsers = val);
 	socketFriendStore.subscribe((val) => socketFriend = val);
 	socketUserStore.subscribe(val => socketUser = val);
-
+	socketRoomStore.subscribe(val => socketRoom = val);
 	onMount(async () => {
 		socketRoom.on("event-write", (data : any) => {
             if (data.write) {
@@ -42,6 +45,8 @@
         })
 
 		socketRoom.on("update-room", (data : any) => {
+			console.log(data);
+			
 			if (currentRoom != null)
 				currentRoomStore.set(data);
 		})
@@ -52,9 +57,17 @@
 		});
 	})
 
-	afterUpdate(() => {
+	afterUpdate(async () => {
 		if (divBody && divBody.scrollHeight)
 			divBody.scrollTop = divBody.scrollHeight + 500;
+		await axios.get(`${API_URL}/Chat/AllUsers/${currentRoom.name}`, {
+			headers: {
+				Authorization : `Bearer ${getJwt()}`
+			}
+		})
+		.then((res) => {
+			usersRoom = res.data            
+		})
 	})
 
 	function updateActive() {

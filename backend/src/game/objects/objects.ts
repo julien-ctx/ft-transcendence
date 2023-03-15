@@ -1,13 +1,6 @@
 import { User } from "@prisma/client";
 import { Socket } from "socket.io";
 
-export class WaitingClient {
-	constructor(
-		public socket: Socket,
-		public user: User,
-	) {}
-};
-
 export class Client {
 	constructor(
 		public socket: Socket,
@@ -27,6 +20,8 @@ export class Game {
 		public playerNumber: number,
 		public maxScore: number,
 		public botLevel: number,
+		public leftPlayerID: number | null,
+		public rightPlayerID: number | null,
 	) {}
 };
 

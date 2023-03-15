@@ -20,7 +20,7 @@
 
 	let members : any;
 	let current : any = {};
-	let Me : any;
+	let Me : any = {};
 	let isAdmin = true;
 	// Change password
 	let currentPass : string = '';
@@ -56,8 +56,9 @@
 				},
 			})
 			.then((res) => {
-				console.log(res);
+				// console.log(res);
 				Me = res.data;
+				console.log('Me - > ', Me);
 			});
 		} catch (error) {
 			console.log(error);
@@ -238,11 +239,11 @@
 	}
 
 	function canAdmin(member : any) {
-		// console.log('First condition ->', current.owner === true || current.admin === true);
-		// console.log('Current ->', current);
-		// console.log('Member ->', member);
-		// console.log('Second condition ->', member.owner === false && member.admin === false);
-		if (current.owner === true || current.admin === true && member.owner === false && member.admin === false)
+		console.log('Me ->', {Me})
+		// Me = Me;
+		if (Me === undefined)
+			return false;
+		if (Me.owner === true || Me.admin === true && member.owner === false && member.admin === false)
 			return true;
 		return false;
 	}
@@ -269,7 +270,7 @@
 							Member
 						</div>
 					{/if}
-					{#if canAdmin(member)}
+					{#if Me !== undefined && Me.owner === true || Me.admin === true && member.owner === false && member.admin === false}
 						<button class="button-admin" on:click={() => Kick(member.user)}>Kick</button>
 						<button>
 							<SvgSettings />

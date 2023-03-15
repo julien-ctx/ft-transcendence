@@ -44,6 +44,8 @@ export class ChatController {
 
 	@Get('getMyRelation/:room')
 	async getMyRelation(@UserDec() userReq: User, @Param('room') room: string) {
-		return await this.Chatservice.getMyRelation(userReq.id_user, room);
+		const t = await this.Chatservice.getMyRelation(userReq.id_user, room);
+		console.log(t);
+		return t;
 	}
 }

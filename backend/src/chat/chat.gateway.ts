@@ -49,6 +49,8 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 		const token = client.handshake.query.token as string;
 		const user = this.jwt.decode(token);
 		if (user === undefined) return;
+		console.log('token ->', token)
+		// console.log('Conncted user :', {user});
 		this.Client.push({user, client});
 		// console.log('Conncted user :', {user});
 
@@ -406,7 +408,9 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 		const userInRoom = await this.chatService.getUsersRooms(User.id, roomInstance.name);
 		this.Client.forEach((elem : any) => {
 			userInRoom.forEach((oneUser : User) => {
-				if (elem.user.id == oneUser.id_user) {
+				if (elem.user === null)
+					return ;				
+				else if (elem.user.id == oneUser.id_user) {
 					elem.client.emit("update-room", roomInstance);
 				}
 			})

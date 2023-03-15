@@ -72,7 +72,7 @@
         } catch (error) {
             console.log(error);
         }
-
+        // console.log(getJwt());
         socket = io(`${API_URL}`, {
             path : '/chat',
             query : {

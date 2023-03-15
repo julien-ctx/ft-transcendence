@@ -1,14 +1,14 @@
 import { GameService } from './game.service';
-import { Ball, Paddle, GameCanvas, Game, Client, WaitingClient } from './objects/objects';
+import { Ball, Paddle, GameCanvas, Game, Client } from './objects/objects';
 import { findLast } from 'lodash';
 import { JwtService } from "@nestjs/jwt";
 import { WebSocketGateway, WebSocketServer, OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, MessageBody, ConnectedSocket } from "@nestjs/websockets";
 import { User } from "@prisma/client";
 import { Server, Socket } from "socket.io";
 import { PrismaService } from "src/prisma/prisma.service";
-import { resolve } from 'path';
 
-const MAX_SCORE = 2;
+
+const MAX_SCORE = 10;
 
 @WebSocketGateway({
 	cors: true,
@@ -171,31 +171,48 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		);
 		let gameReady = false;
 		let game: Game | null = null;
+
 		if (data.playerNumber === 1) {
 			client.side = -1;
 			this.games.push(new Game(client, null, 1, MAX_SCORE, data.botLevel, data.leftPlayerID, data.rightPlayerID));
 			gameReady = true;
 		} else {
-			game = this.games.find(
-				game => game.playerNumber === 2
-				&& game.rightClient === null
-				&& client.user.login != game.leftClient.user.login
-			);
-			if (game) {
-				if ((game.leftPlayerID < 0 && game.rightPlayerID < 0) || (game.rightPlayerID === DBUser.id /*&& data.leftPlayerID === game.leftPlayerID*/)) {
-					console.log(DBUser.login, DBUser.id, 'is on right')
+			if (data.leftPlayerID < 0 && data.rightPlayerID < 0) {
+				game = this.games.find(
+					game => game.playerNumber === 2
+					&& game.rightClient === null
+					&& client.user.login != game.leftClient.user.login
+					&& game.leftPlayerID < 0
+					&& game.rightPlayerID < 0
+				);
+				if (game) {
+					console.log(DBUser.login, DBUser.id, 'is on right...')
 					client.side = 1;
 					game.rightClient = client;
 					gameReady = true;
 				} else {
-					console.log(DBUser.login, DBUser.id, 'is on left')
+					console.log(DBUser.login, DBUser.id, 'is on left...')
 					client.side = -1;
-					this.games.push(new Game(client, null, 2, MAX_SCORE, data.botLevel, data.leftPlayerID, data.rightPlayerID));
+					this.games.push(new Game(client, null, 2, MAX_SCORE, data.botLevel, data.leftPlayerID, data.rightPlayerID));	
 				}
 			} else {
-				console.log(DBUser.login, DBUser.id, 'is on left')
-				client.side = -1;
-				this.games.push(new Game(client, null, 2, MAX_SCORE, data.botLevel, data.leftPlayerID, data.rightPlayerID));
+				game = this.games.find(
+					game => game.playerNumber === 2
+					&& game.rightClient === null
+					&& client.user.login != game.leftClient.user.login
+					&& DBUser.id === game.rightPlayerID
+					&& data.leftPlayerID === game.leftPlayerID
+				);
+				if (game) {
+					console.log(DBUser.login, DBUser.id, 'is on right...')
+					client.side = 1;
+					game.rightClient = client;
+					gameReady = true;
+				} else {
+					console.log(DBUser.login, DBUser.id, 'is on left...')
+					client.side = -1;
+					this.games.push(new Game(client, null, 2, MAX_SCORE, data.botLevel, data.leftPlayerID, data.rightPlayerID));	
+				}
 			}
 		}
 		

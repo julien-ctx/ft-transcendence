@@ -6,7 +6,6 @@
 	import io, { Socket } from 'socket.io-client';
     import { API_URL } from "$lib/env";
     import { userProfileDataStore, usersDataStore } from "$lib/store/user";
-    import { isDepsOptimizerEnabled } from "vite";
 
 	const OBJ_COLOR: string = "#dcd3bc";
 	const BALL_COLOR: string = "#e39c9a";

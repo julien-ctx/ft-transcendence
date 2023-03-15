@@ -221,7 +221,7 @@
 </script>
 <div class="div-chan flex items-end">
     {#if currentRoom}
-        <ChanModal myProfile={myProfile} socketRoom={socket} usersRoom={usersCurrentRoom} />
+        <ChanModal myProfile={myProfile} usersRoom={usersCurrentRoom} />
     {/if}
     <div class="content-chan {active}">
         <div class="header">

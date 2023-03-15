@@ -449,10 +449,12 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 				password: mdp,
 			},
 		});
-		client.emit('successEdit');
+		client.emit('successEdit', {
+			roomName: Room.name,
+		});
 	}
 
-	@SubscribeMessage('changeSatus')
+	@SubscribeMessage('changeStatus')
 	async handleChangeStatus(@ConnectedSocket() client, @MessageBody() data: any) {
 		const token = client.handshake.query.token as string;
 		const user = this.jwt.decode(token);
@@ -469,8 +471,9 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 			return ;
 		}
 		else {
-			let mdp = await this.chatService.hashedPass(data.roomPass);
-			await this.prisma.room.update({
+			console.log('Pass ->', data.pass);
+			let mdp = await this.chatService.hashedPass(data.pass);
+			const newRoom = await this.prisma.room.update({
 				where: {
 					id: Room.id,
 				},
@@ -478,6 +481,17 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 					status: 'Protected',
 					password: mdp,
 				},
+			});
+			console.log('newRoom ->', newRoom);
+			client.emit('successChangeStatus', {
+				roomName: Room.name,
+				status: 'Protected',
+			})
+			client.emit('updateRoom', {
+				name: Room.name, 
+				owner: relation.owner, 
+				status: newRoom.status, 
+				admin: relation.admin,
 			});
 		}
 	}

@@ -40,6 +40,7 @@
 
 	onMount(async () => {
 		current = infoChannel.filter((Chan : any) => Chan.name === room)[0];
+		console.log(current);
 		await axios.get(`${API_URL}/Chat/getMembers/${room}`, {
 			headers: {
 				Authorization: `Bearer ${getJwt()}`,
@@ -138,6 +139,21 @@
 				members = res.data;		
 			});
 		})
+
+		socket.on('successChangeStatus', (data : any) => {
+			if (data.roomName !== room) return;
+			current.status = data.status;
+			change = false;
+			current = current;
+		});
+
+		socket.on('successEdit', (data : any) => {
+			if (data.roomName !== room) return;
+			newPass = '';
+			newPassConfirm = '';
+			validatePass = false;
+			currentPass = '';
+		});
 	});
 
 	function admin(sanction : string, Punished : any) {
@@ -245,6 +261,8 @@
 			pass : StatusPass, 
 			cpass : StatusCPass
 		});
+		StatusPass = '';
+		StatusCPass = ''
 	}
 </script>
 
@@ -356,11 +374,6 @@
 	{/if}
 
 	{#if current.status === 'Public' && Me.owner === true}
-		<!-- <button on:click={() => change = !change}>
-			<Toggle >
-					Change room status to protected
-			</Toggle>
-		</button> -->
 		<div class="flex flex-col">
 			<div class="flex justify-around">
 				<label class="switch">
@@ -373,8 +386,8 @@
 			</div>
 			{#if change === true}
 				<div class="flex flex-col">
-					<input class="rounded m-1" type="password" placeholder="New password" bind:value={newPass}>
-					<input class="rounded m-1" type="password" placeholder="Confirm password" bind:value={newPassConfirm}>
+					<input class="rounded m-1" type="password" placeholder="New password" bind:value={StatusPass}>
+					<input class="rounded m-1" type="password" placeholder="Confirm password" bind:value={StatusCPass}>
 					{#if passError !== ''}
 						<p class="flex justify-center text-red-500 text-sm">{passError}</p>
 					{/if}
@@ -390,11 +403,11 @@
 		<div class="flex justify-center">Change password</div>
 		<div class="flex flex-col">
 			{#if validatePass === false}
-				<input type="password" placeholder="Current password" bind:value={currentPass} on:keydown={verifPassword}>
+				<input class="rounded m-1" type="password" placeholder="Current password" bind:value={currentPass} on:keydown={verifPassword}>
 				<div class="border-t"></div>
 			{:else}
-				<input type="password" placeholder="New password" bind:value={newPass}>
-				<input type="password" placeholder="Confirm password" bind:value={newPassConfirm}>
+				<input class="rounded m-1" type="password" placeholder="New password" bind:value={newPass}>
+				<input class="rounded m-1" type="password" placeholder="Confirm password" bind:value={newPassConfirm}>
 				{#if passError !== ''}
 					<p class="flex justify-center text-red-500 text-sm">{passError}</p>
 				{/if}

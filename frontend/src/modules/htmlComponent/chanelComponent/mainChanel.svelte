@@ -65,8 +65,9 @@
                 headers: {
                     Authorization: `Bearer ${getJwt()}`
                 }
-            }).then((res : any) => {
+            }).then((res : any) => {      
                 rooms = res.data;
+                console.log('rooms ->', rooms);
             });
         } catch (error) {
             console.log(error);
@@ -85,6 +86,15 @@
 
         socket.on('rooms', (receivedRoom : any) => {
             rooms = [...rooms, receivedRoom];
+        });
+
+        socket.on('updateRoom', (receivedRoom : any) => {
+            rooms = rooms.map((room : any) => {
+                if (room.name === receivedRoom.name) {
+                    room = receivedRoom;
+                }
+                return room;
+            });
         });
 
         socket.on('errors', (receivedErr : any) => {

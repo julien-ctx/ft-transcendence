@@ -146,76 +146,8 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		if (game.playerNumber == 1)
 			this.gameService.updateBot(game.leftClient.ball, game.leftClient.rightPaddle, game.leftClient.canvas, game.botLevel);
 	}
-
-	@SubscribeMessage('ready')
-	async startGame(socket: Socket, data: {width, height, playerNumber, botLevel, leftPlayerID, rightPlayerID}) {
-		const token = socket.handshake.query.token as string;
-		const intraUser = this.jwt.decode(token);
-		if (intraUser == undefined) {
-			return console.log('intraUser undefined');
-		}
-		const DBUser = await this.prismaService.user.findUnique({
-			where : {
-				id_user : intraUser['id'],
-			}
-		})
-		let canvas = this.gameService.createCanvas(data.width, data.height);
-		let client = new Client(
-			socket,
-			DBUser,
-			canvas,
-			this.gameService.createLeftPaddle(canvas),
-			this.gameService.createRightPaddle(canvas),
-			this.gameService.createBall(canvas),
-			0,
-		);
-		let gameReady = false;
-		let game: Game | null = null;
-
-		if (data.playerNumber === 1) {
-			client.side = -1;
-			this.games.push(new Game(client, null, 1, MAX_SCORE, data.botLevel, data.leftPlayerID, data.rightPlayerID));
-			gameReady = true;
-		} else {
-			if (data.leftPlayerID < 0 && data.rightPlayerID < 0) {
-				game = this.games.find(
-					game => game.playerNumber === 2
-					&& game.rightClient === null
-					&& client.user.login != game.leftClient.user.login
-					&& game.leftPlayerID < 0
-					&& game.rightPlayerID < 0
-				);
-				if (game) {
-					console.log(DBUser.login, DBUser.id, 'is on right...')
-					client.side = 1;
-					game.rightClient = client;
-					gameReady = true;
-				} else {
-					console.log(DBUser.login, DBUser.id, 'is on left...')
-					client.side = -1;
-					this.games.push(new Game(client, null, 2, MAX_SCORE, data.botLevel, data.leftPlayerID, data.rightPlayerID));	
-				}
-			} else {
-				game = this.games.find(
-					game => game.playerNumber === 2
-					&& game.rightClient === null
-					&& client.user.login != game.leftClient.user.login
-					&& DBUser.id === game.rightPlayerID
-					&& data.leftPlayerID === game.leftPlayerID
-				);
-				if (game) {
-					console.log(DBUser.login, DBUser.id, 'is on right...')
-					client.side = 1;
-					game.rightClient = client;
-					gameReady = true;
-				} else {
-					console.log(DBUser.login, DBUser.id, 'is on left...')
-					client.side = -1;
-					this.games.push(new Game(client, null, 2, MAX_SCORE, data.botLevel, data.leftPlayerID, data.rightPlayerID));	
-				}
-			}
-		}
-		
+	
+	setClientEvents(socket: Socket, client: Client) {
 		socket.on('resize', ({width, height}) => {
 			this.gameService.handleResize(
 				client,
@@ -232,6 +164,84 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 			}
 			paddle.y = mouseY;
 		});
+	}
+
+	async getDBUser(socket: Socket, data: any) {
+		const token = socket.handshake.query.token as string;
+		const intraUser = this.jwt.decode(token);
+		if (intraUser == undefined) {
+			console.log('intraUser undefined');
+			return null;
+		}
+		const DBUser = await this.prismaService.user.findUnique({
+			where : {
+				id_user : intraUser['id'],
+			}
+		});
+		return DBUser;
+	}
+
+	async getClient(socket: Socket, data: any, DBUser: User) {
+		let canvas = this.gameService.createCanvas(data.width, data.height);
+		return new Client(
+			socket,
+			DBUser,
+			canvas,
+			this.gameService.createLeftPaddle(canvas),
+			this.gameService.createRightPaddle(canvas),
+			this.gameService.createBall(canvas),
+			0,
+		);
+	}
+
+	addClientInGame(game: Game | null, client: Client, data: any) {
+		if (game) {
+			client.side = 1;
+			game.rightClient = client;
+			return true;
+		} else {
+			client.side = -1;
+			this.games.push(new Game(client, null, 2, MAX_SCORE, data.botLevel, data.leftPlayerID, data.rightPlayerID));	
+			return false;
+		}
+	}
+
+	@SubscribeMessage('ready')
+	async startGame(socket: Socket, data: {width, height, playerNumber, botLevel, leftPlayerID, rightPlayerID}) {
+		const DBUser = await this.getDBUser(socket, data);
+		if (!DBUser) return console.log('Undefined DBUser');
+		const client = await this.getClient(socket, data, DBUser);
+		if (!client) return console.log('Undefined client');
+
+		let gameReady = false;
+		let game: Game | null = null;
+
+		if (data.playerNumber === 1) {
+			client.side = -1;
+			this.games.push(new Game(client, null, 1, MAX_SCORE, data.botLevel, data.leftPlayerID, data.rightPlayerID));
+			gameReady = true;
+		} else {
+			if (data.leftPlayerID < 0 && data.rightPlayerID < 0) {
+				game = this.games.find(
+					game => game.playerNumber === 2
+					&& game.rightClient === null
+					&& client.user.login != game.leftClient.user.login
+					&& game.leftPlayerID < 0
+					&& game.rightPlayerID < 0
+				);
+				gameReady = this.addClientInGame(game, client, data);
+			} else {
+				game = this.games.find(
+					game => game.playerNumber === 2
+					&& game.rightClient === null
+					&& client.user.login != game.leftClient.user.login
+					&& DBUser.id === game.rightPlayerID
+					&& data.leftPlayerID === game.leftPlayerID
+				);
+				gameReady = this.addClientInGame(game, client, data);
+			}
+		}
+		this.setClientEvents(socket, client);
 		
 		if (gameReady) {
 			if (data.playerNumber == 2) {

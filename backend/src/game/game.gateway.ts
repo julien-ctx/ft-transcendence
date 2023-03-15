@@ -23,7 +23,6 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	
 	private games: Game[] = [];
 	private interval: any = null;
-	private tests: boolean = false;
 
 	@WebSocketServer() server: Server;
 
@@ -104,7 +103,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	
 	
 	async gameLoop(game: Game) {
-		const winner = this.gameService.checkBallPosition(game, this.gameService.randomBallDirection());
+		const winner = await this.gameService.checkBallPosition(game, this.gameService.randomBallDirection());
 		if (winner !== 'NoWinner') {
 			if (winner === 'Bot') {
 				game.leftClient.socket.emit('winner', {winner: winner, side: 1, forfeit: false});
@@ -126,6 +125,14 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 				// await this.storeGameInDB(game, game.rightClient);
 			}
 			return;
+		} else {
+			clearInterval(this.interval);
+			game.leftClient.socket.emit('relaunchBall', ({}));
+			if (game.rightClient) {
+				game.rightClient.socket.emit('relaunchBall', ({}));
+			}
+			await new Promise(r => setTimeout(r, 1000));
+			this.interval = setInterval(this.gameLoop, 1, game);
 		}
 
 		this.gameService.updateBall(game.leftClient);

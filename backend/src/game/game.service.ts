@@ -164,7 +164,7 @@ export class GameService {
 		client.rightPaddle.y = client.canvas.height / 2 - client.rightPaddle.height / 2;
 	}
 
-	checkBallPosition(game: Game, randomBallDirection: number) {
+	async checkBallPosition(game: Game, randomBallDirection: number) {
 		if (game.leftClient.ball.x < 0) {
 			this.resetPaddles(game.leftClient);
 			this.resetBall(game.leftClient, -1, randomBallDirection);

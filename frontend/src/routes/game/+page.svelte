@@ -248,18 +248,6 @@
 		animationFrame = requestAnimationFrame(gameLoop);
 	}
 
-	async function drawSide(side: number) {
-		clearCanvas();
-		currMsg = side < 0 ? 'You play on the left' : 'You play on the right';
-		ctx.fillText(
-			currMsg,
-			canvas.width / 2 - ctx.measureText(currMsg).width / 2,
-			canvas.height / 2 
-		);
-		await new Promise(r => setTimeout(r, 2000));
-		currMsg = null;	
-	}
-
 	async function startGame() {
 		socket.on('paddlesData', ({leftPaddle, rightPaddle}) => {
 			gameLeftPaddle = leftPaddle;
@@ -271,6 +259,14 @@
 		socket.on('scoresData', ({leftScore, rightScore}) => {
 			gameLeftPaddle.score = leftScore;
 			gameRightPaddle.score = rightScore;
+		});
+		socket.on('relaunchBall', async ({}) => {
+			cancelAnimationFrame(animationFrame);
+			clearCanvas();
+			drawScores(gameLeftPaddle.score, gameRightPaddle.score);
+			drawSep(gameBall);
+			await new Promise(r => setTimeout(r, 1000));
+			gameLoop();
 		});
 		socket.on('winner', async ({winner, side, forfeit}) => {
 			gameStarted = false;

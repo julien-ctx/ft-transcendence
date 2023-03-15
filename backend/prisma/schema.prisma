@@ -114,13 +114,13 @@ model MessagePrivate {
 }
 
 model Notification {
-  id Int @id @default(autoincrement())
-  user  User @relation(fields: [id_user_receive], references: [id])
-  id_user_receive Int
-  id_user_send Int
-  name_room_private String @default("")
-  is_read Boolean @default(false)
-  login_send String
-  img_link String
-  type Int
+	id Int @id @default(autoincrement())
+	user User @relation(fields: [id_user_receive], references: [id])
+	id_user_receive Int
+	id_user_send Int
+	name_room_private String @default("")
+	is_read Boolean @default(false)
+	login_send String
+	img_link String
+	type Int
 }

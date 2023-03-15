@@ -1,5 +1,5 @@
 import { GameService } from './game.service';
-import { Ball, Paddle, GameCanvas, Game, Client, WaitingClient } from './objects/objects';
+import { Ball, Paddle, GameCanvas, Game, Client } from './objects/objects';
 import { findLast } from 'lodash';
 import { JwtService } from "@nestjs/jwt";
 import { WebSocketGateway, WebSocketServer, OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, MessageBody, ConnectedSocket } from "@nestjs/websockets";
@@ -7,7 +7,8 @@ import { User } from "@prisma/client";
 import { Server, Socket } from "socket.io";
 import { PrismaService } from "src/prisma/prisma.service";
 
-const MAX_SCORE = 2;
+
+const MAX_SCORE = 10;
 
 @WebSocketGateway({
 	cors: true,
@@ -20,7 +21,6 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	private prismaService : PrismaService
 	) {this.gameLoop = this.gameLoop.bind(this);}
 	
-	private queue: WaitingClient[] = [];
 	private games: Game[] = [];
 	private interval: any = null;
 	private tests: boolean = false;
@@ -29,39 +29,21 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
 	afterInit() {}
 
-	async handleConnection(socket : Socket) {
-		const token = socket.handshake.query.token as string;
-		const user = this.jwt.decode(token);
-		if (user == undefined) return;
-		const fullUserData = await this.prismaService.user.findUnique({
-			where : {
-				id_user : user['id'],
-			}
-		})
-		this.queue.push(new WaitingClient(socket, fullUserData))
-	}
+	handleConnection(socket : Socket) {}
 
 	handleDisconnect(socket: Socket) {
-		if (!this.removeFromQueue(socket)) {
-			const WinnerByForfeit: any = this.removeFromGame(socket);
-			if (WinnerByForfeit.client) {
-				WinnerByForfeit.client.socket.emit('winner', {winner: WinnerByForfeit.client.user.login, side: WinnerByForfeit.side, forfeit: true});
-			}
-			if (this.interval) {
-				clearInterval(this.interval);
-				this.interval = null;
-			}
+		const WinnerByForfeit: any = this.removeFromGame(socket);
+		if (WinnerByForfeit.client) {
+			WinnerByForfeit.client.socket.emit('winner', {
+				winner: WinnerByForfeit.client.user.login,
+				side: WinnerByForfeit.side,
+				forfeit: true
+			});
 		}
-	}
-
-	removeFromQueue(socket: Socket): boolean {
-		for (let i = 0; i < this.queue.length; i++) {
-			if (this.queue[i].socket == socket) {
-				this.queue.splice(i, 1);
-				return true;
-			}
+		if (this.interval) {
+			clearInterval(this.interval);
+			this.interval = null;
 		}
-		return false;
 	}
 
 	removeFromGame(socket: Socket) {
@@ -164,45 +146,8 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		if (game.playerNumber == 1)
 			this.gameService.updateBot(game.leftClient.ball, game.leftClient.rightPaddle, game.leftClient.canvas, game.botLevel);
 	}
-
-	@SubscribeMessage('ready')
-	startGame(socket: Socket, data: {width, height, playerNumber, botLevel}) {
-		let waitingClient = this.queue.find(waitingClient => waitingClient.socket === socket);
-		if (!waitingClient) {
-			return console.log('waitingClient null');
-		}
-		if (socket === waitingClient.socket) {
-			this.removeFromQueue(socket);
-		}
-		let canvas = this.gameService.createCanvas(data.width, data.height);
-		let client = new Client(
-			waitingClient.socket,
-			waitingClient.user,
-			canvas,
-			this.gameService.createLeftPaddle(canvas),
-			this.gameService.createRightPaddle(canvas),
-			this.gameService.createBall(canvas),
-			0,
-		);
-		let gameReady = false;
-		let game: Game | null = null;
-		if (data.playerNumber === 1) {
-			client.side = -1;
-			this.games.push(new Game(client, null, 1, MAX_SCORE, data.botLevel));
-			gameReady = true;
-		} else if (this.games.find(game => game.playerNumber === 2 && game.rightClient === null)) {
-			game = this.games.find(game => game.playerNumber === 2 && game.rightClient === null
-					&& client.user.login != game.leftClient.user.login);
-			if (!game) {
-				return console.log('game null');
-			}
-			client.side = 1;
-			game.rightClient = client;
-			gameReady = true;
-		} else {
-			client.side = -1;
-			this.games.push(new Game(client, null, 2, MAX_SCORE, data.botLevel));
-		}
+	
+	setClientEvents(socket: Socket, client: Client) {
 		socket.on('resize', ({width, height}) => {
 			this.gameService.handleResize(
 				client,
@@ -219,6 +164,84 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 			}
 			paddle.y = mouseY;
 		});
+	}
+
+	async getDBUser(socket: Socket, data: any) {
+		const token = socket.handshake.query.token as string;
+		const intraUser = this.jwt.decode(token);
+		if (intraUser == undefined) {
+			console.log('intraUser undefined');
+			return null;
+		}
+		const DBUser = await this.prismaService.user.findUnique({
+			where : {
+				id_user : intraUser['id'],
+			}
+		});
+		return DBUser;
+	}
+
+	async getClient(socket: Socket, data: any, DBUser: User) {
+		let canvas = this.gameService.createCanvas(data.width, data.height);
+		return new Client(
+			socket,
+			DBUser,
+			canvas,
+			this.gameService.createLeftPaddle(canvas),
+			this.gameService.createRightPaddle(canvas),
+			this.gameService.createBall(canvas),
+			0,
+		);
+	}
+
+	addClientInGame(game: Game | null, client: Client, data: any) {
+		if (game) {
+			client.side = 1;
+			game.rightClient = client;
+			return true;
+		} else {
+			client.side = -1;
+			this.games.push(new Game(client, null, 2, MAX_SCORE, data.botLevel, data.leftPlayerID, data.rightPlayerID));	
+			return false;
+		}
+	}
+
+	@SubscribeMessage('ready')
+	async startGame(socket: Socket, data: {width, height, playerNumber, botLevel, leftPlayerID, rightPlayerID}) {
+		const DBUser = await this.getDBUser(socket, data);
+		if (!DBUser) return console.log('Undefined DBUser');
+		const client = await this.getClient(socket, data, DBUser);
+		if (!client) return console.log('Undefined client');
+
+		let gameReady = false;
+		let game: Game | null = null;
+
+		if (data.playerNumber === 1) {
+			client.side = -1;
+			this.games.push(new Game(client, null, 1, MAX_SCORE, data.botLevel, data.leftPlayerID, data.rightPlayerID));
+			gameReady = true;
+		} else {
+			if (data.leftPlayerID < 0 && data.rightPlayerID < 0) {
+				game = this.games.find(
+					game => game.playerNumber === 2
+					&& game.rightClient === null
+					&& client.user.login != game.leftClient.user.login
+					&& game.leftPlayerID < 0
+					&& game.rightPlayerID < 0
+				);
+				gameReady = this.addClientInGame(game, client, data);
+			} else {
+				game = this.games.find(
+					game => game.playerNumber === 2
+					&& game.rightClient === null
+					&& client.user.login != game.leftClient.user.login
+					&& DBUser.id === game.rightPlayerID
+					&& data.leftPlayerID === game.leftPlayerID
+				);
+				gameReady = this.addClientInGame(game, client, data);
+			}
+		}
+		this.setClientEvents(socket, client);
 		
 		if (gameReady) {
 			if (data.playerNumber == 2) {
@@ -253,15 +276,19 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	
 	@SubscribeMessage('gameLoop')
 	launchGameLoop(socket: Socket) {
-		const game = this.games[this.games.length - 1];
-		let randomBallDirectionX = this.gameService.randomBallDirection();
-		let randomBallDirectionY = this.gameService.randomBallDirection();
-		game.leftClient.ball.direction.x *= randomBallDirectionX;
-		game.leftClient.ball.direction.y *= randomBallDirectionY;
-		if (game.playerNumber === 2) {
-			game.rightClient.ball.direction.x *= randomBallDirectionX;
-			game.rightClient.ball.direction.y *= randomBallDirectionY;
+		try {
+			const game = this.games[this.games.length - 1];
+			let randomBallDirectionX = this.gameService.randomBallDirection();
+			let randomBallDirectionY = this.gameService.randomBallDirection();
+			game.leftClient.ball.direction.x *= randomBallDirectionX;
+			game.leftClient.ball.direction.y *= randomBallDirectionY;
+			if (game.playerNumber === 2) {
+				game.rightClient.ball.direction.x *= randomBallDirectionX;
+				game.rightClient.ball.direction.y *= randomBallDirectionY;
+			}
+			this.interval = setInterval(this.gameLoop, 1, game);
+		} catch (error) {
+			console.log(error);
 		}
-		this.interval = setInterval(this.gameLoop, 1, game);
 	}
 };

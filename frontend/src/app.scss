@@ -402,6 +402,15 @@ button,
 	border-color: #000;
 }
 
+input[type=range]::-moz-range-progress,
+input[type=range]::-moz-range-track,
+input[type=range]::-moz-range-thumb {
+	appearance: none;
+	border: 2px solid rgb(123, 123, 123)!important;
+	background: white !important;
+	border-color: #000;
+}
+
 #play-alone-button {
 	margin-top: 5vh;
 }

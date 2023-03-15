@@ -106,7 +106,12 @@ export class Sanction {
                 this.Clients[i].client.emit('deletedRoom', Room.name);
             }
         }
-        this.By.emit('deletedMember', this.member);
+        // this.By.emit('deletedMember', this.member);
+        this.Clients.forEach((elem : any) => {
+            if (elem.user.id === this.member.id_user)
+                elem.client.emit('deletedRoom', Room.name);
+            elem.client.emit('deletedMember', this.member)
+        });
     }
 
     async mute() {
@@ -141,14 +146,12 @@ export class Sanction {
                 id: relation[0].id,
             }
         });
-        // console.log(this.Clients)
-        for (let i = 0; i < this.Clients.length; i++) {
-            // console.log(this.Clients[i].user);
-            if (this.Clients[i].user.login === User.login) {
-                this.Clients[i].client.emit('deletedRoom', Room.name);
-            }
-        }
-        this.By.emit('deletedMember', this.member);
+        // console.log(this.member);
+        this.Clients.forEach((elem : any) => {
+            if (elem.user.id === this.member.id_user)
+                elem.client.emit('deletedRoom', Room.name);
+            elem.client.emit('deletedMember', this.member)
+        });
     }
 
     findRoom(roomName : string) {

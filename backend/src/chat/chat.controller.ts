@@ -14,8 +14,6 @@ export class ChatController {
 
 	@Get('getRooms')
 	async getRooms(@UserDec() userReq : User) {
-		// console.log(userReq);
-		
 		return await this.Chatservice.getRooms(userReq.id_user);
 	}
 
@@ -42,5 +40,10 @@ export class ChatController {
 	@Get("getRoom/:room")
 	async getRoom(@UserDec() userReq: User, @Param('room') room: string) {
 		return await this.Chatservice.getRoomByName(room);
+	}
+
+	@Get('getMyRelation/:room')
+	async getMyRelation(@UserDec() userReq: User, @Param('room') room: string) {
+		return await this.Chatservice.getMyRelation(userReq.id_user, room);
 	}
 }

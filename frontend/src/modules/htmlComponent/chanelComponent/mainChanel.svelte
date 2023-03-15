@@ -429,7 +429,7 @@
 </Modal>
 
 <Modal bind:open={modalAdmin} title="Admin Panel" class="bg-primary">
-    <Members room={admin} socket={socket} infoChannel={rooms}/>
+    <Members room={admin} socket={socket} infoChannel={rooms} modalAdmin={modalAdmin}/>
 	<div class="flex justify-center gap-8">
 		<button class="button-actions" on:click={() => close()}>Close</button>
 	</div>

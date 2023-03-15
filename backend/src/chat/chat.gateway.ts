@@ -452,6 +452,36 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 		client.emit('successEdit');
 	}
 
+	@SubscribeMessage('changeSatus')
+	async handleChangeStatus(@ConnectedSocket() client, @MessageBody() data: any) {
+		const token = client.handshake.query.token as string;
+		const user = this.jwt.decode(token);
+		if (user === undefined) return;
+
+		const User = await this.Service.getOneById(user['id']);
+		const Room = await this.chatService.getRoomByName(data.roomName);
+		const relation = await this.chatService.getMyRelation(User.id_user, Room.name);
+
+		if (relation.admin !== true) return ;
+		if (data.pass !== data.cpass) {
+			// Emit error password must match
+
+			return ;
+		}
+		else {
+			let mdp = await this.chatService.hashedPass(data.roomPass);
+			await this.prisma.room.update({
+				where: {
+					id: Room.id,
+				},
+				data: {
+					status: 'Protected',
+					password: mdp,
+				},
+			});
+		}
+	}
+
 	@SubscribeMessage('sanction')
 	async handleAdmin(@ConnectedSocket() client, @MessageBody() data: any) {
 		const token = client.handshake.query.token as string;

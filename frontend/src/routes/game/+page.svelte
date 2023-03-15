@@ -6,6 +6,7 @@
 	import io, { Socket } from 'socket.io-client';
     import { API_URL } from "$lib/env";
     import { userProfileDataStore, usersDataStore } from "$lib/store/user";
+    import { isDepsOptimizerEnabled } from "vite";
 
 	const OBJ_COLOR: string = "#dcd3bc";
 	const BALL_COLOR: string = "#e39c9a";
@@ -48,8 +49,8 @@
 	let gamePlayerSide: number = 0;
 	
 	let playerNumber: number = 0;
-	let idSend: any = null;
-	let idReceive: any = null;
+	let idSend: any = -1;
+	let idReceive: any = -1;
 
 	let socket: Socket;	
 	let jwt: any;
@@ -111,7 +112,7 @@
 			removeJwt();
 			goto("/login")
 		})
-		if (idSend && idReceive) {
+		if (idSend !== -1 && idReceive !== -1) {
 			createCanvas(2);
 		}
 	});	

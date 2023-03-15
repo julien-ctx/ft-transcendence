@@ -6,7 +6,7 @@ import { WebSocketGateway, WebSocketServer, OnGatewayInit, OnGatewayConnection, 
 import { User } from "@prisma/client";
 import { Server, Socket } from "socket.io";
 import { PrismaService } from "src/prisma/prisma.service";
-import e from 'express';
+import { resolve } from 'path';
 
 const MAX_SCORE = 2;
 
@@ -21,7 +21,6 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	private prismaService : PrismaService
 	) {this.gameLoop = this.gameLoop.bind(this);}
 	
-	private queue: WaitingClient[] = [];
 	private games: Game[] = [];
 	private interval: any = null;
 	private tests: boolean = false;
@@ -30,39 +29,21 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
 	afterInit() {}
 
-	async handleConnection(socket : Socket) {
-		const token = socket.handshake.query.token as string;
-		const user = this.jwt.decode(token);
-		if (user == undefined) return;
-		const fullUserData = await this.prismaService.user.findUnique({
-			where : {
-				id_user : user['id'],
-			}
-		})
-		this.queue.push(new WaitingClient(socket, fullUserData))
-	}
+	handleConnection(socket : Socket) {}
 
 	handleDisconnect(socket: Socket) {
-		if (!this.removeFromQueue(socket)) {
-			const WinnerByForfeit: any = this.removeFromGame(socket);
-			if (WinnerByForfeit.client) {
-				WinnerByForfeit.client.socket.emit('winner', {winner: WinnerByForfeit.client.user.login, side: WinnerByForfeit.side, forfeit: true});
-			}
-			if (this.interval) {
-				clearInterval(this.interval);
-				this.interval = null;
-			}
+		const WinnerByForfeit: any = this.removeFromGame(socket);
+		if (WinnerByForfeit.client) {
+			WinnerByForfeit.client.socket.emit('winner', {
+				winner: WinnerByForfeit.client.user.login,
+				side: WinnerByForfeit.side,
+				forfeit: true
+			});
 		}
-	}
-
-	removeFromQueue(socket: Socket): boolean {
-		for (let i = 0; i < this.queue.length; i++) {
-			if (this.queue[i].socket == socket) {
-				this.queue.splice(i, 1);
-				return true;
-			}
+		if (this.interval) {
+			clearInterval(this.interval);
+			this.interval = null;
 		}
-		return false;
 	}
 
 	removeFromGame(socket: Socket) {
@@ -167,20 +148,21 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	}
 
 	@SubscribeMessage('ready')
-	startGame(socket: Socket, data: {width, height, playerNumber, botLevel, leftPlayerID, rightPlayerID}) {
-		let waitingClient = this.queue.find(waitingClient => waitingClient.socket === socket);
-		if (!waitingClient) {
-			console.log(this.queue);
-			
-			return console.log('waitingClient null');
+	async startGame(socket: Socket, data: {width, height, playerNumber, botLevel, leftPlayerID, rightPlayerID}) {
+		const token = socket.handshake.query.token as string;
+		const intraUser = this.jwt.decode(token);
+		if (intraUser == undefined) {
+			return console.log('intraUser undefined');
 		}
-		if (socket === waitingClient.socket) {
-			this.removeFromQueue(socket);
-		}
+		const DBUser = await this.prismaService.user.findUnique({
+			where : {
+				id_user : intraUser['id'],
+			}
+		})
 		let canvas = this.gameService.createCanvas(data.width, data.height);
 		let client = new Client(
-			waitingClient.socket,
-			waitingClient.user,
+			socket,
+			DBUser,
 			canvas,
 			this.gameService.createLeftPaddle(canvas),
 			this.gameService.createRightPaddle(canvas),
@@ -193,25 +175,30 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 			client.side = -1;
 			this.games.push(new Game(client, null, 1, MAX_SCORE, data.botLevel, data.leftPlayerID, data.rightPlayerID));
 			gameReady = true;
-		} else if (this.games.find(game => game.playerNumber === 2 && game.rightClient === null
-			&& client.user.login != game.leftClient.user.login)) {
-			
-			game = this.games.find(game => game.playerNumber === 2 && game.rightClient === null
-			&& client.user.login != game.leftClient.user.login);
-			if (!game) {
-				return console.log('game null');
-			}
-			if ((data.leftPlayerID === game.leftClient.user.id && data.rightPlayerID === client.user.id)
-				|| (!data.leftPlayerID && !data.rightPlayerID)) {
-				client.side = 1;
-				game.rightClient = client;
-				gameReady = true;
+		} else {
+			game = this.games.find(
+				game => game.playerNumber === 2
+				&& game.rightClient === null
+				&& client.user.login != game.leftClient.user.login
+			);
+			if (game) {
+				if ((game.leftPlayerID < 0 && game.rightPlayerID < 0) || (game.rightPlayerID === DBUser.id /*&& data.leftPlayerID === game.leftPlayerID*/)) {
+					console.log(DBUser.login, DBUser.id, 'is on right')
+					client.side = 1;
+					game.rightClient = client;
+					gameReady = true;
+				} else {
+					console.log(DBUser.login, DBUser.id, 'is on left')
+					client.side = -1;
+					this.games.push(new Game(client, null, 2, MAX_SCORE, data.botLevel, data.leftPlayerID, data.rightPlayerID));
+				}
+			} else {
+				console.log(DBUser.login, DBUser.id, 'is on left')
+				client.side = -1;
+				this.games.push(new Game(client, null, 2, MAX_SCORE, data.botLevel, data.leftPlayerID, data.rightPlayerID));
 			}
 		}
-		else {
-			client.side = -1;
-			this.games.push(new Game(client, null, 2, MAX_SCORE, data.botLevel, data.leftPlayerID, data.rightPlayerID));
-		}
+		
 		socket.on('resize', ({width, height}) => {
 			this.gameService.handleResize(
 				client,

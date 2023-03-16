@@ -22,7 +22,6 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	) {this.gameLoop = this.gameLoop.bind(this);}
 	
 	private games: Game[] = [];
-	private interval: any = null;
 
 	@WebSocketServer() server: Server;
 
@@ -31,17 +30,14 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	handleConnection(socket : Socket) {}
 
 	handleDisconnect(socket: Socket) {
-		const WinnerByForfeit: any = this.removeFromGame(socket);
-		if (WinnerByForfeit.client) {
-			WinnerByForfeit.client.socket.emit('winner', {
-				winner: WinnerByForfeit.client.user.login,
-				side: WinnerByForfeit.side,
+		const disconnectData = this.removeFromGame(socket);
+		if (disconnectData) {
+			clearInterval(disconnectData.gameInterval);
+			disconnectData.client.socket.emit('winner', {
+				winner: disconnectData.client.user.login,
+				side: disconnectData.side,
 				forfeit: true
-			});
-		}
-		if (this.interval) {
-			clearInterval(this.interval);
-			this.interval = null;
+			});	
 		}
 	}
 
@@ -53,13 +49,15 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 				client = game.rightClient;
 				side = 1;
 				this.games.splice(index, 1);
+				return {game: game, side: side};
 			} else if (game.rightClient && game.rightClient.socket === socket) {
 				client = game.leftClient;
 				side = -1;
 				this.games.splice(index, 1);
+				return {gameInterval: game.interval, client: client, side: side};
 			}
 		});
-		return {client: client, side: side};
+		return null;
 	}
 
 	async storeGameInDB(game: Game, winnerClient: Client) {
@@ -100,10 +98,8 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 			this.server.emit("user_update", userUpdate);
 		});
 	}
-	private isPaused: boolean = false;
 	
 	async gameLoop(game: Game) {
-		if (!this.isPaused) {
 		const winner = await this.gameService.checkBallPosition(game, this.gameService.randomBallDirection());
 		if (winner !== 'NoWinner') {
 			if (winner === 'Bot') {
@@ -143,7 +139,6 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		}
 		if (game.playerNumber == 1)
 			this.gameService.updateBot(game.leftClient.ball, game.leftClient.rightPaddle, game.leftClient.canvas, game.botLevel);
-	}
 	}
 
 	setClientEvents(socket: Socket, client: Client) {
@@ -200,7 +195,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 			return true;
 		} else {
 			client.side = -1;
-			this.games.push(new Game(client, null, 2, MAX_SCORE, data.botLevel, data.leftPlayerID, data.rightPlayerID));	
+			this.games.push(new Game(client, null, 2, MAX_SCORE, data.botLevel, data.leftPlayerID, data.rightPlayerID, null));	
 			return false;
 		}
 	}
@@ -217,7 +212,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
 		if (data.playerNumber === 1) {
 			client.side = -1;
-			this.games.push(new Game(client, null, 1, MAX_SCORE, data.botLevel, data.leftPlayerID, data.rightPlayerID));
+			this.games.push(new Game(client, null, 1, MAX_SCORE, data.botLevel, data.leftPlayerID, data.rightPlayerID, null));
 			gameReady = true;
 		} else {
 			if (data.leftPlayerID < 0 && data.rightPlayerID < 0) {
@@ -285,7 +280,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 				game.rightClient.ball.direction.x *= randomBallDirectionX;
 				game.rightClient.ball.direction.y *= randomBallDirectionY;
 			}
-			this.interval = setInterval(this.gameLoop, 1, game);
+			game.interval = setInterval(this.gameLoop, 1, game);
 		} catch (error) {
 			console.log(error);
 		}

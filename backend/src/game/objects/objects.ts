@@ -22,6 +22,7 @@ export class Game {
 		public botLevel: number,
 		public leftPlayerID: number | null,
 		public rightPlayerID: number | null,
+		public interval: any,
 	) {}
 };
 

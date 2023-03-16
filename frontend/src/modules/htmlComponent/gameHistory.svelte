@@ -9,13 +9,8 @@
 	{#if game.user[0] && game.user[1]}	
 		<div class="flex justify-between items-center max-w-lg shadow-md p-5 rounded">
 			<div>
-				{#if game.id_user_winner === game.user[0].id}
-					<Avatar size="lg" src={game.user[0].img_link} class="object-cover bg-transparent" rounded/>
-					<p class="capitalize font-medium text-center">{game.user[0].login}</p>
-				{:else}
-					<Avatar size="lg" src={game.user[1].img_link} class="object-cover bg-transparent" rounded/>
-					<p class="capitalize font-medium text-center">{game.user[1].login}</p>	
-				{/if}
+				<Avatar size="lg" src={game.user[0].img_link} class="object-cover bg-transparent" rounded/>
+				<p class="capitalize font-medium text-center">{game.user[0].login}</p>
 			</div>
 			<div class="flex flex-col items-center">
 				<p class="font-bold text-3xl">VS</p>
@@ -26,13 +21,8 @@
 				{/if}
 			</div>
 			<div>
-				{#if game.id_user_winner !== game.user[0].id}
-					<Avatar size="lg" src={game.user[0].img_link} class="object-cover bg-transparent" rounded/>
-					<p class="capitalize font-medium text-center">{game.user[0].login}</p>
-				{:else}
-					<Avatar size="lg" src={game.user[1].img_link} class="object-cover bg-transparent" rounded/>
-					<p class="capitalize font-medium text-center">{game.user[1].login}</p>	
-				{/if}
+				<Avatar size="lg" src={game.user[1].img_link} class="object-cover bg-transparent" rounded/>
+				<p class="capitalize font-medium text-center">{game.user[1].login}</p>
 			</div>
 		</div>
 	{/if}

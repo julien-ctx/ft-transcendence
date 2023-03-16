@@ -307,7 +307,7 @@
         {/if}
     </div>
     <button class="button-messagerie {active}" on:click={() => active = "active"}>
-        Messagerie
+        Social
     </button>
 </div>
     

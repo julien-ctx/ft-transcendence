@@ -103,7 +103,7 @@
 							<SvgDelete />
 						</button>
 					</div>
-				{:else if notif.type == 1}
+				<!-- {:else if notif.type == 1}
 					<div class="flex gap-5">
 						<div>
 							<button class="button-card-user">...</button>
@@ -126,7 +126,7 @@
 						<button on:click={() => handleViewMp(notif)}>
 							View
 						</button>
-					</div>
+					</div> -->
 				{:else if notif.type == 2}
 					<div class="flex gap-5">
 						<div>

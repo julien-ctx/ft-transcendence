@@ -14,6 +14,7 @@ body {
     background-repeat: no-repeat;
     background-attachment: fixed;
 	background-image : url("./bg-body.png");
+	background-size: cover;
 }
 
 .img-home {
@@ -578,7 +579,7 @@ input[type=range]::-moz-range-thumb {
 	}
 }
 
-.container-home .container-game .content-game div {
+.shadow-md {
 	background-color: $primary;
 }
 
@@ -703,7 +704,7 @@ input[type=range]::-moz-range-thumb {
 	h2 {
 		border: none !important;
 		&:hover {
-			background-color: $primary !important;
+			background-color: transparent !important;
 		}
 		&[aria-expanded=true] {
 			button {
@@ -716,7 +717,7 @@ input[type=range]::-moz-range-thumb {
 			background-color: transparent !important;
 			&:hover {
 				color: $third;
-				background-color: $primary !important;
+				background-color: transparent !important;
 			}
 			&.active {
 				background-color: $primary !important;

@@ -26,7 +26,7 @@
 	</div>
 	{#if gameHistory}
 		<div class="container-game">
-			<h2>Last games</h2>
+			<h2 style="text-align: center">Last games</h2>
 			<div class="content-game">
 				<GameHistory gameHistory={gameHistory} />
 			</div>

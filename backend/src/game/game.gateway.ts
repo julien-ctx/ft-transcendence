@@ -58,7 +58,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		return null;
 	}
 
-	async storeGameInDB(game: Game, winnerClient: Client) {
+	async storeGameInDB(game: Game, client: Client, winner: boolean) {
 		await this.prismaService.gameHistory.create({
 			data : {
 				user : {
@@ -69,24 +69,27 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 				},
 				score_user1 : game.leftClient.leftPaddle.score,
 				score_user2 : game.rightClient.rightPaddle.score,
-				id_user_winner : winnerClient.user.id
+				id_user_winner : client.user.id
 			},
 			include : {
 				user : true
 			}
 		});
-		
-		const winrate = winnerClient.user.totalGames ? winnerClient.user.totalGamesWin * 100 / winnerClient.user.totalGames : 0;
-		
+
+		let totalGamesWin = client.user.totalGamesWin;
+		let level = client.user.level;
+		if (winner) {
+			totalGamesWin++;
+			level += 0.42;
+		}
 		await this.prismaService.user.update({
 			where : {
-				id : winnerClient.user.id
+				id : client.user.id
 			},
 			data : {
-				totalGames : winnerClient.user.totalGames + 1,
-				totalGamesWin : winnerClient.user.totalGamesWin + 1,
-				level : winnerClient.user.level + 0.42,
-				winrate : winrate,	
+				totalGames : client.user.totalGames + 1,
+				totalGamesWin : totalGamesWin,
+				level : level,
 			},
 			include : {
 				gameHistory : true,
@@ -95,11 +98,26 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 				RoomToUser : true
 			}
 		})
-		.then((userUpdate : User) => {
+		.then(async (userUpdate : User) => {
+			const winrate = client.user.totalGames ? parseInt((client.user.totalGamesWin * 100 / client.user.totalGames).toString()) : 0;
+			await this.prismaService.user.update({
+				where : {
+					id : client.user.id
+				},
+				data : {
+					winrate : winrate,	
+				},
+				include : {
+					gameHistory : true,
+					notification : true,
+					roomMp : true,
+					RoomToUser : true
+				}
+			})	
 			this.server.emit("user_update", userUpdate);
 		})
 		.catch((error) => {
-			console.log(error);``
+			console.log(error);
 		})
 	}
 	
@@ -113,13 +131,15 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 				if (game.rightClient) {
 					game.rightClient.socket.emit('winner', {winner: winner, side: -1, forfeit: false});
 				}
-				await this.storeGameInDB(game, game.leftClient);
+				await this.storeGameInDB(game, game.rightClient, true);
+				await this.storeGameInDB(game, game.leftClient, false);
 			} else if (winner === game.rightClient.user.login){
 				game.leftClient.socket.emit('winner', {winner: winner, side: 1, forfeit: false});
 				if (game.rightClient) {
 					game.rightClient.socket.emit('winner', {winner: winner, side: 1, forfeit: false});
 				}
-				await this.storeGameInDB(game, game.rightClient);
+				await this.storeGameInDB(game, game.rightClient, true);
+				await this.storeGameInDB(game, game.leftClient, false);
 			}
 			return;
 		}

@@ -717,6 +717,21 @@ input[type=range]::-moz-range-thumb {
 	}
 }
 
+.toast-style {
+	position: absolute;
+	top: 63px;
+	left: 50%;
+	transform: translateX(-50%);
+	background-color: $primary !important;
+	padding: 5px 15px;
+	svg {
+		stroke: $third;
+	}
+	.flex-shrink-0 {
+		background-color: transparent !important;
+	}
+}
+
 .dropdown-notification {
 	max-width: 300px;
 	.notification:not(:last-child) {

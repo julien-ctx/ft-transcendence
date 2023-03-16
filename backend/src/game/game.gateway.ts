@@ -131,8 +131,8 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 				if (game.rightClient) {
 					game.rightClient.socket.emit('winner', {winner: winner, side: -1, forfeit: false});
 				}
-				await this.storeGameInDB(game, game.rightClient, true);
-				await this.storeGameInDB(game, game.leftClient, false);
+				await this.storeGameInDB(game, game.rightClient, false);
+				await this.storeGameInDB(game, game.leftClient, true);
 			} else if (winner === game.rightClient.user.login){
 				game.leftClient.socket.emit('winner', {winner: winner, side: 1, forfeit: false});
 				if (game.rightClient) {

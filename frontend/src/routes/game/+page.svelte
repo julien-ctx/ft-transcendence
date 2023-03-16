@@ -85,7 +85,6 @@
 					usersDataStore.set(allUsers);
 				}
 			}
-			socket.emit('gameStoredInDB', ({}));
 		})
 	}
 

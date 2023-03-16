@@ -13,7 +13,17 @@ body {
     margin: 0;
     background-repeat: no-repeat;
     background-attachment: fixed;
-	background-image : url("./bg-body.jpg");
+	background-image : url("./bg-body.png");
+}
+
+.img-home {
+	width: 45%;
+	height: 45%;
+	-moz-box-shadow: 0px 15px 15px rgb(187, 187, 187);
+	-webkit-box-shadow: 0px 15px 15px  rgb(187, 187, 187);
+	box-shadow: 0px 15px 15px  rgb(187, 187, 187);
+	border-radius: 20px;
+	border: solid 5px $secondary;
 }
 
 h1 {
@@ -568,6 +578,10 @@ input[type=range]::-moz-range-thumb {
 	}
 }
 
+.container-home .container-game .content-game div {
+	background-color: $primary;
+}
+
 .header-user-card {
 	font-family: "Audiowide";
 	font-weight: 700;
@@ -685,7 +699,7 @@ input[type=range]::-moz-range-thumb {
 
 .accordion {
 	border: none !important;
-
+	
 	h2 {
 		border: none !important;
 		&:hover {

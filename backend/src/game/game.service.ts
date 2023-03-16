@@ -178,8 +178,6 @@ export class GameService {
 			}
 			if (game.leftClient.rightPaddle.score === game.maxScore) {
 				return game.playerNumber === 1 ? 'Bot' : game.rightClient.user.login;
-			} else {
-				return 'AddPointRight';
 			}
 		}
 		else if (game.leftClient.ball.x > game.leftClient.canvas.width - game.leftClient.ball.size) {
@@ -195,8 +193,6 @@ export class GameService {
 			}
 			if (game.leftClient.leftPaddle.score === game.maxScore) {
 				return game.leftClient.user.login;
-			} else {
-				return 'AddPointLeft';
 			}
 		}
 		return 'NoWinner';

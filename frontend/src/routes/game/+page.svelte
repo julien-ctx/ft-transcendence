@@ -256,20 +256,6 @@
 		socket.on('ballData', ({ball}) => {
 			gameBall = ball;
 		});
-		socket.on('relaunchBall', async ({addPoint}) => {
-			if (addPoint === 'AddPointLeft') {
-				gameLeftPaddle.score++;
-			} else {
-				gameRightPaddle.score++;
-			}
-			cancelAnimationFrame(animationFrame);
-			clearCanvas();
-			drawScores(gameLeftPaddle.score, gameRightPaddle.score);
-			drawSep(gameBall);
-			drawPaddles(gameLeftPaddle, gameRightPaddle);
-			await new Promise(r => setTimeout(r, 1000));
-			gameLoop();
-		});
 		socket.on('winner', async ({winner, side, forfeit}) => {
 			gameStarted = false;
 			dataInit = false;

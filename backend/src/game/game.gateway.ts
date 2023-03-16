@@ -105,19 +105,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	async gameLoop(game: Game) {
 		if (!this.isPaused) {
 		const winner = await this.gameService.checkBallPosition(game, this.gameService.randomBallDirection());
-		if (winner === 'AddPointLeft' || winner === 'AddPointRight') {
-			game.leftClient.socket.emit('paddlesData', {leftPaddle: game.leftClient.leftPaddle, rightPaddle: game.leftClient.rightPaddle});
-			if (game.rightClient) {
-				game.rightClient.socket.emit('paddlesData', {leftPaddle: game.rightClient.leftPaddle, rightPaddle: game.rightClient.rightPaddle});
-			}
-			clearInterval(this.interval);
-			game.leftClient.socket.emit('relaunchBall', ({winner}));
-			if (game.rightClient) {
-				game.rightClient.socket.emit('relaunchBall', ({winner}));
-			}
-			await new Promise(r => setTimeout(r, 1000));
-			this.interval = setInterval(this.gameLoop, 1, game);
-		} else if (winner !== 'NoWinner') {
+		if (winner !== 'NoWinner') {
 			if (winner === 'Bot') {
 				game.leftClient.socket.emit('winner', {winner: winner, side: 1, forfeit: false});
 			} else if (winner === game.leftClient.user.login) {
@@ -157,6 +145,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 			this.gameService.updateBot(game.leftClient.ball, game.leftClient.rightPaddle, game.leftClient.canvas, game.botLevel);
 	}
 	}
+
 	setClientEvents(socket: Socket, client: Client) {
 		socket.on('resize', ({width, height}) => {
 			this.gameService.handleResize(

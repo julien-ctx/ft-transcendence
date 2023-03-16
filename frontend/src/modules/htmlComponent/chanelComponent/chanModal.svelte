@@ -233,7 +233,7 @@
 			{/if}
 			<div class="typing {(loginWrite && myProfile.block_id && !myProfile.block_id.includes(returnIdUserFromLogin(loginWrite)))? 'active' : ''}">
 				<span class="login">{loginWrite}</span>
-				<span>write a msg</span> 
+				<span>is writing</span> 
 				<div class="dot-typing"></div>
 			</div>
 			{#if currentRoom.Message && currentRoom.Message.length == 0}

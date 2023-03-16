@@ -100,11 +100,24 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 			this.server.emit("user_update", userUpdate);
 		});
 	}
-	
+	private isPaused: boolean = false;
 	
 	async gameLoop(game: Game) {
+		if (!this.isPaused) {
 		const winner = await this.gameService.checkBallPosition(game, this.gameService.randomBallDirection());
-		if (winner !== 'NoWinner') {
+		if (winner === 'AddPointLeft' || winner === 'AddPointRight') {
+			game.leftClient.socket.emit('paddlesData', {leftPaddle: game.leftClient.leftPaddle, rightPaddle: game.leftClient.rightPaddle});
+			if (game.rightClient) {
+				game.rightClient.socket.emit('paddlesData', {leftPaddle: game.rightClient.leftPaddle, rightPaddle: game.rightClient.rightPaddle});
+			}
+			clearInterval(this.interval);
+			game.leftClient.socket.emit('relaunchBall', ({winner}));
+			if (game.rightClient) {
+				game.rightClient.socket.emit('relaunchBall', ({winner}));
+			}
+			await new Promise(r => setTimeout(r, 1000));
+			this.interval = setInterval(this.gameLoop, 1, game);
+		} else if (winner !== 'NoWinner') {
 			if (winner === 'Bot') {
 				game.leftClient.socket.emit('winner', {winner: winner, side: 1, forfeit: false});
 			} else if (winner === game.leftClient.user.login) {
@@ -125,14 +138,6 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 				// await this.storeGameInDB(game, game.rightClient);
 			}
 			return;
-		} else {
-			clearInterval(this.interval);
-			game.leftClient.socket.emit('relaunchBall', ({}));
-			if (game.rightClient) {
-				game.rightClient.socket.emit('relaunchBall', ({}));
-			}
-			await new Promise(r => setTimeout(r, 1000));
-			this.interval = setInterval(this.gameLoop, 1, game);
 		}
 
 		this.gameService.updateBall(game.leftClient);
@@ -140,7 +145,6 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
 		game.leftClient.socket.emit('paddlesData', {leftPaddle: game.leftClient.leftPaddle, rightPaddle: game.leftClient.rightPaddle});
 		game.leftClient.socket.emit('ballData', {ball: game.leftClient.ball});
-		game.leftClient.socket.emit('scoresData', {leftScore: game.leftClient.leftPaddle.score, rightScore: game.leftClient.rightPaddle.score});
 		if (game.playerNumber === 2) {
 			this.gameService.updateBall(game.rightClient);
 			this.gameService.movePaddles(game.rightClient.leftPaddle, game.rightClient.canvas);
@@ -148,12 +152,11 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
 			game.rightClient.socket.emit('paddlesData', {leftPaddle: game.rightClient.leftPaddle, rightPaddle: game.rightClient.rightPaddle});
 			game.rightClient.socket.emit('ballData', {ball: game.rightClient.ball});
-			game.rightClient.socket.emit('scoresData', {leftScore: game.rightClient.leftPaddle.score, rightScore: game.rightClient.rightPaddle.score});
 		}
 		if (game.playerNumber == 1)
 			this.gameService.updateBot(game.leftClient.ball, game.leftClient.rightPaddle, game.leftClient.canvas, game.botLevel);
 	}
-	
+	}
 	setClientEvents(socket: Socket, client: Client) {
 		socket.on('resize', ({width, height}) => {
 			this.gameService.handleResize(

@@ -256,15 +256,17 @@
 		socket.on('ballData', ({ball}) => {
 			gameBall = ball;
 		});
-		socket.on('scoresData', ({leftScore, rightScore}) => {
-			gameLeftPaddle.score = leftScore;
-			gameRightPaddle.score = rightScore;
-		});
-		socket.on('relaunchBall', async ({}) => {
+		socket.on('relaunchBall', async ({addPoint}) => {
+			if (addPoint === 'AddPointLeft') {
+				gameLeftPaddle.score++;
+			} else {
+				gameRightPaddle.score++;
+			}
 			cancelAnimationFrame(animationFrame);
 			clearCanvas();
 			drawScores(gameLeftPaddle.score, gameRightPaddle.score);
 			drawSep(gameBall);
+			drawPaddles(gameLeftPaddle, gameRightPaddle);
 			await new Promise(r => setTimeout(r, 1000));
 			gameLoop();
 		});

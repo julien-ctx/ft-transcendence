@@ -1,12 +1,10 @@
 import { GameService } from './game.service';
-import { Ball, Paddle, GameCanvas, Game, Client } from './objects/objects';
-import { findLast } from 'lodash';
+import { Game, Client } from './objects/objects';
 import { JwtService } from "@nestjs/jwt";
 import { WebSocketGateway, WebSocketServer, OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, MessageBody, ConnectedSocket } from "@nestjs/websockets";
 import { User } from "@prisma/client";
 import { Server, Socket } from "socket.io";
 import { PrismaService } from "src/prisma/prisma.service";
-
 
 const MAX_SCORE = 10;
 
@@ -77,6 +75,9 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 				user : true
 			}
 		});
+		
+		const winrate = winnerClient.user.totalGames ? winnerClient.user.totalGamesWin * 100 / winnerClient.user.totalGames : 0;
+		
 		await this.prismaService.user.update({
 			where : {
 				id : winnerClient.user.id
@@ -85,7 +86,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 				totalGames : winnerClient.user.totalGames + 1,
 				totalGamesWin : winnerClient.user.totalGamesWin + 1,
 				level : winnerClient.user.level + 0.42,
-				winrate : winnerClient.user.totalGamesWin * 100 / winnerClient.user.totalGames,	
+				winrate : winrate,	
 			},
 			include : {
 				gameHistory : true,
@@ -96,7 +97,10 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		})
 		.then((userUpdate : User) => {
 			this.server.emit("user_update", userUpdate);
-		});
+		})
+		.catch((error) => {
+			console.log(error);``
+		})
 	}
 	
 	async gameLoop(game: Game) {
@@ -105,21 +109,17 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 			if (winner === 'Bot') {
 				game.leftClient.socket.emit('winner', {winner: winner, side: 1, forfeit: false});
 			} else if (winner === game.leftClient.user.login) {
-				// game.leftClient.socket.on('gameStoredInDB', ({}) => {
-					game.leftClient.socket.emit('winner', {winner: winner, side: -1, forfeit: false});
-					if (game.rightClient) {
-						game.rightClient.socket.emit('winner', {winner: winner, side: -1, forfeit: false});
-					}
-				// });
-				// await this.storeGameInDB(game, game.leftClient);
+				game.leftClient.socket.emit('winner', {winner: winner, side: -1, forfeit: false});
+				if (game.rightClient) {
+					game.rightClient.socket.emit('winner', {winner: winner, side: -1, forfeit: false});
+				}
+				await this.storeGameInDB(game, game.leftClient);
 			} else if (winner === game.rightClient.user.login){
-				// game.leftClient.socket.on('gameStoredInDB', ({}) => {
-					game.leftClient.socket.emit('winner', {winner: winner, side: 1, forfeit: false});
-					if (game.rightClient) {
-						game.rightClient.socket.emit('winner', {winner: winner, side: 1, forfeit: false});
-					}
-				// });
-				// await this.storeGameInDB(game, game.rightClient);
+				game.leftClient.socket.emit('winner', {winner: winner, side: 1, forfeit: false});
+				if (game.rightClient) {
+					game.rightClient.socket.emit('winner', {winner: winner, side: 1, forfeit: false});
+				}
+				await this.storeGameInDB(game, game.rightClient);
 			}
 			return;
 		}

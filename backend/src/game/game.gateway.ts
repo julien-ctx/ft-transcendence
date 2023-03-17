@@ -6,7 +6,7 @@ import { User } from "@prisma/client";
 import { Server, Socket } from "socket.io";
 import { PrismaService } from "src/prisma/prisma.service";
 
-const MAX_SCORE = 10;
+const MAX_SCORE = 2;
 
 @WebSocketGateway({
 	cors: true,
@@ -58,8 +58,59 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		return null;
 	}
 
-	async storeGameInDB(game: Game, client: Client, winner: boolean) {
-		await this.prismaService.gameHistory.create({
+	async updateUser(client: Client, winner: boolean, winRate: number) {
+		if (winner) {
+			await this.prismaService.user.update({
+				where : {
+					id : client.user.id
+				},
+				data : {
+					totalGames : client.user.totalGames + 1,
+					totalGamesWin : client.user.totalGamesWin + 1,
+					level : client.user.level + 0.20,
+				},
+				include : {
+					gameHistory : true,
+					notification : true,
+					roomMp : true,
+					RoomToUser : true
+				}
+			});
+		} else {
+			this.prismaService.user.update({
+				where : {
+					id : client.user.id
+				},
+				data : {
+					totalGames : client.user.totalGames + 1,
+					level : client.user.level + 0.10,
+				},
+				include : {
+					gameHistory : true,
+					notification : true,
+					roomMp : true,
+					RoomToUser : true
+				}
+			});
+		}
+		await this.prismaService.user.update({
+			where : {
+				id : client.user.id
+			},
+			data : {
+				winrate : winRate,	
+			},
+			include : {
+				gameHistory : true,
+				notification : true,
+				roomMp : true,
+				RoomToUser : true
+			}
+		});
+	}
+
+	async storeGameInDB(game: Game, winnerClient: Client, looserClient: Client) {
+		this.prismaService.gameHistory.create({
 			data : {
 				user : {
 					connect : [
@@ -69,56 +120,27 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 				},
 				score_user1 : game.leftClient.leftPaddle.score,
 				score_user2 : game.rightClient.rightPaddle.score,
-				id_user_winner : client.user.id
+				id_user_winner : winnerClient.user.id
 			},
 			include : {
 				user : true
 			}
-		});
-
-		let totalGamesWin = client.user.totalGamesWin;
-		let level = client.user.level;
-		if (winner) {
-			totalGamesWin++;
-			level += 0.42;
-		}
-		await this.prismaService.user.update({
-			where : {
-				id : client.user.id
-			},
-			data : {
-				totalGames : client.user.totalGames + 1,
-				totalGamesWin : totalGamesWin,
-				level : level,
-			},
-			include : {
-				gameHistory : true,
-				notification : true,
-				roomMp : true,
-				RoomToUser : true
-			}
 		})
-		.then(async (userUpdate : User) => {
-			const winrate = client.user.totalGames ? parseInt((client.user.totalGamesWin * 100 / client.user.totalGames).toString()) : 0;
-			await this.prismaService.user.update({
-				where : {
-					id : client.user.id
-				},
-				data : {
-					winrate : winrate,	
-				},
-				include : {
-					gameHistory : true,
-					notification : true,
-					roomMp : true,
-					RoomToUser : true
-				}
-			})	
-			this.server.emit("user_update", userUpdate);
+		.then(async () => {
+			const winnerWinrate = winnerClient.user.totalGames ? parseInt((winnerClient.user.totalGamesWin * 100 / winnerClient.user.totalGames).toString()) : 0;
+			const looserWinrate = looserClient.user.totalGames ? parseInt((looserClient.user.totalGamesWin * 100 / looserClient.user.totalGames).toString()) : 0;
+			this.updateUser(winnerClient, true, winnerWinrate)
+			.then(async () => {
+				await this.updateUser(looserClient, false, looserWinrate);
+			})
+			.catch((error) => {
+				console.log(error);
+			})
+			
 		})
 		.catch((error) => {
 			console.log(error);
-		})
+		});
 	}
 	
 	async gameLoop(game: Game) {
@@ -131,15 +153,13 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 				if (game.rightClient) {
 					game.rightClient.socket.emit('winner', {winner: winner, side: -1, forfeit: false});
 				}
-				await this.storeGameInDB(game, game.rightClient, false);
-				await this.storeGameInDB(game, game.leftClient, true);
-			} else if (winner === game.rightClient.user.login){
+				await this.storeGameInDB(game, game.leftClient, game.rightClient);
+			} else if (winner === game.rightClient.user.login) {
 				game.leftClient.socket.emit('winner', {winner: winner, side: 1, forfeit: false});
 				if (game.rightClient) {
 					game.rightClient.socket.emit('winner', {winner: winner, side: 1, forfeit: false});
 				}
-				await this.storeGameInDB(game, game.rightClient, true);
-				await this.storeGameInDB(game, game.leftClient, false);
+				await this.storeGameInDB(game, game.rightClient, game.leftClient);
 			}
 			return;
 		}

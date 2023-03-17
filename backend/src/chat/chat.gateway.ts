@@ -429,7 +429,10 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 		const valide = await this.chatService.verifyPass(data.password, Room.password);
 		// console.log(valide);
 		if (valide === false) 
-			client.emit('wrongEdit', 'Wrong password');
+			client.emit('wrongEdit', {
+				roomName: Room.name,
+				error : 'Wrong password',
+			});
 		else
 			client.emit('successVerify');
 	}

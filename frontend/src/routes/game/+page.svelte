@@ -8,7 +8,7 @@
     import { userProfileDataStore, usersDataStore } from "$lib/store/user";
 
 	const OBJ_COLOR: string = "#dcd3bc";
-	const BALL_COLOR: string = "#e36c5d";
+	const BALL_COLOR: string = "#e39c9a";
 
 	let isLogged: boolean = false;
 	let canvas: HTMLCanvasElement;
@@ -48,6 +48,8 @@
 	let gamePlayerSide: number = 0;
 	
 	let playerNumber: number = 0;
+	let idSend: any = -1;
+	let idReceive: any = -1;
 
 	let socket: Socket;	
 	let jwt: any;
@@ -66,8 +68,7 @@
 			query: { token: jwt}
 		});
 
-		socket.on("user_update", (data : any) => {
-			console.log(data);
+		socket.on("user_update", (data: any) => {
 			if (data.id && userProfile.id && data.id == userProfile.id)
 				userProfileDataStore.set(data);
 			if (allUsers && allUsers.length != 0) {
@@ -75,20 +76,32 @@
 				for (let i = 0; i < allUsers.length; i++) {
 					if (allUsers[i].id == data.id) {
 						allUsers[i] = data;
-						usersDataStore.set(allUsers)
+						usersDataStore.set(allUsers);
 						arrId.push(data.id);
 					}
 				}
 				if (arrId && !arrId.includes(data.id)) {
-					allUsers.push(data)
+					allUsers.push(data);
 					usersDataStore.set(allUsers);
 				}
 			}
-			socket.emit('gameStoredInDB', ({}));
 		})
 	}
 
 	onMount(async () => {
+		jwt = getJwt();
+		connectSocket();
+		const URL = new URLSearchParams(window.location.search);
+		if (URL.has('id_send') && URL.has('id_receive')) {
+			idSend = URL.get('id_send');
+			if (idSend) {
+				idSend = parseInt(idSend);
+			}
+			idReceive = URL.get('id_receive');
+			if (idReceive) {
+				idReceive = parseInt(idReceive);
+			}
+		}
 		AuthGuard()
 		.then((res) => {
 			isLogged = true;
@@ -97,8 +110,9 @@
 			removeJwt();
 			goto("/login")
 		})
-		jwt = getJwt();
-		connectSocket();
+		if (idSend !== -1 && idReceive !== -1) {
+			createCanvas(2);
+		}
 	});	
 	
 	function handleResize() {
@@ -150,7 +164,6 @@
 		ctx.beginPath();
 		ctx.arc(ball.x + ball.size / 2, ball.y + ball.size / 2, radius, 0, 2 * Math.PI);
 		ctx.fill();
-		ctx.stroke();
 		ctx.fillStyle = OBJ_COLOR;
 	}
 		
@@ -234,18 +247,6 @@
 		animationFrame = requestAnimationFrame(gameLoop);
 	}
 
-	async function drawSide(side: number) {
-		clearCanvas();
-		currMsg = side < 0 ? 'You play on the left' : 'You play on the right';
-		ctx.fillText(
-			currMsg,
-			canvas.width / 2 - ctx.measureText(currMsg).width / 2,
-			canvas.height / 2 
-		);
-		await new Promise(r => setTimeout(r, 2000));
-		currMsg = null;	
-	}
-
 	async function startGame() {
 		socket.on('paddlesData', ({leftPaddle, rightPaddle}) => {
 			gameLeftPaddle = leftPaddle;
@@ -253,10 +254,6 @@
 		});
 		socket.on('ballData', ({ball}) => {
 			gameBall = ball;
-		});
-		socket.on('scoresData', ({leftScore, rightScore}) => {
-			gameLeftPaddle.score = leftScore;
-			gameRightPaddle.score = rightScore;
 		});
 		socket.on('winner', async ({winner, side, forfeit}) => {
 			gameStarted = false;
@@ -306,7 +303,26 @@
 				dataInit = true;	
 				startGame();
 			});
-			socket.emit('ready', {width: canvas.width, height: canvas.height, playerNumber, botLevel});
+			if (idSend) {
+				socket.emit('ready', {
+					width: canvas.width,
+					height: canvas.height,
+					playerNumber: playerNumber,
+					botLevel: botLevel,
+					leftPlayerID: idSend,
+					rightPlayerID: idReceive,
+				});
+				
+			} else {
+				socket.emit('ready', {
+					width: canvas.width,
+					height: canvas.height,
+					playerNumber: playerNumber,
+					botLevel: botLevel,
+					LeftPlayerID: null,
+					RightPlayerID: null,
+				});
+			}
 			if (playerNumber === 2) {
 				drawWaitingForOpponent();
 			}
@@ -336,7 +352,6 @@
 		ctx.fillStyle = OBJ_COLOR;
 	
 		containerCanvas.appendChild(canvas)
-		
 		playerNumber = userNb;
 		isReady();
 	}

@@ -8,15 +8,7 @@
 	let percent : string = "0";
 	let xpMatch : string = "0/200"
 	onMount(() => {
-		if (user.exp != 0) {
-			if (user.level != 5) {
-				percent = (Math.trunc((user.exp / levelObj[user.level + 1]) * 100)).toString();
-				xpMatch = user.exp + "/" + levelObj[user.level + 1];
-			} else {
-				percent = (Math.trunc((user.exp / levelObj[user.level]) * 100)).toString();
-				xpMatch = user.exp + "/" + levelObj[user.level];
-			}
-		}		
+		percent = (((user.level - parseInt(user.level)) * 100).toFixed(0)).toString();	
 	})
 </script>
 
@@ -39,8 +31,8 @@
 				</div>
 			{/if}
 		</div>
-		<p class="font-medium text-center">105 Games</p>
+		<p class="font-medium text-center">{user.totalGames} Games</p>
 		<div>
-			<Progressbar id="progress" progress={percent} labelOutside="Level {user.level} - {xpMatch}" class="progress-label"/>
+			<Progressbar id="progress" progress={percent} labelOutside="Level {user.level}" class="progress-label"/>
 		</div>
 </Card>

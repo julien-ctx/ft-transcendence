@@ -84,7 +84,7 @@
 		<button class="header {active}">
 			<button class="button-card-user">...</button>
 			<Dropdown open={dropdownOpen} class="bg-primary">
-				<DropdownItem  defaultClass="bg-primary border-none rounded-none p-2 font-sm hover:bg-secondary text-sm">
+				<DropdownItem  defaultClass="bg-primary border-none rounded-none p-2 font-sm hover:bg-secondary text-sm"  on:click={() => {socketUser.emit("notification_game", {user_send : myProfile, user_receive : otherProfile}); goto(`/game?id_send=${myProfile.id}&id_receive=${otherProfile.id}`)}}>
 					Invite game
 				</DropdownItem>
 				<DropdownItem defaultClass="bg-primary border-none rounded-none p-2 font-sm hover:bg-secondary text-sm" on:click={() => {handleGotoUser(otherProfile.id); dropdownOpen = false;}}>

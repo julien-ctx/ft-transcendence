@@ -231,7 +231,7 @@
 </script>
 <div class="div-chan flex items-end">
     {#if currentRoom}
-        <ChanModal myProfile={myProfile} socketRoom={socket} usersRoom={usersCurrentRoom} />
+        <ChanModal myProfile={myProfile} usersRoom={usersCurrentRoom} />
     {/if}
     <div class="content-chan {active}">
         <div class="header">
@@ -304,8 +304,8 @@
                             <button class="button-svg" on:click={() => socketMp.emit("create-room", {user_send : myProfile, user_receive : user})}>
                                 <SvgMsg />
                             </button>
-                            <button>
-                                <img src="./game-battle.png" alt="" width="20">
+                            <button on:click={() => {socketUser.emit("notification_game", {user_send : myProfile, user_receive : user}); goto(`/game?id_send=${myProfile.id}&id_receive=${user.id}`)}}>
+                                <img src="./game-battle.png" alt="" style="max-width: none;">
                             </button>
                             <button class="button-svg" on:click={() => handleGotoUser(user.id)}>
                                 <SvgProfile />
@@ -317,7 +317,7 @@
         {/if}
     </div>
     <button class="button-messagerie {active}" on:click={() => active = "active"}>
-        Messagerie
+        Social
     </button>
 </div>
     
@@ -419,8 +419,8 @@
                 {/if}
                 <p>{user.login}</p>
                 {#if myProfile.id != user.id}
-                    <button on:click={() => {modalUsersRoom = false;}}>
-                        <img src="./game-battle.png" alt="" width="24">
+                    <button on:click={() => {socketUser.emit("notification_game", {user_send : myProfile, user_receive : user}); goto(`/game?id_send=${myProfile.id}&id_receive=${user.id}`); modalUsersRoom = false;}}>
+                        <img src="./game-battle.png" alt="" style="max-width: none;">
                     </button>
                     <button class="button-svg" on:click={() => {handleGotoUser(user.id); modalUsersRoom = false;}}>
                         <SvgProfile />

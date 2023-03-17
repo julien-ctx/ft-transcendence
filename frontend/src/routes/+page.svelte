@@ -21,12 +21,12 @@
 <div class="container-home container">
 	<div>
 		<a href="/game">
-			<img src="./img-home.png" alt="" style="margin: 0 auto;">
+			<img src="./img-home.png" alt="" style="margin: 0 auto;" class="img-home">
 		</a>
 	</div>
 	{#if gameHistory}
 		<div class="container-game">
-			<h2>Last game</h2>
+			<h2 style="text-align: center">Last games</h2>
 			<div class="content-game">
 				<GameHistory gameHistory={gameHistory} />
 			</div>

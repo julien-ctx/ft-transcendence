@@ -71,7 +71,7 @@
 	{/each}
 	<div class="typing {(room.write && room.write.includes(otherProfile.login))? 'active' : ''}">
 		<span class="login">{otherProfile.login} </span>
-		<span>write a msg</span> 
+		<span>is writing</span> 
 		<div class="dot-typing"></div>
 	</div>
 	{#if room.mp.length == 0}

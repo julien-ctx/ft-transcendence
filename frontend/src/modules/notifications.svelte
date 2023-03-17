@@ -9,6 +9,7 @@
     import { io } from "socket.io-client";
     import { API_URL } from "$lib/env";
     import { getJwt } from "$lib/jwtUtils";
+    import { goto } from "$app/navigation";
 
 	let socketFriend : any;
 	let socketUser : any;
@@ -47,12 +48,17 @@
 		})
 	}
 
-	async function handleDeleteMp(notif : any) {
+	function handleDeleteNotif(notif : any) {
 		socketUser.emit("delete-notification", {id_notif : notif.id, user : myProfile});
 	}
 
-	async function handleViewRoomPrivate(notif : any) {
+	function handleViewRoomPrivate(notif : any) {
 		socketRoom.emit("joinInvite", {roomName : notif.name_room_private})
+		socketUser.emit("delete-notification", {id_notif : notif.id, user : myProfile});
+	}
+
+	function handleAcceptGame(notif : any) {
+		goto(`/game?id_send=${notif.id_user_send}&id_receive=${notif.id_user_receive}`);
 		socketUser.emit("delete-notification", {id_notif : notif.id, user : myProfile});
 	}
 
@@ -97,7 +103,7 @@
 							<SvgDelete />
 						</button>
 					</div>
-				{:else if notif.type == 1}
+				<!-- {:else if notif.type == 1}
 					<div class="flex gap-5">
 						<div>
 							<button class="button-card-user">...</button>
@@ -114,13 +120,13 @@
 						</div>
 					</div>
 					<div class="flex justify-center gap-5 mt-2">
-						<button on:click={() => handleDeleteMp(notif)}>
+						<button on:click={() => handleDeleteNotif(notif)}>
 							Delete
 						</button>
 						<button on:click={() => handleViewMp(notif)}>
 							View
 						</button>
-					</div>
+					</div> -->
 				{:else if notif.type == 2}
 					<div class="flex gap-5">
 						<div>
@@ -138,10 +144,34 @@
 						</div>
 					</div>
 					<div class="flex justify-center gap-5 mt-2">
-						<button on:click={() => handleDeleteMp(notif)}>
+						<button on:click={() => handleDeleteNotif(notif)}>
 							Refuse
 						</button>
 						<button on:click={() => handleViewRoomPrivate(notif)}>
+							Accept
+						</button>
+					</div>
+				{:else if notif.type == 3}
+					<div class="flex gap-5">
+						<div>
+							<button class="button-card-user">...</button>
+							<Dropdown class="w-36">
+								<button on:click={() => blockUser(notif)} class="rounded p-1 !bg-primary rounded !hover:bg-primary hover:text-third transition-colors duration-300">
+									Block user
+								</button>
+							</Dropdown>
+							<Avatar src={notif.img_link} class="object-cover bg-transparent" rounded/>
+						</div>
+						<div class="text-notif flex flex-col items-center justify-end">
+							<p>New invite to play with</p>
+							<a href="/user?id={notif.id_user_send}" class="capitalize hover:text-third transition-colors duration-300">{notif.login_send}</a>
+						</div>
+					</div>
+					<div class="flex justify-center gap-5 mt-2">
+						<button on:click={() => handleDeleteNotif(notif)}>
+							Refuse
+						</button>
+						<button on:click={() => handleAcceptGame(notif)}>
 							Accept
 						</button>
 					</div>

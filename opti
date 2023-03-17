@@ -7,8 +7,6 @@ palier exp
 
 game:	
 		leave game running
-		then Promise
 		protectection rightclient / try catch
 		time before ball launch
 		ball rebond
-		handleDisconnect

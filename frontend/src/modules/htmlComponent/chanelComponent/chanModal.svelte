@@ -1,18 +1,21 @@
 <script lang="ts">
     import { goto } from "$app/navigation";
+    import { API_URL } from "$lib/env";
+    import { getJwt } from "$lib/jwtUtils";
     import { currentRoomStore } from "$lib/store/roomStore";
-    import { socketFriendStore } from "$lib/store/socket";
+    import { socketFriendStore, socketRoomStore, socketUserStore } from "$lib/store/socket";
     import { userProfileDataStore, usersDataStore } from "$lib/store/user";
     import { GetOneUser } from "$lib/userUtils";
+    import axios from "axios";
     import { Avatar, Dropdown, DropdownItem } from "flowbite-svelte";
 	import { afterUpdate, onDestroy, onMount } from "svelte";
     import { element } from "svelte/internal";
     import SvgCancel from "../svgComponent/svgCancel.svelte";
 
 	export let myProfile : any;
-	export let socketRoom : any;
 	export let usersRoom : any;
 
+	let socketRoom : any;
 	let currentRoom : any;
 	let active : string = "";
 	let divBody : any;
@@ -21,12 +24,14 @@
 	let Endmute : any = null;	
 	let allUsers : any;
 	let socketFriend : any;
+	let socketUser : any;
 	let dropdownOpen : boolean = false;
 
 	currentRoomStore.subscribe((val) => currentRoom = val);
 	usersDataStore.subscribe((val) => allUsers = val);
 	socketFriendStore.subscribe((val) => socketFriend = val);
-
+	socketUserStore.subscribe(val => socketUser = val);
+	socketRoomStore.subscribe(val => socketRoom = val);
 	onMount(async () => {
 		socketRoom.on("event-write", (data : any) => {
             if (data.write) {
@@ -40,6 +45,8 @@
         })
 
 		socketRoom.on("update-room", (data : any) => {
+			console.log(data);
+			
 			if (currentRoom != null)
 				currentRoomStore.set(data);
 		})
@@ -50,9 +57,17 @@
 		});
 	})
 
-	afterUpdate(() => {
+	afterUpdate(async () => {
 		if (divBody && divBody.scrollHeight)
 			divBody.scrollTop = divBody.scrollHeight + 500;
+		await axios.get(`${API_URL}/Chat/AllUsers/${currentRoom.name}`, {
+			headers: {
+				Authorization : `Bearer ${getJwt()}`
+			}
+		})
+		.then((res) => {
+			usersRoom = res.data            
+		})
 	})
 
 	function updateActive() {
@@ -146,7 +161,7 @@
 									<div class="avatar">
 										<Avatar src={getUser(mp.id_user).img_link} rounded class="object-cover cursor-pointer" />
 										<Dropdown open={dropdownOpen} class="bg-primary rounded">
-											<DropdownItem defaultClass="bg-primary border-none rounded-none p-2 font-sm hover:bg-secondary text-sm">
+											<DropdownItem defaultClass="bg-primary border-none rounded-none p-2 font-sm hover:bg-secondary text-sm" on:click={() => {socketUser.emit("notification_game", {user_send : myProfile, user_receive : getUser(mp.id_user)}); goto(`/game?id_send=${myProfile.id}&id_receive=${getUser(mp.id_user).id}`)}}>
 												Invite game
 											</DropdownItem>
 											<DropdownItem defaultClass="bg-primary border-none rounded-none p-2 font-sm hover:bg-secondary text-sm" on:click={() => handleGotoUser(returnIdUser(mp.id_user))}>
@@ -178,7 +193,7 @@
 									<div class="avatar">
 										<Avatar src={getUser(mp.id_user).img_link} rounded class="object-cover cursor-pointer" />
 										<Dropdown open={dropdownOpen}  class="bg-primary rounded">
-											<DropdownItem defaultClass="bg-primary border-none rounded-none p-2 font-sm hover:bg-secondary text-sm">
+											<DropdownItem defaultClass="bg-primary border-none rounded-none p-2 font-sm hover:bg-secondary text-sm"  on:click={() => {socketUser.emit("notification_game", {user_send : myProfile, user_receive : getUser(mp.id_user)}); goto(`/game?id_send=${myProfile.id}&id_receive=${getUser(mp.id_user).id}`)}}>
 												Invite game
 											</DropdownItem>
 											<DropdownItem defaultClass="bg-primary border-none rounded-none p-2 font-sm hover:bg-secondary text-sm" on:click={() => handleGotoUser(returnIdUser(mp.id_user))}>
@@ -218,7 +233,7 @@
 			{/if}
 			<div class="typing {(loginWrite && myProfile.block_id && !myProfile.block_id.includes(returnIdUserFromLogin(loginWrite)))? 'active' : ''}">
 				<span class="login">{loginWrite}</span>
-				<span>write a msg</span> 
+				<span>is writing</span> 
 				<div class="dot-typing"></div>
 			</div>
 			{#if currentRoom.Message && currentRoom.Message.length == 0}

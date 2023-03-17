@@ -49,6 +49,8 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 		const token = client.handshake.query.token as string;
 		const user = this.jwt.decode(token);
 		if (user === undefined) return;
+		// console.log('token ->', token)
+		// console.log('Conncted user :', {user});
 		this.Client.push({user, client});
 		// console.log('Conncted user :', {user});
 
@@ -212,6 +214,22 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 			status : room.status,
 			admin : false,
 		});
+		const newUser = await this.prisma.roomToUser.findFirst({
+			where : {
+				id_user : User.id_user,
+				id_room : room.id,
+			},
+			include : {
+				user : true,
+				room : true,
+			}
+		})
+		this.Client.forEach((elem : any) => {
+			elem.client.emit('newMembers', {
+				roomName : room.name,
+				member : newUser,
+			});
+		});
 		return ;
 	}
 
@@ -374,30 +392,14 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 		
 		const User = await this.Service.getOneById(user['id']);
 		const Room = await this.chatService.getRoomByName(data.roomName);
-		// console.log({data}, {User});
 		if (await this.chatService.muteUpdate(Room, User) === false) {
-			// console.log('Muted');
 			const relation = await this.prisma.roomToUser.findFirst({
 				where: {
 					id_user: User.id_user,
 					id_room: Room.id,
 				}
 			});
-			let time = {Years: '', Months: '', Days: '', Hours: '', Minutes: '', Seconds: ''};
-			time.Years = relation.EndMute.getFullYear().toString();
-			time.Months = relation.EndMute.getMonth().toString();
-			time.Days = relation.EndMute.getDate().toString();
-			time.Hours = relation.EndMute.getHours().toString();
-			time.Minutes = relation.EndMute.getMinutes().toString();
-			time.Seconds = relation.EndMute.getSeconds().toString();
-			time.Years = time.Years.length === 1 ? '0' + time.Years : time.Years;
-			time.Months = time.Months.length === 1 ? '0' + time.Months : time.Months;
-			time.Days = time.Days.length === 1 ? '0' + time.Days : time.Days;
-			time.Hours = time.Hours.length === 1 ? '0' + time.Hours : time.Hours;
-			time.Minutes = time.Minutes.length === 1 ? '0' + time.Minutes : time.Minutes;
-			time.Seconds = time.Seconds.length === 1 ? '0' + time.Seconds : time.Seconds;                                                                                                                                                                                                    
-			// console.log(relation);
-			// console.log(time);
+			const time = this.chatService.getDateMute(relation.EndMute);
 			client.emit('muted', time);
 			return ;
 		}
@@ -406,7 +408,9 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 		const userInRoom = await this.chatService.getUsersRooms(User.id, roomInstance.name);
 		this.Client.forEach((elem : any) => {
 			userInRoom.forEach((oneUser : User) => {
-				if (elem.user.id == oneUser.id_user) {
+				if (elem.user === null)
+					return ;				
+				else if (elem.user.id == oneUser.id_user) {
 					elem.client.emit("update-room", roomInstance);
 				}
 			})
@@ -449,7 +453,53 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 				password: mdp,
 			},
 		});
-		client.emit('successEdit');
+		client.emit('successEdit', {
+			roomName: Room.name,
+		});
+	}
+
+	@SubscribeMessage('changeStatus')
+	async handleChangeStatus(@ConnectedSocket() client, @MessageBody() data: any) {
+		const token = client.handshake.query.token as string;
+		const user = this.jwt.decode(token);
+		if (user === undefined) return;
+
+		const User = await this.Service.getOneById(user['id']);
+		const Room = await this.chatService.getRoomByName(data.roomName);
+		const relation = await this.chatService.getMyRelation(User.id_user, Room.name);
+
+		if (relation.admin !== true) return ;
+		if (data.pass !== data.cpass) {
+			client.emit('badPass', {
+				roomName : Room.name,
+				error : 'Password must match',
+			});
+			return ;
+		}
+		else {
+			// console.log('Pass ->', data.pass);
+			let mdp = await this.chatService.hashedPass(data.pass);
+			const newRoom = await this.prisma.room.update({
+				where: {
+					id: Room.id,
+				},
+				data: {
+					status: 'Protected',
+					password: mdp,
+				},
+			});
+			// console.log('newRoom ->', newRoom);
+			client.emit('successChangeStatus', {
+				roomName: Room.name,
+				status: 'Protected',
+			})
+			client.emit('updateRoom', {
+				name: Room.name, 
+				owner: relation.owner, 
+				status: newRoom.status, 
+				admin: relation.admin,
+			});
+		}
 	}
 
 	@SubscribeMessage('sanction')
@@ -460,7 +510,10 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 
 		const User = await this.Service.getOneById(user['id']);
 		const Room = await this.chatService.getRoomByName(data.roomName);
-
+		const isIn = await this.chatService.isInRoom(User, Room);
+		if (isIn === false) return;
+		const relation = await this.chatService.getMyRelation(User.id_user, Room.name);
+		if (relation.admin !== true) return;
 		const t = new Sanction(this.Rooms, this.Client, data, this.prisma, client);
 		t.handleSanction();
 	}
@@ -472,8 +525,13 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 		const user = this.jwt.decode(token);
 		if (user === undefined) return;
 
-		// const User = await this.Service.getOneById(user['id']);
+		const User = await this.Service.getOneById(user['id']);
 		const Room = await this.chatService.getRoomByName(data.roomName);
+
+		const isIn = await this.chatService.isInRoom(User, Room);
+		if (isIn === false) return;
+		const relation = await this.chatService.getMyRelation(User.id_user, Room.name);
+		if (relation.admin !== true) return;
 
 		const relate = await this.prisma.roomToUser.findMany({
 			where: {
@@ -487,7 +545,7 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 		});
 		let Sanction : Date = new Date();
 		let error : boolean = false;
-		console.log({data});
+		// console.log({data});
 		switch (data.duration) {
 			case 'Second':
 				Sanction.setSeconds(Sanction.getSeconds() + data.time); break;
@@ -516,7 +574,10 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 					room : true,
 				}
 			});
-			client.emit('mute', newUser);
+			// client.emit('mute', newUser);
+			this.Client.forEach((elem : any) => {
+				elem.client.emit('mute', newUser)
+			});
 		} else return;
 	}
 
@@ -526,7 +587,14 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 		const user = this.jwt.decode(token);
 		if (user === undefined) return;
 
+		const User = await this.Service.getOneById(user['id']);
 		const room = await this.chatService.getRoomByName(data.roomName);
+
+		const isIn = await this.chatService.isInRoom(User, room);
+		if (isIn === false) return;
+		const verif = await this.chatService.getMyRelation(User.id_user, room.name);
+		if (verif.admin !== true) return;
+
 		const relation = await this.prisma.roomToUser.findFirst({
 			where : {
 				id_user : data.member.id_user,
@@ -546,7 +614,9 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 				room : true,
 			}
 		});
-		client.emit('unmute', newUser);
+		this.Client.forEach((elem : any) => {
+			elem.client.emit('unmute', newUser)
+		});
 	}
 
 	@SubscribeMessage('OP')
@@ -559,6 +629,11 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 		const Room = await this.chatService.getRoomByName(data.roomName);
 
 		// console.log({data});
+
+		const isIn = await this.chatService.isInRoom(User, Room);
+		if (isIn === false) return;
+		const verif = await this.chatService.getMyRelation(User.id_user, Room.name);
+		if (verif.admin !== true) return;
 
 		const relation = await this.prisma.roomToUser.findMany({
 			where: {
@@ -575,19 +650,20 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 			},
 		});
 		this.Client.forEach((elem) => {
-			if (elem.user.id === data.member.id_user) {
+			// console.log(elem.user);
+			// if (elem.user.id === data.member.id_user) {
 				elem.client.emit('newRight', {
 					roomName : data.roomName,
 					admin : true,
 					id_user : data.member.id_user,
 				});
-			}
+			// }
 		});
-		client.emit('newRight', {
-			roomName : data.roomName,
-			admin : true,
-			id_user : data.member.id_user,
-		});
+		// client.emit('newRight', {
+		// 	roomName : data.roomName,
+		// 	admin : true,
+		// 	id_user : data.member.id_user,
+		// });
 	}
 
 	@SubscribeMessage('DEOP')
@@ -598,6 +674,11 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 
 		const User = await this.Service.getOneById(user['id']);
 		const Room = await this.chatService.getRoomByName(data.roomName);
+
+		const isIn = await this.chatService.isInRoom(User, Room);
+		if (isIn === false) return;
+		const verif = await this.chatService.getMyRelation(User.id_user, Room.name);
+		if (verif.admin !== true) return;
 
 		const relation = await this.prisma.roomToUser.findMany({
 			where: {
@@ -614,19 +695,19 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 			},
 		});
 		this.Client.forEach((elem) => {
-			if (elem.user.id === data.member.id_user) {
+			// if (elem.user.id === data.member.id_user) {
 				elem.client.emit('newRight', {
 					roomName : data.roomName,
 					admin : false,
 					id_user : data.member.id_user,
 				});
-			}
+			// }
 		});
-		client.emit('newRight', {
-			roomName : data.roomName,
-			admin : false,
-			id_user : data.member.id_user,
-		});
+		// client.emit('newRight', {
+		// 	roomName : data.roomName,
+		// 	admin : false,
+		// 	id_user : data.member.id_user,
+		// });
 	}
 
 	@UseGuards(UserGuardGateway)

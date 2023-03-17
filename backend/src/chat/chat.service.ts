@@ -69,6 +69,44 @@ export class ChatService {
 			return true;
 	}
 
+	getDateMute(EndMute : Date) {
+		let time = {Years: '', Months: '', Days: '', Hours: '', Minutes: '', Seconds: ''};
+		time.Years = EndMute.getFullYear().toString();
+		time.Months = EndMute.getMonth().toString();
+		time.Days = EndMute.getDate().toString();
+		time.Hours = EndMute.getHours().toString();
+		time.Minutes = EndMute.getMinutes().toString();
+		time.Seconds = EndMute.getSeconds().toString();
+		time.Years = time.Years.length === 1 ? '0' + time.Years : time.Years;
+		time.Months = time.Months.length === 1 ? '0' + time.Months : time.Months;
+		time.Days = time.Days.length === 1 ? '0' + time.Days : time.Days;
+		time.Hours = time.Hours.length === 1 ? '0' + time.Hours : time.Hours;
+		time.Minutes = time.Minutes.length === 1 ? '0' + time.Minutes : time.Minutes;
+		time.Seconds = time.Seconds.length === 1 ? '0' + time.Seconds : time.Seconds;
+		return time; 
+	}
+
+	async getMyRelation(id : number, room : string) {
+		const Room = await this.getRoomByName(room);
+		const relation = await this.prisma.roomToUser.findFirst({
+			where : {
+				id_room : Room.id,
+				id_user : id,
+			}
+		});
+		return relation;
+	}
+
+	async isInRoom(user : any, room : any) {
+		const relation = await this.prisma.roomToUser.findFirst({
+			where : {
+				id_room : room.id,
+				id_user : user.id_user,
+			}
+		});
+		return relation !== null;
+	}
+
 	async getAllUsersRooms(room : string) {
 		const Room = await this.getRoomByName(room);
 		const relation = await this.prisma.roomToUser.findMany({

@@ -49,7 +49,7 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 		const token = client.handshake.query.token as string;
 		const user = this.jwt.decode(token);
 		if (user === undefined) return;
-		console.log('token ->', token)
+		// console.log('token ->', token)
 		// console.log('Conncted user :', {user});
 		this.Client.push({user, client});
 		// console.log('Conncted user :', {user});

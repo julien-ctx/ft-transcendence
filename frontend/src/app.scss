@@ -30,7 +30,8 @@ body {
 .rank-second {
 	float: left;
 	width: 33.33%;
-	height: 100px;
+	height: auto;
+	padding-bottom: 20px;
 	background-color: rgba(222, 222, 222, 0.503);
 	-moz-box-shadow: 0 4px 10px -2px rgb(187, 187, 187);
 	-webkit-box-shadow: 0 4px 10px -2px rgb(187, 187, 187);
@@ -42,7 +43,8 @@ body {
 .rank-first {
 	float: left;
 	width: 33.33%;
-	height: 100px;
+	height: auto;
+	padding-bottom: 20px;
 	background-color: rgb(188, 162, 102, 0.503);
 	-moz-box-shadow: 0 4px 10px -2px rgb(187, 187, 187);
 	-webkit-box-shadow: 0 4px 10px -2px rgb(187, 187, 187);
@@ -51,8 +53,9 @@ body {
 
 .rank-third {
 	float: left;
-	width: 33.33%;
-	height: 100px;
+	width:	33.33%;
+	height: auto;
+	padding-bottom: 20px;
 	background-color: rgb(217, 119, 70, 0.503);
 	-moz-box-shadow: 0 4px 10px -2px rgb(187, 187, 187);
 	-webkit-box-shadow: 0 4px 10px -2px rgb(187, 187, 187);
@@ -66,6 +69,11 @@ body {
 	max-width: 800px;
 	clear: both;
 	font-family: 'Audiowide' !important;
+	display: flex;
+}
+
+.win-rate-ranking {
+	font-family: Arial, Helvetica, sans-serif;
 }
 
 .ranking h2 {
@@ -580,6 +588,7 @@ input[type=range]::-moz-range-thumb {
 		}
 	}
 }
+
 .button-admin {
 	background-color: $secondary;
 	padding: 5px 10px;
@@ -610,7 +619,7 @@ input[type=range]::-moz-range-thumb {
 		margin-bottom: 20px;
 	}
 	.container-game {
-		margin: 20px auto;
+		margin: 50px auto;
 		max-width: 800px;
 		.content-game {
 			display: flex;

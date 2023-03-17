@@ -6,7 +6,7 @@ import { User } from "@prisma/client";
 import { Server, Socket } from "socket.io";
 import { PrismaService } from "src/prisma/prisma.service";
 
-const MAX_SCORE = 2;
+const MAX_SCORE = 3;
 
 @WebSocketGateway({
 	cors: true,
@@ -30,7 +30,6 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	handleDisconnect(socket: Socket) {
 		const disconnectData = this.removeFromGame(socket);
 		if (disconnectData) {
-			clearInterval(disconnectData.gameInterval);
 			disconnectData.client.socket.emit('winner', {
 				winner: disconnectData.client.user.login,
 				side: disconnectData.side,
@@ -47,12 +46,12 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 				client = game.rightClient;
 				side = 1;
 				this.games.splice(index, 1);
-				return {game: game, side: side};
+				return {client: client, side: side};
 			} else if (game.rightClient && game.rightClient.socket === socket) {
 				client = game.leftClient;
 				side = -1;
 				this.games.splice(index, 1);
-				return {gameInterval: game.interval, client: client, side: side};
+				return {client: client, side: side};
 			}
 		});
 		return null;
@@ -67,7 +66,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 				data : {
 					totalGames : client.user.totalGames + 1,
 					totalGamesWin : client.user.totalGamesWin + 1,
-					level : client.user.level + 0.20,
+					level : parseFloat((client.user.level + 0.20).toFixed(2)),
 				},
 				include : {
 					gameHistory : true,
@@ -77,13 +76,13 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 				}
 			});
 		} else {
-			this.prismaService.user.update({
+			await this.prismaService.user.update({
 				where : {
 					id : client.user.id
 				},
 				data : {
 					totalGames : client.user.totalGames + 1,
-					level : client.user.level + 0.10,
+					level : parseFloat((client.user.level + 0.10).toFixed(2)),
 				},
 				include : {
 					gameHistory : true,
@@ -119,7 +118,9 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 					]
 				},
 				score_user1 : game.leftClient.leftPaddle.score,
+				id_user1 : game.leftClient.user.id,
 				score_user2 : game.rightClient.rightPaddle.score,
+				id_user2: game.rightClient.user.id,
 				id_user_winner : winnerClient.user.id
 			},
 			include : {
@@ -146,6 +147,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	async gameLoop(game: Game) {
 		const winner = await this.gameService.checkBallPosition(game, this.gameService.randomBallDirection());
 		if (winner !== 'NoWinner') {
+			clearInterval(game.interval)
 			if (winner === 'Bot') {
 				game.leftClient.socket.emit('winner', {winner: winner, side: 1, forfeit: false});
 			} else if (winner === game.leftClient.user.login) {

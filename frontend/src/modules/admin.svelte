@@ -160,6 +160,11 @@
 			if (data.roomName !== room) return;
 			CpassError = data.error;
 		});
+
+		socket.on('badChangePass', (data : any) => {
+			if (data.roomName !== room) return;
+			passError = data.error;
+		});
 	});
 
 	function admin(sanction : string, Punished : any) {
@@ -233,13 +238,16 @@
 
 	function changePass() {
 		passError = '';
-		if (newPass !== newPassConfirm ) {
-			passError = "Passwords don't match";
-			newPass = '';
-			newPassConfirm = '';
-		} else if (newPass !== '' && newPassConfirm !== '') {
+		// if (newPass !== newPassConfirm ) {
+		// 	passError = "Passwords don't match";
+		// 	newPass = '';
+		// 	newPassConfirm = '';
+		// } else if (newPass !== '' && newPassConfirm !== '') {
+		// 	socket.emit('changePass', {roomName: room, Pass: newPass, Cpass : newPassConfirm});
+		// }
+
+		if (newPass !== '' && newPassConfirm !== '') 
 			socket.emit('changePass', {roomName: room, Pass: newPass, Cpass : newPassConfirm});
-		}
 	}
 	
 	function userIsInRoomPrivate(user : any) {

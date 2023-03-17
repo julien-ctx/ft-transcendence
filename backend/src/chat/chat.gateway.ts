@@ -443,6 +443,14 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 		const User = await this.Service.getOneById(user['id']);
 		const Room = await this.chatService.getRoomByName(data.roomName);
 		
+		if (data.Pass !== data.Cpass) {
+			client.emit('badChangePass', {
+				roomName: Room.name,
+				error : 'Password must match',
+			})
+			return;
+		}
+
 		let mdp = await this.chatService.hashedPass(data.Pass);
 		// console.log(mdp);
 		await this.prisma.room.update({

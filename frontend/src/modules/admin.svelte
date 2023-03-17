@@ -29,6 +29,7 @@
 	let change = false;
 	let StatusPass : string = '';
 	let StatusCPass : string = '';
+	let CpassError : string = '';
 
 	let users : any;
 	let socketUser : any;
@@ -40,7 +41,7 @@
 
 	onMount(async () => {
 		current = infoChannel.filter((Chan : any) => Chan.name === room)[0];
-		console.log(current);
+		// console.log(current);
 		await axios.get(`${API_URL}/Chat/getMembers/${room}`, {
 			headers: {
 				Authorization: `Bearer ${getJwt()}`,
@@ -60,7 +61,7 @@
 			.then((res) => {
 				// console.log(res);
 				Me = res.data;
-				console.log('Me - > ', Me);
+				// console.log('Me - > ', Me);
 			});
 		} catch (error) {
 			console.log(error);
@@ -84,7 +85,7 @@
 
 		socket.on('newMembers', (data : any) => {
 			if (data.roomName !== room) return;
-			console.log(data.member);
+			// console.log(data.member);
 			members.push(data.member);
 			members = members;			
 		});
@@ -153,6 +154,11 @@
 			newPassConfirm = '';
 			validatePass = false;
 			currentPass = '';
+		});
+
+		socket.on('badPass', (data : any) => {
+			if (data.roomName !== room) return;
+			CpassError = data.error;
 		});
 	});
 
@@ -256,13 +262,18 @@
 	}
 
 	function changeStatus() {
-		socket.emit('changeStatus', {
-			roomName: room, 
-			pass : StatusPass, 
-			cpass : StatusCPass
-		});
+		CpassError = '';
+		if (StatusPass !== '' && StatusCPass !== '') { 
+			socket.emit('changeStatus', {
+				roomName: room, 
+				pass : StatusPass, 
+				cpass : StatusCPass
+			});
+		}
+		// else if (StatusPass !== StatusCPass)
+		// 	CpassError = "Passwords don't match";
 		StatusPass = '';
-		StatusCPass = ''
+		StatusCPass = '';
 	}
 </script>
 
@@ -388,8 +399,8 @@
 				<div class="flex flex-col">
 					<input class="rounded m-1" type="password" placeholder="New password" bind:value={StatusPass}>
 					<input class="rounded m-1" type="password" placeholder="Confirm password" bind:value={StatusCPass}>
-					{#if passError !== ''}
-						<p class="flex justify-center text-red-500 text-sm">{passError}</p>
+					{#if CpassError !== ''}
+						<p class="flex justify-center text-red-500 text-sm">{CpassError}</p>
 					{/if}
 				</div>
 				<div class="flex justify-center">

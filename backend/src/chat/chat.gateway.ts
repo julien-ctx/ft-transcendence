@@ -470,12 +470,14 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 
 		if (relation.admin !== true) return ;
 		if (data.pass !== data.cpass) {
-			// Emit error password must match
-
+			client.emit('badPass', {
+				roomName : Room.name,
+				error : 'Password must match',
+			});
 			return ;
 		}
 		else {
-			console.log('Pass ->', data.pass);
+			// console.log('Pass ->', data.pass);
 			let mdp = await this.chatService.hashedPass(data.pass);
 			const newRoom = await this.prisma.room.update({
 				where: {
@@ -486,7 +488,7 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 					password: mdp,
 				},
 			});
-			console.log('newRoom ->', newRoom);
+			// console.log('newRoom ->', newRoom);
 			client.emit('successChangeStatus', {
 				roomName: Room.name,
 				status: 'Protected',
@@ -543,7 +545,7 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 		});
 		let Sanction : Date = new Date();
 		let error : boolean = false;
-		console.log({data});
+		// console.log({data});
 		switch (data.duration) {
 			case 'Second':
 				Sanction.setSeconds(Sanction.getSeconds() + data.time); break;

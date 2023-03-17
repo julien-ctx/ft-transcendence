@@ -57,47 +57,19 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		return null;
 	}
 
-	async updateUser(client: Client, winner: boolean, winRate: number) {
-		if (winner) {
-			await this.prismaService.user.update({
-				where : {
-					id : client.user.id
-				},
-				data : {
-					totalGames : client.user.totalGames + 1,
-					totalGamesWin : client.user.totalGamesWin + 1,
-					level : parseFloat((client.user.level + 0.20).toFixed(2)),
-				},
-				include : {
-					gameHistory : true,
-					notification : true,
-					roomMp : true,
-					RoomToUser : true
-				}
-			});
-		} else {
-			await this.prismaService.user.update({
-				where : {
-					id : client.user.id
-				},
-				data : {
-					totalGames : client.user.totalGames + 1,
-					level : parseFloat((client.user.level + 0.10).toFixed(2)),
-				},
-				include : {
-					gameHistory : true,
-					notification : true,
-					roomMp : true,
-					RoomToUser : true
-				}
-			});
-		}
+	async updateUser(client: Client, winner: boolean) {
+		const totalGamesWin = winner ? client.user.totalGamesWin + 1 : client.user.totalGamesWin;
+		const totalGames = client.user.totalGames + 1;
+		const level = winner ? client.user.level + 0.20 : client.user.level + 0.1;
 		await this.prismaService.user.update({
 			where : {
 				id : client.user.id
 			},
 			data : {
-				winrate : winRate,	
+				totalGames : totalGames,
+				totalGamesWin : totalGamesWin,
+				level : parseFloat((level).toFixed(2)),
+				winrate : parseInt((totalGamesWin * 100 / (totalGames)).toString())
 			},
 			include : {
 				gameHistory : true,
@@ -128,16 +100,16 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 			}
 		})
 		.then(async () => {
-			const winnerWinrate = winnerClient.user.totalGames ? parseInt((winnerClient.user.totalGamesWin * 100 / winnerClient.user.totalGames).toString()) : 0;
-			const looserWinrate = looserClient.user.totalGames ? parseInt((looserClient.user.totalGamesWin * 100 / looserClient.user.totalGames).toString()) : 0;
-			this.updateUser(winnerClient, true, winnerWinrate)
+			await this.updateUser(winnerClient, true)
 			.then(async () => {
-				await this.updateUser(looserClient, false, looserWinrate);
+				await this.updateUser(looserClient, false)
+				.catch((error) => {
+					console.log(error);
+				})
 			})
 			.catch((error) => {
 				console.log(error);
 			})
-			
 		})
 		.catch((error) => {
 			console.log(error);

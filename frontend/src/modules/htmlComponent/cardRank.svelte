@@ -8,16 +8,6 @@
 	let percent : string = "0";
 	let xpMatch : string = "0/200"
 	onMount(() => {
-		// if (user.exp != 0) {
-		// 	user.
-		// 	if (user.level != 5) {
-		// 		percent = (Math.trunc((user.exp / levelObj[user.level + 1]) * 100)).toString();
-		// 		xpMatch = user.exp + "/" + levelObj[user.level + 1];
-		// 	} else {
-		// 		percent = (Math.trunc((user.exp / levelObj[user.level]) * 100)).toString();
-		// 		xpMatch = user.exp + "/" + levelObj[user.level];
-		// 	}
-		// }
 		percent = (((user.level - parseInt(user.level)) * 100).toFixed(0)).toString();	
 	})
 </script>

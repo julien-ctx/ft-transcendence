@@ -41,7 +41,9 @@ model GameHistory {
 	createdAt DateTime @default(now())
 	user User[] @relation("GameHistoryRelation")
 	score_user1 Int
-	score_user2 Int
+	id_user1 Int @default(-1)
+	score_user2 Int 
+	id_user2 Int @default(-1)
 	id_user_winner Int
 }
 

@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "GameHistory" ADD COLUMN     "id_user1" INTEGER NOT NULL DEFAULT -1,
+ADD COLUMN     "id_user2" INTEGER NOT NULL DEFAULT -1;

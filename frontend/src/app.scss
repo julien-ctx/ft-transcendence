@@ -27,6 +27,51 @@ body {
 	border: solid 6px $secondary;
 }
 
+.rank-second {
+	float: left;
+	width: 33.33%;
+	height: 100px;
+	background-color: rgba(222, 222, 222, 0.503);
+	-moz-box-shadow: 0 4px 10px -2px rgb(187, 187, 187);
+	-webkit-box-shadow: 0 4px 10px -2px rgb(187, 187, 187);
+	box-shadow: 0 4px 10px -2px rgb(187, 187, 187);
+	border-top-left-radius: 20px 20px;
+	border-bottom-left-radius: 20px 20px;
+}
+
+.rank-first {
+	float: left;
+	width: 33.33%;
+	height: 100px;
+	background-color: rgb(188, 162, 102, 0.503);
+	-moz-box-shadow: 0 4px 10px -2px rgb(187, 187, 187);
+	-webkit-box-shadow: 0 4px 10px -2px rgb(187, 187, 187);
+	box-shadow: 0 4px 10px -2px rgb(187, 187, 187);
+}
+
+.rank-third {
+	float: left;
+	width: 33.33%;
+	height: 100px;
+	background-color: rgb(217, 119, 70, 0.503);
+	-moz-box-shadow: 0 4px 10px -2px rgb(187, 187, 187);
+	-webkit-box-shadow: 0 4px 10px -2px rgb(187, 187, 187);
+	box-shadow: 0 4px 10px -2px rgb(187, 187, 187);
+	border-top-right-radius: 20px 20px;
+	border-bottom-right-radius: 20px 20px;
+}
+
+.ranking {
+	margin: 100px auto;
+	max-width: 800px;
+	clear: both;
+	font-family: 'Audiowide' !important;
+}
+
+.ranking h2 {
+	color: rgb(88, 88, 88);	
+}
+
 h1 {
 	font-family: 'Audiowide' !important;
 	font-size: 48px !important;

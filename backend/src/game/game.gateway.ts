@@ -81,7 +81,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	}
 
 	async storeGameInDB(game: Game, winnerClient: Client, looserClient: Client) {
-		this.prismaService.gameHistory.create({
+		await this.prismaService.gameHistory.create({
 			data : {
 				user : {
 					connect : [
@@ -91,18 +91,24 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 				},
 				score_user1 : game.leftClient.leftPaddle.score,
 				id_user1 : game.leftClient.user.id,
+				login_user1 : game.leftClient.user.login,
+				img_link_user1 : game.leftClient.user.img_link,
+
 				score_user2 : game.rightClient.rightPaddle.score,
-				id_user2: game.rightClient.user.id,
-				id_user_winner : winnerClient.user.id
+				id_user2 : game.rightClient.user.id,
+				login_user2 : game.rightClient.user.login,
+				img_link_user2 : game.rightClient.user.img_link,
+				
+				id_user_winner : winnerClient.user.id,
 			},
 			include : {
-				user : true
+				user : true,
 			}
 		})
 		.then(async () => {
 			await this.updateUser(winnerClient, true)
 			.then(async () => {
-				await this.updateUser(looserClient, false)
+				this.updateUser(looserClient, false)
 				.catch((error) => {
 					console.log(error);
 				})
@@ -132,6 +138,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 				game.leftClient.socket.emit('winner', {winner: winner, side: 1, forfeit: false});
 				if (game.rightClient) {
 					game.rightClient.socket.emit('winner', {winner: winner, side: 1, forfeit: false});
+					/// check for same score;
 					await this.storeGameInDB(game, game.rightClient, game.leftClient);
 				}
 			}

@@ -40,10 +40,17 @@ model GameHistory {
 	id Int @id @default(autoincrement())
 	createdAt DateTime @default(now())
 	user User[] @relation("GameHistoryRelation")
+	
 	score_user1 Int
-	id_user1 Int @default(-1)
-	score_user2 Int 
-	id_user2 Int @default(-1)
+	id_user1 Int
+	login_user1 String
+	img_link_user1 String
+
+	score_user2 Int
+	id_user2 Int
+	login_user2 String
+	img_link_user2 String
+
 	id_user_winner Int
 }
 

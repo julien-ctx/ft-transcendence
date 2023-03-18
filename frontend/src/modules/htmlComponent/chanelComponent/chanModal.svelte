@@ -32,7 +32,17 @@
 	socketFriendStore.subscribe((val) => socketFriend = val);
 	socketUserStore.subscribe(val => socketUser = val);
 	socketRoomStore.subscribe(val => socketRoom = val);
+
 	onMount(async () => {
+		await axios.get(`${API_URL}/Chat/AllUsers/${currentRoom.name}`, {
+			headers: {
+				Authorization : `Bearer ${getJwt()}`
+			}
+		})
+		.then((res) => {
+			usersRoom = res.data            
+		})
+
 		socketRoom.on("event-write", (data : any) => {
             if (data.write) {
 				for (let i = 0; i < data.write.length; i++) {
@@ -44,11 +54,18 @@
 				loginWrite = "";
         })
 
-		socketRoom.on("update-room", (data : any) => {
-			console.log(data);
-			
-			if (currentRoom != null)
+		socketRoom.on("update-room", async (data : any) => {
+			if (currentRoom != null) {
 				currentRoomStore.set(data);
+				await axios.get(`${API_URL}/Chat/AllUsers/${currentRoom.name}`, {
+				headers: {
+					Authorization : `Bearer ${getJwt()}`
+				}
+				})
+				.then((res) => {
+					usersRoom = res.data            
+				})
+			}
 		})
 
 		socketRoom.on("muted", (data : any) => {
@@ -57,17 +74,9 @@
 		});
 	})
 
-	afterUpdate(async () => {
+	afterUpdate(() => {
 		if (divBody && divBody.scrollHeight)
 			divBody.scrollTop = divBody.scrollHeight + 500;
-		await axios.get(`${API_URL}/Chat/AllUsers/${currentRoom.name}`, {
-			headers: {
-				Authorization : `Bearer ${getJwt()}`
-			}
-		})
-		.then((res) => {
-			usersRoom = res.data            
-		})
 	})
 
 	function updateActive() {

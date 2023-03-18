@@ -24,6 +24,7 @@
 	let newPassConfirm : string = '';
 	let validatePass : Boolean = false;
 	let passError : string = '';
+	let checkPassError : string = '';
 
 	// Change Room Status
 	let change = false;
@@ -35,13 +36,16 @@
 	let socketUser : any;
 	let myProfile : any;
 
+	// Sanction
+	let time = '';
+	let duration = '';
+
 	usersDataStore.subscribe(val => users = val);
 	socketUserStore.subscribe(val => socketUser = val);
 	myProfileDataStore.subscribe(val => myProfile = val);
 
 	onMount(async () => {
 		current = infoChannel.filter((Chan : any) => Chan.name === room)[0];
-		// console.log(current);
 		await axios.get(`${API_URL}/Chat/getMembers/${room}`, {
 			headers: {
 				Authorization: `Bearer ${getJwt()}`,
@@ -49,7 +53,6 @@
 		})
 		.then((res) => {
 			members = res.data;
-			// console.log(members);
 		});
 
 		try {
@@ -59,9 +62,7 @@
 				},
 			})
 			.then((res) => {
-				// console.log(res);
 				Me = res.data;
-				// console.log('Me - > ', Me);
 			});
 		} catch (error) {
 			console.log(error);
@@ -69,7 +70,6 @@
 
 		socket.on('deletedMember', (data : any) => {
 			let newMembers = [];
-			// console.log("Deleted Member ->", {data});
 			if (data.id_user === Me.id_user) {
 				isAdmin = false;
 				return ;
@@ -85,7 +85,6 @@
 
 		socket.on('newMembers', (data : any) => {
 			if (data.roomName !== room) return;
-			// console.log(data.member);
 			members.push(data.member);
 			members = members;			
 		});
@@ -105,7 +104,6 @@
 				if (mem.user.id_user === data.id_user) {
 					mem.admin = data.admin;
 				}
-				// console.log("Bew Right Members ->", {mem})
 				return mem;
 			});
 			members = members;
@@ -121,7 +119,6 @@
 		});
 
 		socket.on('mute', (data : any) => {
-			// console.log('Mute ->', {data});
 			members = members.map((mem : any) => {
 				if (mem.user.id_user === data.id_user) {
 					mem.Muted = true;
@@ -160,10 +157,20 @@
 			if (data.roomName !== room) return;
 			CpassError = data.error;
 		});
+
+		socket.on('badChangePass', (data : any) => {
+			if (data.roomName !== room) return;
+			passError = data.error;
+		});
+
+		socket.on('wrongEdit', (data : any ) => {
+			currentPass = '';
+			if (data.roomName !== room) return;
+			checkPassError = data.error;
+		});
 	});
 
 	function admin(sanction : string, Punished : any) {
-		// console.log(sanction);
 		members.filter((mem : any) => mem.user.login !== Punished);
 		socket.emit('sanction', {
 			roomName: room,
@@ -176,7 +183,6 @@
 	}
 
 	function Kick(Punished : any) {
-		// console.log(Punished)
 		socket.emit('sanction', {
 			roomName: room,
 			sanction: 'kick',
@@ -221,25 +227,16 @@
 		resetTime();
 	}
 
-	let selected = '';
-	let time = '';
-	let duration = '';
-
 	function verifPassword(event : KeyboardEvent) {
-		// console.log('test');
 		if (event.key == "Enter" && currentPass !== '') 
 			socket.emit('verifPassword', {roomName: room, password: currentPass});
 	}
 
 	function changePass() {
 		passError = '';
-		if (newPass !== newPassConfirm ) {
-			passError = "Passwords don't match";
-			newPass = '';
-			newPassConfirm = '';
-		} else if (newPass !== '' && newPassConfirm !== '') {
+		checkPassError
+		if (newPass !== '' && newPassConfirm !== '') 
 			socket.emit('changePass', {roomName: room, Pass: newPass, Cpass : newPassConfirm});
-		}
 	}
 	
 	function userIsInRoomPrivate(user : any) {
@@ -270,8 +267,6 @@
 				cpass : StatusCPass
 			});
 		}
-		// else if (StatusPass !== StatusCPass)
-		// 	CpassError = "Passwords don't match";
 		StatusPass = '';
 		StatusCPass = '';
 	}
@@ -415,6 +410,9 @@
 		<div class="flex flex-col">
 			{#if validatePass === false}
 				<input class="rounded m-1" type="password" placeholder="Current password" bind:value={currentPass} on:keydown={verifPassword}>
+				{#if checkPassError !== ''}
+					<p class="flex justify-center text-red-500 text-sm">{checkPassError}</p>
+				{/if}
 				<div class="border-t"></div>
 			{:else}
 				<input class="rounded m-1" type="password" placeholder="New password" bind:value={newPass}>
@@ -422,8 +420,9 @@
 				{#if passError !== ''}
 					<p class="flex justify-center text-red-500 text-sm">{passError}</p>
 				{/if}
-				<div class="flex justify-center">
-					<button on:click={() => changePass()}>Change password</button>
+				<div class="flex flex-row justify-center gap-4">
+					<button class="border hover:bg-secondary p-2" on:click={() => validatePass = false}>Cancel</button>
+					<button class="border hover:bg-secondary p-2" on:click={() => changePass()}>Confirm</button>
 				</div>
 			{/if}
 		</div>

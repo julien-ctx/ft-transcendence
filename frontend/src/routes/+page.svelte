@@ -25,11 +25,11 @@
 </script>
 
 <div class="container-home container">
-		<div>
-			<a href="/game">
-				<img src="./img-home.png" alt="" style="margin: 0 auto;" class="img-home">
-			</a>
-		</div>
+	<div class="img-home">
+		<a href="/game">
+			<img src="./img-home.png" alt="">
+		</a>
+	</div>
 		
 	{#if allUsers.length >= 3}
 		<div class="container-game">

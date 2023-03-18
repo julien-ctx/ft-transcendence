@@ -429,7 +429,10 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 		const valide = await this.chatService.verifyPass(data.password, Room.password);
 		// console.log(valide);
 		if (valide === false) 
-			client.emit('wrongEdit', 'Wrong password');
+			client.emit('wrongEdit', {
+				roomName: Room.name,
+				error : 'Wrong password',
+			});
 		else
 			client.emit('successVerify');
 	}
@@ -443,6 +446,14 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 		const User = await this.Service.getOneById(user['id']);
 		const Room = await this.chatService.getRoomByName(data.roomName);
 		
+		if (data.Pass !== data.Cpass) {
+			client.emit('badChangePass', {
+				roomName: Room.name,
+				error : 'Password must match',
+			})
+			return;
+		}
+
 		let mdp = await this.chatService.hashedPass(data.Pass);
 		// console.log(mdp);
 		await this.prisma.room.update({

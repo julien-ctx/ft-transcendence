@@ -18,13 +18,15 @@ body {
 }
 
 .img-home {
-	width: 45%;
-	height: 45%;
-	-moz-box-shadow: 0px 15px 15px rgb(187, 187, 187);
-	-webkit-box-shadow: 0px 15px 15px  rgb(187, 187, 187);
-	box-shadow: 0px 15px 15px  rgb(187, 187, 187);
-	border-radius: 20px;
-	border: solid 6px $secondary;
+	max-width: 700px;
+	margin: 0 auto;
+	img {
+		-moz-box-shadow: 0px 15px 15px rgb(187, 187, 187);
+		-webkit-box-shadow: 0px 15px 15px  rgb(187, 187, 187);
+		box-shadow: 0px 15px 15px  rgb(187, 187, 187);
+		border: solid 6px $secondary;
+		border-radius: 20px;
+	}
 }
 
 h1 {

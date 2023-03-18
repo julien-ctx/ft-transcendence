@@ -6,20 +6,23 @@
     import { afterUpdate, onMount } from "svelte";
     import GameHistory from "../modules/htmlComponent/gameHistory.svelte";
 
-	let gameHistory : any;
+	let gameHistory : any = null;
 	let allUsers : any = [];
-	let threeBestLevels: any;
+	let threeBestUsers: any = null;
 	
-	usersDataStore.subscribe(val => allUsers = val);
+	usersDataStore.subscribe(val => {
+		allUsers = val;
+		threeBestUsers = allUsers.slice().sort((a: any, b: any) => b.level - a.level).slice(0, 3);
+	});
 	
-	threeBestLevels = [...allUsers].sort((a, b) => a.level - b.level).slice(-3);
 	onMount(async() => {
 		await axios.get(`${API_URL}/users/get10GameHistory`, { headers : {
 				Authorization : `Bearer ${getJwt()}`
 			}
 		})
 		.then((res) => {
-			gameHistory = res.data;
+			if (!threeBestUsers || threeBestUsers.length < 3)
+				gameHistory = res.data;
 		})
 	})
 </script>
@@ -30,34 +33,33 @@
 			<img src="./img-home.png" alt="">
 		</a>
 	</div>
-		
-	{#if allUsers.length >= 3}
+	{#if allUsers.length >= 3 && threeBestUsers}
 		<div class="container-game">
 			<h2 style="text-align: center">Rankings</h2>
 		</div>
 		<div class="ranking">
 			<div class="rank-second">
 				<h2 style="text-align: center">#2</h2>
-				<strong><p style="text-align: center" class="ranking-login">{threeBestLevels[1].login}</p></strong>
+				<strong><p style="text-align: center" class="ranking-login">{threeBestUsers[1].login}</p></strong>
 				<div class="ranking-player-info">
-					<p style="text-align: center" class ="win-rate-ranking">WR : {threeBestLevels[1].winrate}%</p>
-					<p style="text-align: center" class ="level-ranking">Level {threeBestLevels[1].level}</p>
+					<p style="text-align: center" class ="win-rate-ranking">WR : {threeBestUsers[1].winrate}%</p>
+					<p style="text-align: center" class ="level-ranking">Level {threeBestUsers[1].level}</p>
 				</div>
 			</div>
 			<div class="rank-first">
 				<h2 style="text-align: center">#1</h2>
-				<strong><p style="text-align: center" class="ranking-login">{threeBestLevels[2].login}</p></strong>
+				<strong><p style="text-align: center" class="ranking-login">{threeBestUsers[0].login}</p></strong>
 				<div class="ranking-player-info">
-					<p style="text-align: center" class ="win-rate-ranking">WR : {threeBestLevels[2].winrate}%</p>
-					<p style="text-align: center" class ="level-ranking">Level {threeBestLevels[2].level}</p>
+					<p style="text-align: center" class ="win-rate-ranking">WR : {threeBestUsers[0].winrate}%</p>
+					<p style="text-align: center" class ="level-ranking">Level {threeBestUsers[0].level}</p>
 				</div>
 			</div>
 			<div class="rank-third">
 				<h2 style="text-align: center">#3</h2>
-				<strong><p style="text-align: center" class="ranking-login">{threeBestLevels[0].login}</p></strong>
+				<strong><p style="text-align: center" class="ranking-login">{threeBestUsers[2].login}</p></strong>
 				<div class="ranking-player-info">
-					<p style="text-align: center" class ="win-rate-ranking">WR : {threeBestLevels[0].winrate}%</p>
-					<p style="text-align: center" class ="level-ranking">Level {threeBestLevels[0].level}</p>
+					<p style="text-align: center" class ="win-rate-ranking">WR : {threeBestUsers[2].winrate}%</p>
+					<p style="text-align: center" class ="level-ranking">Level {threeBestUsers[2].level}</p>
 				</div>
 			</div>
 		</div>

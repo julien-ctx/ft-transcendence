@@ -12,6 +12,7 @@
 	export let socket : any;
 	export let room : string;
 	export let infoChannel : any;
+	export let modalAdmin : boolean;
 
 	let members : any;
 	let current : any = {};
@@ -45,6 +46,7 @@
 	myProfileDataStore.subscribe(val => myProfile = val);
 
 	onMount(async () => {
+		console.log(modalAdmin);
 		current = infoChannel.filter((Chan : any) => Chan.name === room)[0];
 		await axios.get(`${API_URL}/Chat/getMembers/${room}`, {
 			headers: {
@@ -72,6 +74,7 @@
 			let newMembers = [];
 			if (data.id_user === Me.id_user) {
 				isAdmin = false;
+				modalAdmin = false;
 				return ;
 			}
 			for (let i = 0; i < members.length; i++) {
@@ -95,8 +98,10 @@
 		socket.on('newRight', (data : any) => {
 			if (data.roomName !== room) return;
 			if (data.id_user === Me.id_user) {
-				if (Me.admin === true && data.admin === false)
+				if (Me.admin === true && data.admin === false) {
 					isAdmin = false;
+					modalAdmin = false;
+				}
 				else if (isAdmin === false && data.admin === true)
 					isAdmin = true;
 			}
@@ -273,7 +278,7 @@
 </script>
 
 
-{#if isAdmin === true}
+<!-- {#if isAdmin === true} -->
 	{#if members && members.length > 0}
 		<div class="flex flex-col gap-3">
 			{#each members as member}
@@ -427,7 +432,7 @@
 			{/if}
 		</div>
 	{/if}
-{/if}
+<!-- {/if} -->
 
 <style>
 .switch {

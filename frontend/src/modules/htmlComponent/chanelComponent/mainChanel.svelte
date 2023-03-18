@@ -26,6 +26,7 @@
     let socketMp : any;
     let active : string = "";
     let socketUser : any;
+    let size = "lg";
 
     // Modal Create : //
     let roomName = '';
@@ -438,9 +439,9 @@
     </div>
 </Modal>
 
-<Modal bind:open={modalAdmin} title="Admin Panel" class="bg-primary">
-    <Members room={admin} socket={socket} infoChannel={rooms}/>
-	<div class="flex justify-center gap-8">
-		<button class="button-actions" on:click={() => close()}>Close</button>
-	</div>
+<Modal bind:open={modalAdmin} title='{admin} Admin gestion panel' size={size} class="bg-primary" >
+    <Members room={admin} socket={socket} infoChannel={rooms} bind:modalAdmin={modalAdmin}/>
+        <div class="flex justify-center gap-8">
+            <button class="button-actions" on:click={() => close()}>Close</button>
+        </div>
 </Modal>

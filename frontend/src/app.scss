@@ -29,6 +29,116 @@ body {
 	}
 }
 
+@media (max-width: 768px) {
+	.img-home {
+		width: 90%;
+		margin-left: 5%;
+	}
+}
+
+.rank-second {
+	float: left;
+	width: 33.33%;
+	height: auto;
+	padding-bottom: 20px;
+	background-color: rgba(222, 222, 222, 0.503);
+	-moz-box-shadow: 0 4px 10px -2px rgb(187, 187, 187);
+	-webkit-box-shadow: 0 4px 10px -2px rgb(187, 187, 187);
+	box-shadow: 0 4px 10px -2px rgb(187, 187, 187);
+	border-top-left-radius: 20px 20px;
+	border-bottom-left-radius: 20px 20px;
+}
+
+.rank-first {
+	float: left;
+	width: 33.33%;
+	height: auto;
+	padding-bottom: 20px;
+	background-color: rgb(188, 162, 102, 0.503);
+	-moz-box-shadow: 0 4px 10px -2px rgb(187, 187, 187);
+	-webkit-box-shadow: 0 4px 10px -2px rgb(187, 187, 187);
+	box-shadow: 0 4px 10px -2px rgb(187, 187, 187);
+}
+
+.rank-third {
+	float: left;
+	width:	33.33%;
+	height: auto;
+	padding-bottom: 20px;
+	background-color: rgb(217, 119, 70, 0.503);
+	-moz-box-shadow: 0 4px 10px -2px rgb(187, 187, 187);
+	-webkit-box-shadow: 0 4px 10px -2px rgb(187, 187, 187);
+	box-shadow: 0 4px 10px -2px rgb(187, 187, 187);
+	border-top-right-radius: 20px 20px;
+	border-bottom-right-radius: 20px 20px;
+}
+
+.ranking {
+	margin: 50px auto;
+	max-width: 800px;
+	clear: both;
+	font-family: 'Audiowide' !important;
+	display: flex;
+}
+
+@media (max-width: 768px) {
+	.ranking {
+		flex-direction: column;
+	}
+	.rank-first {
+		width: 90%;
+		margin-left: 5%;
+		border-radius: 0;
+		order: 1;
+		border-top-left-radius: 20px;
+		border-top-right-radius: 20px;
+	}
+	.rank-second {
+		width: 90%;
+		margin-left: 5%;
+		border-radius: 0;
+		order: 2;
+	}
+	.rank-third {
+		width: 90%;
+		margin-left: 5%;
+		border-radius: 0;
+		order: 3;
+		border-bottom-left-radius: 20px;
+		border-bottom-right-radius: 20px;
+	}
+}
+
+.win-rate-ranking {
+	font-family: 'Ubuntu', sans-serif;
+	color: rgb(88, 88, 88);
+	font-weight: 500;
+}
+
+.level-ranking {
+	font-family: 'Ubuntu', sans-serif;
+	color: rgb(88, 88, 88);	
+	font-weight: 500;
+}
+
+.ranking h2 {
+	color: rgb(88, 88, 88);	
+}
+
+.ranking-login {
+	font-size: 110%;
+}
+
+.ranking-player-info {
+	margin-top: 20px;
+	margin-left: 40px;
+	margin-right: 40px;
+	padding-top: 10px;
+	padding-bottom: 10px;
+	border: solid 5px rgba(0, 0, 0, 0.068);	
+	border-radius: 15px;
+}
+
 h1 {
 	font-family: 'Audiowide' !important;
 	font-size: 48px !important;
@@ -537,6 +647,7 @@ input[type=range]::-moz-range-thumb {
 		}
 	}
 }
+
 .button-admin {
 	background-color: $secondary;
 	padding: 5px 10px;
@@ -567,7 +678,7 @@ input[type=range]::-moz-range-thumb {
 		margin-bottom: 20px;
 	}
 	.container-game {
-		margin: 20px auto;
+		margin: 50px auto;
 		max-width: 800px;
 		.content-game {
 			display: flex;

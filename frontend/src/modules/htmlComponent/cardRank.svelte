@@ -6,7 +6,6 @@
 	export let user : any;
 
 	let percent : string = "0";
-	let xpMatch : string = "0/200"
 	onMount(() => {
 		percent = (((user.level - parseInt(user.level)) * 100).toFixed(0)).toString();	
 	})

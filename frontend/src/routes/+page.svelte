@@ -24,7 +24,7 @@
 			if (!threeBestUsers || threeBestUsers.length < 3)
 				gameHistory = res.data;
 		})
-	})
+	});
 </script>
 
 <div class="container-home container">

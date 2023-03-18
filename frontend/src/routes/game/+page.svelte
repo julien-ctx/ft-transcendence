@@ -102,7 +102,7 @@
 				idReceive = parseInt(idReceive);
 			}
 		}
-		AuthGuard()
+		await AuthGuard()
 		.then((res) => {
 			isLogged = true;
 		})

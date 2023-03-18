@@ -38,7 +38,6 @@
 	socketFriendStore.subscribe(val => socketFriend = val);
 	socketUserStore.subscribe(val => socketUser = val);
 
-
 	async function submitFormImg() {
 		const formData = new FormData();
 		formData.append('file', fileInput.files[0]);

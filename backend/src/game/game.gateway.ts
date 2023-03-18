@@ -20,6 +20,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	) {this.gameLoop = this.gameLoop.bind(this);}
 	
 	private games: Game[] = [];
+	private isProcessing = false;
 
 	@WebSocketServer() server: Server;
 
@@ -123,8 +124,12 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	}
 	
 	async gameLoop(game: Game) {
+		if (this.isProcessing) {
+			return;
+		}
 		const winner = await this.gameService.checkBallPosition(game, this.gameService.randomBallDirection());
 		if (winner !== 'NoWinner') {
+			this.isProcessing = true;
 			clearInterval(game.interval)
 			if (winner === 'Bot') {
 				game.leftClient.socket.emit('winner', {winner: winner, side: 1, forfeit: false});
@@ -132,16 +137,18 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 				game.leftClient.socket.emit('winner', {winner: winner, side: -1, forfeit: false});
 				if (game.rightClient) {
 					game.rightClient.socket.emit('winner', {winner: winner, side: -1, forfeit: false});
-					await this.storeGameInDB(game, game.leftClient, game.rightClient);
+					if (game.leftClient.leftPaddle.score !== game.rightClient.rightPaddle.score)
+						await this.storeGameInDB(game, game.leftClient, game.rightClient);
 				}
 			} else if (winner === game.rightClient.user.login) {
 				game.leftClient.socket.emit('winner', {winner: winner, side: 1, forfeit: false});
 				if (game.rightClient) {
 					game.rightClient.socket.emit('winner', {winner: winner, side: 1, forfeit: false});
-					/// check for same score;
-					await this.storeGameInDB(game, game.rightClient, game.leftClient);
+					if (game.leftClient.leftPaddle.score !== game.rightClient.rightPaddle.score)
+						await this.storeGameInDB(game, game.rightClient, game.leftClient);
 				}
 			}
+			this.isProcessing = false;
 			return;
 		}
 

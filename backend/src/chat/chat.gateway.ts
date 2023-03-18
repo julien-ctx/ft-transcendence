@@ -110,7 +110,22 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 				admin : true,
 		}
 		});
+		// this.Client.forEach((elem : any) => {
+		// 	if (elem.user.id === idUser)
+		// 		elem.client.emit('successCreate');
+		// });
 		client.emit('successCreate');
+		// this.Client.forEach((elem : any) => {
+		// 	console.log(elem.user.id, idUser, client.id, elem.client.id)
+		// 	if (elem.user.id === idUser && elem.client.id !== client.id) {
+		// 		client.emit('rooms', {
+		// 			name : room.name,
+		// 			owner : true,
+		// 			status : room.status,
+		// 			admin : true,
+		// 		});
+		// 	}
+		// });
 		client.emit('rooms', {
 			name : room.name,
 			owner : true,
@@ -160,6 +175,10 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 		}
 		else if (alreadyJoin.length > 0) {
 			client.emit('errors', {already : 'You already join this room'});
+			return ;
+		}
+		if (room.status === 'Private') {
+			client.emit('errors', {already : 'This channel is private'});
 			return ;
 		}
 		let Ban = false;
@@ -283,7 +302,7 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 	async handleLeaveRoom(@ConnectedSocket() client, @MessageBody() data: any) {
 		const token = client.handshake.query.token as string;
 		const user = this.jwt.decode(token);
-		if (user === undefined) return;
+		if (user === undefined || user === null) return;
 
 		const idUser : number = user['id'];
 		const User = await this.prisma.user.findUnique({
@@ -525,11 +544,9 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 		if (isIn === false) return;
 		const relation = await this.chatService.getMyRelation(User.id_user, Room.name);
 		if (relation.admin !== true) return;
-		const t = new Sanction(this.Rooms, this.Client, data, this.prisma, client);
-		t.handleSanction();
+		new Sanction(this.Rooms, this.Client, data, this.prisma, client).handleSanction();
 	}
 
-	// @UseGuards(UserGuardGateway)
 	@SubscribeMessage('mute')
 	async handleMute(@ConnectedSocket() client, @MessageBody() data: any) {
 		const token = client.handshake.query.token as string;
@@ -556,7 +573,6 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 		});
 		let Sanction : Date = new Date();
 		let error : boolean = false;
-		// console.log({data});
 		switch (data.duration) {
 			case 'Second':
 				Sanction.setSeconds(Sanction.getSeconds() + data.time); break;
@@ -585,7 +601,6 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 					room : true,
 				}
 			});
-			// client.emit('mute', newUser);
 			this.Client.forEach((elem : any) => {
 				elem.client.emit('mute', newUser)
 			});

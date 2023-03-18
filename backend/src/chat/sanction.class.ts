@@ -131,7 +131,8 @@ export class Sanction {
             }
         });
         this.Clients.forEach((elem : any) => {
-            if (elem.user.id === this.member.id_user)
+            if (elem.user === null) return ;
+            if (elem.user?.id === this.member.id_user)
                 elem.client.emit('deletedRoom', Room.name);
             elem.client.emit('deletedMember', this.member)
         });

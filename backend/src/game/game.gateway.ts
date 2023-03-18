@@ -20,6 +20,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	) {this.gameLoop = this.gameLoop.bind(this);}
 	
 	private games: Game[] = [];
+	private isProcessing = false;
 
 	@WebSocketServer() server: Server;
 
@@ -81,7 +82,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	}
 
 	async storeGameInDB(game: Game, winnerClient: Client, looserClient: Client) {
-		this.prismaService.gameHistory.create({
+		await this.prismaService.gameHistory.create({
 			data : {
 				user : {
 					connect : [
@@ -91,18 +92,24 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 				},
 				score_user1 : game.leftClient.leftPaddle.score,
 				id_user1 : game.leftClient.user.id,
+				login_user1 : game.leftClient.user.login,
+				img_link_user1 : game.leftClient.user.img_link,
+
 				score_user2 : game.rightClient.rightPaddle.score,
-				id_user2: game.rightClient.user.id,
-				id_user_winner : winnerClient.user.id
+				id_user2 : game.rightClient.user.id,
+				login_user2 : game.rightClient.user.login,
+				img_link_user2 : game.rightClient.user.img_link,
+				
+				id_user_winner : winnerClient.user.id,
 			},
 			include : {
-				user : true
+				user : true,
 			}
 		})
 		.then(async () => {
 			await this.updateUser(winnerClient, true)
 			.then(async () => {
-				await this.updateUser(looserClient, false)
+				this.updateUser(looserClient, false)
 				.catch((error) => {
 					console.log(error);
 				})
@@ -117,8 +124,12 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	}
 	
 	async gameLoop(game: Game) {
+		if (this.isProcessing) {
+			return;
+		}
 		const winner = await this.gameService.checkBallPosition(game, this.gameService.randomBallDirection());
 		if (winner !== 'NoWinner') {
+			this.isProcessing = true;
 			clearInterval(game.interval)
 			if (winner === 'Bot') {
 				game.leftClient.socket.emit('winner', {winner: winner, side: 1, forfeit: false});
@@ -126,15 +137,18 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 				game.leftClient.socket.emit('winner', {winner: winner, side: -1, forfeit: false});
 				if (game.rightClient) {
 					game.rightClient.socket.emit('winner', {winner: winner, side: -1, forfeit: false});
-					await this.storeGameInDB(game, game.leftClient, game.rightClient);
+					if (game.leftClient.leftPaddle.score !== game.rightClient.rightPaddle.score)
+						await this.storeGameInDB(game, game.leftClient, game.rightClient);
 				}
 			} else if (winner === game.rightClient.user.login) {
 				game.leftClient.socket.emit('winner', {winner: winner, side: 1, forfeit: false});
 				if (game.rightClient) {
 					game.rightClient.socket.emit('winner', {winner: winner, side: 1, forfeit: false});
-					await this.storeGameInDB(game, game.rightClient, game.leftClient);
+					if (game.leftClient.leftPaddle.score !== game.rightClient.rightPaddle.score)
+						await this.storeGameInDB(game, game.rightClient, game.leftClient);
 				}
 			}
+			this.isProcessing = false;
 			return;
 		}
 

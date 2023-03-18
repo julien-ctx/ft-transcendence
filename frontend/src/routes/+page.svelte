@@ -19,9 +19,9 @@
 
 </script>
 <div class="container-home container">
-	<div>
+	<div class="img-home">
 		<a href="/game">
-			<img src="./img-home.png" alt="" style="margin: 0 auto;" class="img-home">
+			<img src="./img-home.png" alt="">
 		</a>
 	</div>
 	{#if gameHistory}

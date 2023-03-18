@@ -29,6 +29,13 @@ body {
 	}
 }
 
+@media (max-width: 768px) {
+	.img-home {
+		width: 90%;
+		margin-left: 5%;
+	}
+}
+
 .rank-second {
 	float: left;
 	width: 33.33%;
@@ -67,19 +74,71 @@ body {
 }
 
 .ranking {
-	margin: 100px auto;
+	margin: 50px auto;
 	max-width: 800px;
 	clear: both;
 	font-family: 'Audiowide' !important;
 	display: flex;
 }
 
+@media (max-width: 768px) {
+	.ranking {
+		flex-direction: column;
+	}
+	.rank-first {
+		width: 90%;
+		margin-left: 5%;
+		border-radius: 0;
+		order: 1;
+		border-top-left-radius: 20px;
+		border-top-right-radius: 20px;
+	}
+	.rank-second {
+		width: 90%;
+		margin-left: 5%;
+		border-radius: 0;
+		order: 2;
+	}
+	.rank-third {
+		width: 90%;
+		margin-left: 5%;
+		border-radius: 0;
+		order: 3;
+		border-bottom-left-radius: 20px;
+		border-bottom-right-radius: 20px;
+	}
+}
+
 .win-rate-ranking {
-	font-family: Arial, Helvetica, sans-serif;
+	font-family: 'Ubuntu', sans-serif;
+	font-size: 90%;
+	color: rgb(88, 88, 88);
+	font-weight: 500;
+}
+
+.level-ranking {
+	font-family: 'Ubuntu', sans-serif;
+	font-size: 90%;
+	color: rgb(88, 88, 88);	
+	font-weight: 500;
 }
 
 .ranking h2 {
 	color: rgb(88, 88, 88);	
+}
+
+.ranking-login {
+	font-size: 110%;
+}
+
+.ranking-player-info {
+	margin-top: 20px;
+	margin-left: 40px;
+	margin-right: 40px;
+	padding-top: 10px;
+	padding-bottom: 10px;
+	border: solid 5px rgba(0, 0, 0, 0.068);	
+	border-radius: 15px;
 }
 
 h1 {

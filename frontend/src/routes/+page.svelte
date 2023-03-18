@@ -38,21 +38,27 @@
 		<div class="ranking">
 			<div class="rank-second">
 				<h2 style="text-align: center">#2</h2>
-				<strong><p style="text-align: center">{threeBestLevels[1].login}</p></strong>
-				<strong><p style="text-align: center" class ="win-rate-ranking">WR: {threeBestLevels[1].winrate} %</p></strong>
-				<strong><p style="text-align: center">Level {threeBestLevels[1].level}</p></strong>
+				<strong><p style="text-align: center" class="ranking-login">{threeBestLevels[1].login}</p></strong>
+				<div class="ranking-player-info">
+					<p style="text-align: center" class ="win-rate-ranking">WR : {threeBestLevels[1].winrate}%</p>
+					<p style="text-align: center" class ="level-ranking">Level {threeBestLevels[1].level}</p>
+				</div>
 			</div>
 			<div class="rank-first">
 				<h2 style="text-align: center">#1</h2>
-				<strong><p style="text-align: center">{threeBestLevels[2].login}</p></strong>
-				<strong><p style="text-align: center" class ="win-rate-ranking">WR: {threeBestLevels[2].winrate} %</p></strong>
-				<strong><p style="text-align: center">Level {threeBestLevels[2].level}</p></strong>
+				<strong><p style="text-align: center" class="ranking-login">{threeBestLevels[2].login}</p></strong>
+				<div class="ranking-player-info">
+					<p style="text-align: center" class ="win-rate-ranking">WR : {threeBestLevels[2].winrate}%</p>
+					<p style="text-align: center" class ="level-ranking">Level {threeBestLevels[2].level}</p>
+				</div>
 			</div>
 			<div class="rank-third">
 				<h2 style="text-align: center">#3</h2>
-				<strong><p style="text-align: center">{threeBestLevels[0].login}</p></strong>
-				<strong><p style="text-align: center" class ="win-rate-ranking">WR: {threeBestLevels[0].winrate} %</p></strong>
-				<strong><p style="text-align: center">Level {threeBestLevels[0].level}</p></strong>
+				<strong><p style="text-align: center" class="ranking-login">{threeBestLevels[0].login}</p></strong>
+				<div class="ranking-player-info">
+					<p style="text-align: center" class ="win-rate-ranking">WR : {threeBestLevels[0].winrate}%</p>
+					<p style="text-align: center" class ="level-ranking">Level {threeBestLevels[0].level}</p>
+				</div>
 			</div>
 		</div>
 	{:else if gameHistory}

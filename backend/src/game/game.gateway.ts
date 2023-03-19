@@ -7,7 +7,7 @@ import { Server, Socket } from "socket.io";
 import { PrismaService } from "src/prisma/prisma.service";
 import { first } from 'rxjs';
 
-const MAX_SCORE = 10;
+const MAX_SCORE = 3;
 
 @WebSocketGateway({
 	cors: true,
@@ -67,14 +67,14 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		return null;
 	}
 
-	async updateUser(user: User, userScore: number, otherScore: number, side: number, winner: boolean) {
+	async updateUser(user: User, userScore: number, otherScore: number, winner: boolean) {
 		const totalGamesWin = winner ? user.totalGamesWin + 1 : user.totalGamesWin;
 		const totalGames = user.totalGames + 1;
 		const level = winner ? user.level + 0.20 : user.level + 0.1;
 
-		let fanny: boolean = false;
-		let double_fanny: boolean = false;
-		let first_win: boolean = false;
+		let fanny: boolean = user.fanny;
+		let double_fanny: boolean = user.double_fanny;
+		let first_win: boolean = user.first_win;
 		if (userScore === 0 && !user.fanny)
 			fanny = true;
 		if (userScore === 0 && user.fanny)
@@ -122,7 +122,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		});
 	}
 
-	async storeGameInDB(game: Game, winnerClient: Client, looserClient: Client, winnerScore: number, looserScore: number, side: number) {
+	async storeGameInDB(game: Game, winnerClient: Client, looserClient: Client, winnerScore: number, looserScore: number) {
 		await this.prismaService.gameHistory.create({
 			data : {
 				user : {
@@ -148,9 +148,9 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 			}
 		})
 		.then(async () => {
-			await this.updateUser(winnerClient.user, winnerScore, looserScore, side, true)
+			await this.updateUser(winnerClient.user, winnerScore, looserScore, true)
 			.then(async () => {
-				await this.updateUser(looserClient.user, looserScore, winnerScore, side, false)
+				await this.updateUser(looserClient.user, looserScore, winnerScore, false)
 				.catch((error) => {
 					console.log(error);
 				})
@@ -184,7 +184,6 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 							game.rightClient,
 							game.leftClient.leftPaddle.score,
 							game.rightClient.rightPaddle.score,
-							-1
 						);
 				}
 			} else if (winner === game.rightClient.user.login) {
@@ -198,7 +197,6 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 							game.leftClient,
 							game.rightClient.rightPaddle.score,
 							game.leftClient.leftPaddle.score,
-							1
 						);
 				}
 			}

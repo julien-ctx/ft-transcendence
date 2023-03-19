@@ -48,6 +48,11 @@ body {
 		font-size: 18px;
 		font-family: 'Audiowide';
 	}
+	.no-achievement {
+		font-family: 'Audiowide';
+		padding: 20px;
+		font-size: 16px;
+	}
 }
 
 .ranking {
@@ -713,6 +718,7 @@ input[type=range]::-moz-range-thumb {
 
 .container-home {
 	margin: 50px auto;
+	padding-bottom: 20px;
 	h2 {
 		font-size: 32px;
 		font-family: 'Audiowide';

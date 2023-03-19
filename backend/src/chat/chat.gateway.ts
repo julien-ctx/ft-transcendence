@@ -164,6 +164,7 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 			client.emit('errors', {already : 'Room does not exist'});
 			return ;
 		}
+		await this.chatService.updateBan(room, this.Client);
 		let alreadyJoin = await this.prisma.roomToUser.findMany({
 			where: {
 				id_user: User.id_user,
@@ -265,6 +266,7 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 			},
 		});
 		const Room = await this.chatService.getRoomByName(data.roomName);
+		await this.chatService.updateBan(Room, this.Client);
 		const createRelation = await this.prisma.roomToUser.create({
 			data: {
 				room: {
@@ -312,6 +314,7 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 			}
 		});
 		const room = await this.chatService.getRoomByName(data.roomName);
+		await this.chatService.updateBan(room, this.Client);
 		const relation = await this.prisma.roomToUser.findMany({
 			where: {
 				id_user: User.id_user,
@@ -388,7 +391,7 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 		const idUser : number = user['id'];
 		const User = await this.Service.getOneById(idUser);
 		const Room = await this.chatService.getRoomByName(data.roomName);
-		
+		await this.chatService.updateBan(Room, this.Client);
 		// console.log(this.findRoom(Room.name));
 		let roomInstance = this.findRoom(Room.name);
 		if (roomInstance === undefined) {
@@ -419,6 +422,7 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 		
 		const User = await this.Service.getOneById(user['id']);
 		const Room = await this.chatService.getRoomByName(data.roomName);
+		await this.chatService.updateBan(Room, this.Client);
 		if (await this.chatService.muteUpdate(Room, User) === false) {
 			const relation = await this.prisma.roomToUser.findFirst({
 				where: {
@@ -472,7 +476,8 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 
 		const User = await this.Service.getOneById(user['id']);
 		const Room = await this.chatService.getRoomByName(data.roomName);
-		
+		await this.chatService.updateBan(Room, this.Client);
+
 		if (data.Pass !== data.Cpass) {
 			client.emit('badChangePass', {
 				roomName: Room.name,

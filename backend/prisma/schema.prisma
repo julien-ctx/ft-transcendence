@@ -78,7 +78,7 @@ model Banned {
 	user User @relation(fields: [id_user], references: [id_user])
 	id_user Int 
 
-	endBan DateTime
+	endBan DateTime @default(now())
 }
 
 model RoomToUser {

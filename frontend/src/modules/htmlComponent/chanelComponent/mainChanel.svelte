@@ -73,6 +73,7 @@
                 }).then((res : any) => {      
                     rooms = res.data;
                 });
+
             } catch (error) {
                 console.log(error);
             }
@@ -92,10 +93,10 @@
                 }
             }).then((res : any) => {      
                 otherRoom = res.data;
-                // console.log('Public : ->', otherRoom);
-                otherRoom.forEach((elem : any) => {
-                    console.log('elem ->', elem.name);
-                })
+                console.log('Public : ->', otherRoom);
+                // otherRoom.forEach((elem : any) => {
+                //     console.log('elem ->', elem.name);
+                // })
             });
         } catch (error) {
             console.log(error);
@@ -130,6 +131,16 @@
                 otherRoom = otherRoom.filter((room : any) => room.name !== receivedRoom.roomName);
             });
 
+            socket.on('newPublicRoom', (receivedRoom : any) => {
+                console.log('newPublicRoom ->', receivedRoom);
+                for (let i = 0; i < otherRoom.length; i++) {
+                    if (otherRoom[i].name == receivedRoom.name) {
+                        return;
+                    }
+                }
+                otherRoom = [...otherRoom, receivedRoom];
+            });
+
             socket.on('errors', (receivedErr : any) => {
                 err = {...err, ...receivedErr};
             });
@@ -150,6 +161,11 @@
             });
 
             socket.on('newRight', (data : any) => {
+                console.log(data.id_user, myProfile.id_user);
+                if (data.id_user !== myProfile.id_user) {
+                    console.log('endend');
+                    return;
+                } 
                 rooms = rooms.map((room : any) => {
                     if (room.name === data.roomName) {
                         room.admin = data.admin;

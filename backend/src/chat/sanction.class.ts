@@ -28,7 +28,7 @@ export class Sanction {
     setEndOfSanction() {
         let now = new Date();
         if (this.time === '' || this.duration === '') 
-            return null;
+            return false;
         switch (this.duration) {
             case 'Second':
                 now.setSeconds(now.getSeconds() + parseInt(this.time)); break;
@@ -44,10 +44,13 @@ export class Sanction {
                 break;
         }
         this.endOfSanction = now;
+        return true;
     }
 
     async handleSanction() {
-        this.setEndOfSanction();
+        if (this.sanction !== 'kick')
+            if (this.setEndOfSanction() === false) return;
+        console.log('test');
         switch (this.sanction) {
             case 'ban': 
                 await this.ban(); break;
@@ -98,7 +101,7 @@ export class Sanction {
         //     }
         // }
         this.Clients.forEach((elem : any) => {
-            if (elem.user.id === this.member.id_user)
+            if (elem.user.id === this.member.id_user) 
                 elem.client.emit('deletedRoom', Room.name);
             elem.client.emit('deletedMember', this.member)
         });
@@ -132,8 +135,11 @@ export class Sanction {
         });
         this.Clients.forEach((elem : any) => {
             if (elem.user === null) return ;
-            if (elem.user?.id === this.member.id_user)
+            if (elem.user?.id === this.member.id_user) {
                 elem.client.emit('deletedRoom', Room.name);
+                if (Room.status === 'Public')
+                    elem.client.emit('newPublicRoom', Room);
+            }
             elem.client.emit('deletedMember', this.member)
         });
     }

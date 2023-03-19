@@ -4,7 +4,7 @@
     import { usersDataStore } from "$lib/store/user";
     import axios from "axios";
     import { afterUpdate, onMount } from "svelte";
-    import GameHistory from "../modules/htmlComponent/gameHistory.svelte";
+    import GameHistory from "../../modules/htmlComponent/gameHistory.svelte";
 
 	let gameHistory : any = null;
 	let allUsers : any = [];
@@ -16,16 +16,14 @@
 	});
 	
 	onMount(async() => {
-		if (getJwt() != undefined && getJwt() != "") {
-			await axios.get(`${API_URL}/users/get10GameHistory`, { headers : {
-					Authorization : `Bearer ${getJwt()}`
-				}
-			})
-			.then((res) => {
-				if (!threeBestUsers || threeBestUsers.length < 3)
-					gameHistory = res.data;
-			})
-		}
+		await axios.get(`${API_URL}/users/get10GameHistory`, { headers : {
+				Authorization : `Bearer ${getJwt()}`
+			}
+		})
+		.then((res) => {
+			if (!threeBestUsers || threeBestUsers.length < 3)
+				gameHistory = res.data;
+		})
 	});
 </script>
 

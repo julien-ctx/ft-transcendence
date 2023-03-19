@@ -32,101 +32,108 @@
 	socketMpStore.subscribe(val => socketMp = val);
 
 	onMount(async () => {
-		await AuthGuard()
-		.then(async (res) => {
-			await UpdateProfileConnected(1)
-			.then((res) => {
-				UpdateProfileToStore(res.data);
-			})
-		})
-		.catch((err) => {
+		if (getJwt() == undefined || getJwt() == "") {
 			removeJwt();
 			goto("/login")
-		})
-	
-		await GetAllUsers()
-		.then((res) => {
-			usersDataStore.set(res.data);
-		})
-
-		await GetAllUsers()
-		.then((res) => {
-			usersDataStore.set(res.data);
-		})
-    
-		await GetAllMyRoom()
-		.then((res) => {
-			myRoomMpStore.set(res.data);
-		})
-
-		let socketUser = io(API_URL, {
-			path: "/event_user",
-			query : { token : getJwt()}
-		});
-		socketUser.on("notification_mp", (data : any) => {
-			let contain : Boolean = false;
-			if (!notifMp)
-				notifMp = [data];
-			else {
-				for (let i = 0; i < notifMp.length; i++) {
-					if (notifMp[i].user.id == data.user.id)
-						contain = true;
-				}
-				if (!contain)
-					notifMp.push(data);
-			}
-			notifMp = notifMp;
-		})
-		socketUser.on("update_me", (data : any) => {
-			UpdateProfileToStore(data);
-		})
-		socketUser.on("event_user", (data : any) => {
-			if (data.id && userProfile.id && data.id == userProfile.id)
-				userProfileDataStore.set(data);
-			if (allUsers && allUsers.length != 0) {
-				let arrId : number [] = [];
-				for (let i = 0; i < allUsers.length; i++) {
-					if (allUsers[i].id == data.id) {
-						allUsers[i] = data;
-						usersDataStore.set(allUsers)
-						arrId.push(data.id);
-					}
-				}
-				if (arrId && !arrId.includes(data.id)) {
-					allUsers.push(data)
-					usersDataStore.set(allUsers);
-				}
-			}                                                                                            
-		})
-		socketUser.on("room-unblock", (data : any) => {
-			if (myRoomMp && myRoomMp.length != 0) {
-				let arrId : number [] = [];
-				for (let i = 0; i < myRoomMp.length; i++) {
-					if (myRoomMp[i].id == data.id) {
-						myRoomMp[i] = data;
-						myRoomMpStore.set(myRoomMp)
-						arrId.push(data.id);
-					}
-				}
-				if (arrId && !arrId.includes(data.id)) {
-					myRoomMp.push(data)
-					myRoomMpStore.set(myRoomMp);
-				}
-			}
-		})
-		socketUserStore.set(socketUser);
+			return;
+		} else if ($page.url.pathname != "/login") {
+			
+			await AuthGuard()
+			.then(async (res) => {
+				await UpdateProfileConnected(1)
+				.then((res) => {
+					UpdateProfileToStore(res.data);
+				})
+			})
+			.catch((err) => {
+				removeJwt();
+				goto("/login")
+			})
 		
-		let socketFriend = io(API_URL, {
-			path: "/notif_friend",
-			query : { token : getJwt()}
-		});
-		socketFriend.on('event_friend', (data : any) => {
-			if (data.id && userProfile.id && data.id == userProfile.id)
-				userProfileDataStore.set(data);
-			else if (data.id && myProfile.id == data.id)
-				UpdateProfileToStore(data);			
-		});
-		socketFriendStore.set(socketFriend);
+			await GetAllUsers()
+			.then((res) => {
+				usersDataStore.set(res.data);
+			})
+
+			await GetAllUsers()
+			.then((res) => {
+				usersDataStore.set(res.data);
+			})
+		
+			await GetAllMyRoom()
+			.then((res) => {
+				myRoomMpStore.set(res.data);
+			})
+
+			let socketUser = io(API_URL, {
+				path: "/event_user",
+				query : { token : getJwt()}
+			});
+			socketUser.on("notification_mp", (data : any) => {
+				let contain : Boolean = false;
+				if (!notifMp)
+					notifMp = [data];
+				else {
+					for (let i = 0; i < notifMp.length; i++) {
+						if (notifMp[i].user.id == data.user.id)
+							contain = true;
+					}
+					if (!contain)
+						notifMp.push(data);
+				}
+				notifMp = notifMp;
+			})
+			socketUser.on("update_me", (data : any) => {
+				UpdateProfileToStore(data);
+			})
+			socketUser.on("event_user", (data : any) => {
+				if (data.id && userProfile.id && data.id == userProfile.id)
+					userProfileDataStore.set(data);
+				if (allUsers && allUsers.length != 0) {
+					let arrId : number [] = [];
+					for (let i = 0; i < allUsers.length; i++) {
+						if (allUsers[i].id == data.id) {
+							allUsers[i] = data;
+							usersDataStore.set(allUsers)
+							arrId.push(data.id);
+						}
+					}
+					if (arrId && !arrId.includes(data.id)) {
+						allUsers.push(data)
+						usersDataStore.set(allUsers);
+					}
+				}                                                                                            
+			})
+			socketUser.on("room-unblock", (data : any) => {
+				if (myRoomMp && myRoomMp.length != 0) {
+					let arrId : number [] = [];
+					for (let i = 0; i < myRoomMp.length; i++) {
+						if (myRoomMp[i].id == data.id) {
+							myRoomMp[i] = data;
+							myRoomMpStore.set(myRoomMp)
+							arrId.push(data.id);
+						}
+					}
+					if (arrId && !arrId.includes(data.id)) {
+						myRoomMp.push(data)
+						myRoomMpStore.set(myRoomMp);
+					}
+				}
+			})
+			socketUserStore.set(socketUser);
+			
+			let socketFriend = io(API_URL, {
+				path: "/notif_friend",
+				query : { token : getJwt()}
+			});
+			socketFriend.on('event_friend', (data : any) => {
+				if (data.id && userProfile.id && data.id == userProfile.id)
+					userProfileDataStore.set(data);
+				else if (data.id && myProfile.id == data.id)
+					UpdateProfileToStore(data);			
+			});
+			socketFriendStore.set(socketFriend);
+		}
 	})
 
 </script>
@@ -162,7 +169,9 @@
 		{#each notifMp as notif}
 			<Toast divClass="toast-style cursor-pointer">
 				<svelte:fragment slot="icon">
-				<svg on:click={() => {socketMp.emit("create-room", {user_send : notif.user, user_receive : notif.user_send})}} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg>
+					<button on:click={() => {socketMp.emit("create-room", {user_send : notif.user, user_receive : notif.user_send})}}>
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg>
+					</button>
 				</svelte:fragment>
 				{notif.user_send.login} send you "{notif.content.length > 10 ? notif.content.substring(0, 10) + "..." : notif.content}"
 			</Toast>

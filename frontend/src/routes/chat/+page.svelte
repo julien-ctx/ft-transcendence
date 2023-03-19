@@ -58,7 +58,6 @@
 				}
 			}).then((res : any) => {
 				rooms = res.data;
-				console.log(rooms);
 			});
 		} catch (error) {
 			console.log(error);
@@ -71,7 +70,6 @@
 			})
 		.then((res : any) => {
 			allRooms = res.data;
-			console.log(allRooms);
 		})
 		} catch (error) {
 			console.log(error);
@@ -80,17 +78,14 @@
 
 		socket.on('rooms', (receivedRoom : string) => {
 			rooms.push(receivedRoom);
-			// console.log(rooms);
 		});
 
 		socket.on('deletedRoom', (receivedRoom : string) => {
 			rooms = rooms.filter((room : any) => room.name !== receivedRoom);
-			// console.log(rooms);
 		});
 
 		socket.on('errors', (receivedErr : any) => {
 			err = {...err, ...receivedErr};
-			// console.log(err);
 		});
 
 		socket.on("successCreate", () => {

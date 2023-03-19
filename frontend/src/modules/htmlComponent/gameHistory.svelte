@@ -1,11 +1,7 @@
 <script lang="ts">
     import { Avatar } from "flowbite-svelte";
-    import UserCard from "./userCard.svelte";
 
-	export let gameHistory : any;
-	console.log(gameHistory);
-	
-
+	export let gameHistory : any;	
 </script>
 
 {#each gameHistory as game}

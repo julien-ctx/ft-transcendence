@@ -69,12 +69,11 @@
                     }
                 }).then((res : any) => {      
                     rooms = res.data;
-                    console.log('rooms ->', rooms);
                 });
             } catch (error) {
                 console.log(error);
             }
-            // console.log(getJwt());
+
             socket = io(`${API_URL}`, {
                 path : '/chat',
                 query : {

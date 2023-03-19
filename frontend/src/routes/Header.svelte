@@ -33,8 +33,6 @@
 
 	onMount(async () => {
 		if (getJwt() == undefined || getJwt() == "") {
-			console.log("ici");
-
 			removeJwt();
 			goto("/login")
 			return;

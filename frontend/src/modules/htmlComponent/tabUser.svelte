@@ -1,9 +1,8 @@
 <script lang="ts">
-	import { Accordion, AccordionItem, Avatar, Tooltip, Card, Dropdown, MenuButton, TabItem, Tabs } from "flowbite-svelte";
+	import { Accordion, AccordionItem, TabItem, Tabs } from "flowbite-svelte";
     import UserCard from "../../modules/htmlComponent/userCard.svelte";
     import HeaderUserCard from "../../modules/htmlComponent/headerUserCard.svelte";
-    import { myProfileDataStore, userProfileDataStore, usersDataStore } from "$lib/store/user";
-    import { onMount } from "svelte";
+    import { myProfileDataStore, usersDataStore } from "$lib/store/user";
     import GameHistory from "./gameHistory.svelte";
 
 	export let user : any;
@@ -79,5 +78,19 @@
 		</div>
 	</TabItem>
 	<TabItem title="Achievements" defaultClass="w-full">
+		<div class="container-achievements">
+			<div class="achievement shadow-md p-5 rounded-lg">
+				<img src="./first-win.png" alt="">
+				<p>First Win</p>
+			</div>
+			<div class="achievement shadow-md p-5 rounded-lg">
+				<img src="./fanny.png" alt="">
+				<p>Fanny</p>
+			</div>
+			<div class="achievement shadow-md p-5 rounded-lg">
+				<img src="./barbate.png" alt="">
+				<p>Double Fanny</p>
+			</div>
+		</div>
 	</TabItem>
 </Tabs>

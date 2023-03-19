@@ -36,6 +36,20 @@ body {
 	}
 }
 
+.container-achievements {
+	margin-top: 20px;
+	display: flex;
+	gap: 40px;
+	flex-wrap: wrap;
+	align-items: center;
+	background-color: $primary;
+	p {
+		text-align: center;
+		font-size: 18px;
+		font-family: 'Audiowide';
+	}
+}
+
 .ranking {
 	margin: 50px auto;
 	max-width: 800px;

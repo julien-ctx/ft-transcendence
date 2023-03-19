@@ -54,11 +54,6 @@
 			.then((res) => {
 				usersDataStore.set(res.data);
 			})
-
-			await GetAllUsers()
-			.then((res) => {
-				usersDataStore.set(res.data);
-			})
 		
 			await GetAllMyRoom()
 			.then((res) => {
@@ -69,6 +64,7 @@
 				path: "/event_user",
 				query : { token : getJwt()}
 			});
+
 			socketUser.on("notification_mp", (data : any) => {
 				let contain : Boolean = false;
 				if (!notifMp)
@@ -133,6 +129,30 @@
 					UpdateProfileToStore(data);			
 			});
 			socketFriendStore.set(socketFriend);
+			
+			const socketGame = io(API_URL, {
+				path: "/pong",
+				query : { token : getJwt()}
+			});
+
+			socketGame.on("user_update", (data: any) => {
+				if (data.id && userProfile.id && data.id == userProfile.id)
+					userProfileDataStore.set(data);
+				if (allUsers && allUsers.length != 0) {
+					let arrId : number [] = [];
+					for (let i = 0; i < allUsers.length; i++) {
+						if (allUsers[i].id == data.id) {
+							allUsers[i] = data;
+							usersDataStore.set(allUsers);
+							arrId.push(data.id);
+						}
+					}
+					if (arrId && !arrId.includes(data.id)) {
+						allUsers.push(data);
+						usersDataStore.set(allUsers);
+					}
+				}
+			});
 		}
 	})
 

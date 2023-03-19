@@ -3,6 +3,7 @@
     import { getJwt } from "$lib/jwtUtils";
     import { usersDataStore } from "$lib/store/user";
     import axios from "axios";
+    import { Avatar } from "flowbite-svelte";
     import { afterUpdate, onMount } from "svelte";
     import GameHistory from "../modules/htmlComponent/gameHistory.svelte";
 
@@ -42,26 +43,26 @@
 		<div class="ranking">
 			<div class="rank-second">
 				<h2 style="text-align: center">#2</h2>
-				<strong><p style="text-align: center" class="ranking-login">{threeBestUsers[1].login}</p></strong>
+				<p style="text-align: center; margin-top: auto;" class="ranking-login">{threeBestUsers[1].login}</p>
 				<div class="ranking-player-info">
-					<p style="text-align: center" class ="win-rate-ranking">WR : {threeBestUsers[1].winrate}%</p>
-					<p style="text-align: center" class ="level-ranking">Level {threeBestUsers[1].level}</p>
+					<p class="win-rate-ranking"><span class="wr">WR :</span><span class="info">{threeBestUsers[1].winrate}%</span></p>
+					<p class="level-ranking"><span class="level">Level : </span><span class="info">{threeBestUsers[1].level}</span></p>
 				</div>
 			</div>
 			<div class="rank-first">
 				<h2 style="text-align: center">#1</h2>
-				<strong><p style="text-align: center" class="ranking-login">{threeBestUsers[0].login}</p></strong>
+				<p style="text-align: center; margin-top: auto;" class="ranking-login">{threeBestUsers[0].login}</p>
 				<div class="ranking-player-info">
-					<p style="text-align: center" class ="win-rate-ranking">WR : {threeBestUsers[0].winrate}%</p>
-					<p style="text-align: center" class ="level-ranking">Level {threeBestUsers[0].level}</p>
+					<p class="win-rate-ranking"><span class="wr">WR : </span><span class="info">{threeBestUsers[0].winrate}%</span></p>
+					<p class="level-ranking"><span class="level">Level : </span><span class="info">{threeBestUsers[0].level}</span></p>
 				</div>
 			</div>
 			<div class="rank-third">
 				<h2 style="text-align: center">#3</h2>
-				<strong><p style="text-align: center" class="ranking-login">{threeBestUsers[2].login}</p></strong>
+				<p style="text-align: center; margin-top: auto;" class="ranking-login">{threeBestUsers[2].login}</p>
 				<div class="ranking-player-info">
-					<p style="text-align: center" class ="win-rate-ranking">WR : {threeBestUsers[2].winrate}%</p>
-					<p style="text-align: center" class ="level-ranking">Level {threeBestUsers[2].level}</p>
+					<p class="win-rate-ranking"><span class="wr">WR :</span><span class="info">{threeBestUsers[2].winrate}%</span></p>
+					<p class="level-ranking"><span class="level">Level : </span><span class="info">{threeBestUsers[2].level}</span></p>
 				</div>
 			</div>
 		</div>

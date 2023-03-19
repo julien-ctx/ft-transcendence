@@ -126,13 +126,13 @@
                 });
             });
 
-        socket.on('update-public-room', (receivedRoom : any) => {
-            otherRoom = otherRoom.filter((room : any) => room.name !== receivedRoom.roomName);
-        });
+            socket.on('update-public-room', (receivedRoom : any) => {
+                otherRoom = otherRoom.filter((room : any) => room.name !== receivedRoom.roomName);
+            });
 
-        socket.on('errors', (receivedErr : any) => {
-            err = {...err, ...receivedErr};
-        });
+            socket.on('errors', (receivedErr : any) => {
+                err = {...err, ...receivedErr};
+            });
 
             socket.on("needPass", () => {
                 needPass = 'yes';

@@ -29,15 +29,19 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
 	async handleDisconnect(socket: Socket) {
 		const data = this.removeFromGame(socket);
-		if (data && !data.game.isProcessing) {
-			data.game.isProcessing = true;
-			if (!data.game.rightClient) return;
+		if (data) {
+			await this.updateUserState(data.game.leftClient.user.id, 1);
+			this.server.emit('user_update', data.game.leftClient.user);
+			if (data.game.rightClient) {
+				data.client.socket.emit('winner', {
+					winner: data.client.user.login,
+					side: data.winnerSide,
+					forfeit: true,
+				});
+				await this.updateUserState(data.game.rightClient.user.id, 1);	
+				this.server.emit('user_update', data.game.rightClient.user);
+			}
 			this.games.splice(data.index, 1);
-			data.client.socket.emit('winner', {
-				winner: data.client.user.login,
-				side: data.winnerSide,
-				forfeit: true,
-			});	
 		}
 	}
 
@@ -78,7 +82,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 				roomMp : true,
 				RoomToUser : true
 			}
-		})
+		});
 	}
 
 	async storeGameInDB(game: Game, winnerClient: Client, looserClient: Client) {
@@ -144,6 +148,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 					game.rightClient.socket.emit('winner', {winner: winner, side: 1, forfeit: false});
 					if (game.leftClient.leftPaddle.score !== game.rightClient.rightPaddle.score)
 						await this.storeGameInDB(game, game.rightClient, game.leftClient);
+					
 				}
 			}
 			return;
@@ -292,18 +297,56 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 			}	
 		}
 	}
+
+	async updateUserState(id: number, state: number) {
+		return await this.prismaService.user.update({
+			where : {
+				id : id
+			},
+			data : {
+				activity: state,
+			},
+			include : {
+				gameHistory : {
+					select : {
+						user : true,
+						score_user1 : true,
+						id_user1 : true,
+						login_user1 : true,
+						img_link_user1 : true,
+						score_user2 : true,
+						id_user2 : true,
+						login_user2 : true,
+						img_link_user2 : true,
+						id_user_winner : true,
+					}
+				},
+				notification : true,
+				roomMp : true,
+				RoomToUser : true
+			}
+		});
+	}
 	
 	@SubscribeMessage('gameLoop')
-	launchGameLoop(socket: Socket) {
+	async launchGameLoop(socket: Socket) {
 		try {
-			const game = this.games[this.games.length - 1];
+			let game = this.games[this.games.length - 1];
 			let randomBallDirectionX = this.gameService.randomBallDirection();
 			let randomBallDirectionY = this.gameService.randomBallDirection();
 			game.leftClient.ball.direction.x *= randomBallDirectionX;
 			game.leftClient.ball.direction.y *= randomBallDirectionY;
+			await this.updateUserState(game.leftClient.user.id, 2)
+			.then((user) => {
+				this.server.emit('user_update', user);	
+			});
 			if (game.playerNumber === 2) {
 				game.rightClient.ball.direction.x *= randomBallDirectionX;
 				game.rightClient.ball.direction.y *= randomBallDirectionY;
+				await this.updateUserState(game.rightClient.user.id, 2)
+				.then(() => {
+					this.server.emit('user_update', game.rightClient.user);	
+				});
 			}
 			game.interval = setInterval(this.gameLoop, 1, game);
 		} catch (error) {

@@ -38,7 +38,7 @@
 			removeJwt();
 			goto("/login")
 			return;
-		} else {
+		} else if ($page.url.pathname != "/login") {
 			
 			await AuthGuard()
 			.then(async (res) => {

@@ -5,7 +5,7 @@
 
 	export let gameHistory : any;
 	let allUsers : any;
-
+	
 	usersDataStore.subscribe(val => allUsers = val);
 	function getUser(id : any) {
 		for (let i = 0; i < allUsers.length; i++) {
@@ -16,7 +16,7 @@
 </script>
 {#key allUsers}
 	{#each gameHistory as game}
-		{#if game.user && game.user.length == 2}
+		{#if game.user && game.user.length == 2 && getUser(game.id_user1) && getUser(game.id_user2)}
 			<div class="flex justify-between items-center max-w-lg shadow-md p-5 rounded">
 				<div>
 					<Avatar size="lg" src={getUser(game.id_user1).img_link} class="object-cover bg-transparent" rounded/>

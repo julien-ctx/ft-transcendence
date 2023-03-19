@@ -36,6 +36,25 @@ body {
 	}
 }
 
+.container-achievements {
+	margin-top: 20px;
+	display: flex;
+	gap: 40px;
+	flex-wrap: wrap;
+	align-items: center;
+	background-color: $primary;
+	p {
+		text-align: center;
+		font-size: 18px;
+		font-family: 'Audiowide';
+	}
+	.no-achievement {
+		font-family: 'Audiowide';
+		padding: 20px;
+		font-size: 16px;
+	}
+}
+
 .ranking {
 	margin: 50px auto;
 	max-width: 800px;
@@ -699,6 +718,7 @@ input[type=range]::-moz-range-thumb {
 
 .container-home {
 	margin: 50px auto;
+	padding-bottom: 20px;
 	h2 {
 		font-size: 32px;
 		font-family: 'Audiowide';

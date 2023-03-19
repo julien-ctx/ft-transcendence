@@ -87,7 +87,9 @@
 
 
 		socket.on('newMembers', (data : any) => {
+			console.log(data);
 			if (data.roomName !== room) return;
+			console.log('ok');
 			members.push(data.member);
 			members = members;			
 		});
@@ -97,6 +99,7 @@
 
 		socket.on('newRight', (data : any) => {
 			if (data.roomName !== room) return;
+			console.log('newRight ->', data);
 			if (data.id_user === Me.id_user) {
 				if (Me.admin === true && data.admin === false) {
 					isAdmin = false;

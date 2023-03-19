@@ -32,6 +32,37 @@ export class ChatService {
 		})
 	}
 
+	async updateBan(room : any, Client : any) {
+		console.log(room.banned);
+		room.banned.forEach(async (elem : any) => {
+			console.log('boucle');
+			let now = new Date();
+			console.log(elem.Endban, now, elem.Endban < now);
+			if (elem.endBan < now) {
+				let who = room.banned.id_user;
+				console.log('unban');
+				await this.prisma.banned.delete({
+					where : {
+						id : elem.id,
+					}
+				});
+				if (room.status === 'Public') {
+					console.log('Public');
+					let alreadySend = false;
+					Client.forEach((elem) => {
+						if (elem.user.id_user === who) {
+							console.log('send');
+							if (alreadySend === false) {
+								elem.client.emit('newPublicRoom', room);
+								alreadySend = true;
+							}
+						}
+					});
+				}
+			}
+		});
+	}
+
 	async getPublics(id_user : number) {
 		const rooms = await this.prisma.roomToUser.findMany({
 			include : {
@@ -92,6 +123,7 @@ export class ChatService {
 				id_user : user.id_user,
 			}
 		});
+		if (relation === null) return false;
 		if (relation.Muted === true) {
 			let now : Date = new Date();
 			if (now > relation.EndMute) {

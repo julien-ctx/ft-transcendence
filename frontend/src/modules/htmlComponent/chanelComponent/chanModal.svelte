@@ -70,7 +70,6 @@
 
 		socketRoom.on("muted", (data : any) => {
 			Endmute = data;
-			console.log('Endmute ->', Endmute);
 		});
 	})
 
@@ -110,8 +109,6 @@
 	function submitMp() {
 		if (inputMp != "") {
 			Endmute = null;
-			console.log(inputMp, currentRoom.name);
-			
 			socketRoom.emit('sendMessage', {
 				roomName : currentRoom.name, 
 				message : inputMp

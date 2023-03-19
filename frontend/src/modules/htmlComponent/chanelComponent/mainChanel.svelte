@@ -61,72 +61,72 @@
     socketUserStore.subscribe(val => socketUser = val);
 
     onMount(async () => {
-        try {
-            await axios.get(`${API_URL}/Chat/getRooms`, {
-                headers: {
-                    Authorization: `Bearer ${getJwt()}`
-                }
-            }).then((res : any) => {      
-                rooms = res.data;
-                console.log('rooms ->', rooms);
-            });
-        } catch (error) {
-            console.log(error);
-        }
-        // console.log(getJwt());
-        socket = io(`${API_URL}`, {
-            path : '/chat',
-            query : {
-                token : getJwt(),
+        if (getJwt() != undefined && getJwt() != "") {
+            try {
+                await axios.get(`${API_URL}/Chat/getRooms`, {
+                    headers: {
+                        Authorization: `Bearer ${getJwt()}`
+                    }
+                }).then((res : any) => {      
+                    rooms = res.data;
+                });
+            } catch (error) {
+                console.log(error);
             }
-        });
 
-        socket.on("successCreate", () => {
+            socket = io(`${API_URL}`, {
+                path : '/chat',
+                query : {
+                    token : getJwt(),
+                }
+            });
+
+            socket.on("successCreate", () => {
+                    close();
+            })
+
+            socket.on('rooms', (receivedRoom : any) => {
+                rooms = [...rooms, receivedRoom];
+            });
+
+            socket.on('updateRoom', (receivedRoom : any) => {
+                rooms = rooms.map((room : any) => {
+                    if (room.name === receivedRoom.name) {
+                        room = receivedRoom;
+                    }
+                    return room;
+                });
+            });
+
+            socket.on('errors', (receivedErr : any) => {
+                err = {...err, ...receivedErr};
+            });
+
+            socket.on("needPass", () => {
+                needPass = 'yes';
+            })
+
+            socket.on("successJoin", () => {
                 close();
-        })
+            })
 
-        socket.on('rooms', (receivedRoom : any) => {
-            rooms = [...rooms, receivedRoom];
-        });
-
-        socket.on('updateRoom', (receivedRoom : any) => {
-            rooms = rooms.map((room : any) => {
-                if (room.name === receivedRoom.name) {
-                    room = receivedRoom;
+            socket.on('deletedRoom', (receivedRoom : string) => {
+                if (chat && currentRoom && currentRoom.name == receivedRoom) {
+                    currentRoom = null;
                 }
-                return room;
+                rooms = rooms.filter((room : any) => room.name !== receivedRoom);
             });
-        });
 
-        socket.on('errors', (receivedErr : any) => {
-            err = {...err, ...receivedErr};
-        });
-
-		socket.on("needPass", () => {
-			needPass = 'yes';
-		})
-
-		socket.on("successJoin", () => {
-			close();
-		})
-
-		socket.on('deletedRoom', (receivedRoom : string) => {
-            if (chat && currentRoom && currentRoom.name == receivedRoom) {
-                currentRoom = null;
-            }
-			rooms = rooms.filter((room : any) => room.name !== receivedRoom);
-		});
-
-        socket.on('newRight', (data : any) => {
-            rooms = rooms.map((room : any) => {
-                if (room.name === data.roomName) {
-                    room.admin = data.admin;
-                }
-                return room;
-            });
-        })
-
-        socketRoomStore.set(socket);
+            socket.on('newRight', (data : any) => {
+                rooms = rooms.map((room : any) => {
+                    if (room.name === data.roomName) {
+                        room.admin = data.admin;
+                    }
+                    return room;
+                });
+            })
+            socketRoomStore.set(socket);
+        }
     })
 
     function createRoom() {

@@ -33,12 +33,10 @@
 
 	onMount(async () => {
 		if (getJwt() == undefined || getJwt() == "") {
-			console.log("ici");
-
 			removeJwt();
 			goto("/login")
 			return;
-		} else {
+		} else if ($page.url.pathname != "/login") {
 			
 			await AuthGuard()
 			.then(async (res) => {

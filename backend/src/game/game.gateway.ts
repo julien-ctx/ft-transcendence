@@ -6,7 +6,7 @@ import { User } from "@prisma/client";
 import { Server, Socket } from "socket.io";
 import { PrismaService } from "src/prisma/prisma.service";
 
-const MAX_SCORE = 3;
+const MAX_SCORE = 10;
 
 @WebSocketGateway({
 	cors: true,
@@ -20,7 +20,6 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	) {this.gameLoop = this.gameLoop.bind(this);}
 	
 	private games: Game[] = [];
-	private isProcessing = false;
 
 	@WebSocketServer() server: Server;
 
@@ -28,33 +27,34 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
 	handleConnection(socket : Socket) {}
 
-	handleDisconnect(socket: Socket) {
-		const disconnectData = this.removeFromGame(socket);
-		if (disconnectData) {
-			disconnectData.client.socket.emit('winner', {
-				winner: disconnectData.client.user.login,
-				side: disconnectData.side,
-				forfeit: true
+	async handleDisconnect(socket: Socket) {
+		const data = this.removeFromGame(socket);
+		if (data && !data.game.isProcessing) {
+			data.game.isProcessing = true;
+			if (!data.game.rightClient) return;
+			this.games.splice(data.index, 1);
+			data.client.socket.emit('winner', {
+				winner: data.client.user.login,
+				side: data.winnerSide,
+				forfeit: true,
 			});	
 		}
 	}
 
 	removeFromGame(socket: Socket) {
 		let client: Client | null = null;
-		let side = 0;
-		this.games.forEach((game, index) => {
-			if ((game.leftClient.socket === socket)) {
-				client = game.rightClient;
-				side = 1;
-				this.games.splice(index, 1);
-				return {client: client, side: side};
-			} else if (game.rightClient && game.rightClient.socket === socket) {
-				client = game.leftClient;
-				side = -1;
-				this.games.splice(index, 1);
-				return {client: client, side: side};
+		let winnerSide = 0;
+		for (let i = 0; i < this.games.length; i++) {
+			if (this.games[i].leftClient.socket === socket) {
+				client = this.games[i].rightClient;
+				winnerSide = 1;
+				return {game: this.games[i], client: client, winnerSide: winnerSide, index: i};
+			} else if (this.games[i].rightClient && this.games[i].rightClient.socket === socket) {
+				client = this.games[i].leftClient;
+				winnerSide = -1;
+				return {game: this.games[i], client: client, winnerSide: winnerSide, index: i};
 			}
-		});
+		}
 		return null;
 	}
 
@@ -78,7 +78,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 				roomMp : true,
 				RoomToUser : true
 			}
-		});
+		})
 	}
 
 	async storeGameInDB(game: Game, winnerClient: Client, looserClient: Client) {
@@ -124,12 +124,10 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	}
 	
 	async gameLoop(game: Game) {
-		if (this.isProcessing) {
-			return;
-		}
+		if (game.isProcessing) return;
 		const winner = await this.gameService.checkBallPosition(game, this.gameService.randomBallDirection());
 		if (winner !== 'NoWinner') {
-			this.isProcessing = true;
+			game.isProcessing = true;
 			clearInterval(game.interval)
 			if (winner === 'Bot') {
 				game.leftClient.socket.emit('winner', {winner: winner, side: 1, forfeit: false});
@@ -148,7 +146,6 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 						await this.storeGameInDB(game, game.rightClient, game.leftClient);
 				}
 			}
-			this.isProcessing = false;
 			return;
 		}
 
@@ -223,7 +220,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 			return true;
 		} else {
 			client.side = -1;
-			this.games.push(new Game(client, null, 2, MAX_SCORE, data.botLevel, data.leftPlayerID, data.rightPlayerID, null));	
+			this.games.push(new Game(client, null, 2, MAX_SCORE, data.botLevel, data.leftPlayerID, data.rightPlayerID, null, false));	
 			return false;
 		}
 	}
@@ -240,7 +237,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
 		if (data.playerNumber === 1) {
 			client.side = -1;
-			this.games.push(new Game(client, null, 1, MAX_SCORE, data.botLevel, data.leftPlayerID, data.rightPlayerID, null));
+			this.games.push(new Game(client, null, 1, MAX_SCORE, data.botLevel, data.leftPlayerID, data.rightPlayerID, null, false));
 			gameReady = true;
 		} else {
 			if (data.leftPlayerID < 0 && data.rightPlayerID < 0) {

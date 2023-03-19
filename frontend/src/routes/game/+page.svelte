@@ -267,13 +267,15 @@
 			removeEvents();
 			socket.disconnect();
 			connectSocket();
-			drawScores(gameLeftPaddle.score, gameRightPaddle.score);
 			gameLeftPaddle.score = 0;	
 			gameRightPaddle.score = 0;
 			cancelAnimationFrame(animationFrame);
 			let winMsg = winner + ' won the game';
 			if (forfeit) {
 				winMsg += ' by forfeit!';
+			}
+			else {
+				drawScores(gameLeftPaddle.score, gameRightPaddle.score);
 			}
 			await drawWinner(winMsg);
 			playAgain();

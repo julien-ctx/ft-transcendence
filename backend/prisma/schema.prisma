@@ -34,6 +34,9 @@ model User {
 	banned Banned[]
 	roomMp RoomMessagePrivate[] @relation("RoomUserMessagePrivate")
 	gameHistory GameHistory[] @relation("GameHistoryRelation")
+	fanny Boolean @default(false)
+	double_fanny Boolean @default(false)
+	first_win Boolean @default(false)
 }
 
 model GameHistory {

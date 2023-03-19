@@ -258,9 +258,6 @@
 			if (forfeit) {
 				winMsg += ' by forfeit!';
 			}
-			else {
-				drawScores(gameLeftPaddle.score, gameRightPaddle.score);
-			}
 			await drawWinner(winMsg);
 			playAgain();
 		});

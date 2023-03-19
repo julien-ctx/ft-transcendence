@@ -1,6 +1,6 @@
-FROM node:18 AS builder
+FROM node:alpine
 
-WORKDIR /app
+WORKDIR /usr/src/app
 
 COPY package*.json ./
 COPY prisma ./prisma/
@@ -11,11 +11,9 @@ COPY . .
 
 RUN npm run build
 
-FROM node:18
+COPY entry.sh /
 
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package*.json ./
-COPY --from=builder /app/dist ./dist
+RUN chmod +x /entry.sh
 
-EXPOSE 4000
-CMD [ "npm", "run", "start:prod" ]
+EXPOSE 4545
+CMD [ "/entry.sh" ]

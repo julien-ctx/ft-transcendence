@@ -84,17 +84,20 @@
 					<img src="./first-win.png" alt="">
 					<p>First Win</p>
 				</div>
-			{:else if user.fanny}
+			{/if}
+			{#if user.fanny}
 				<div class="achievement shadow-md p-5 rounded-lg">
 					<img src="./fanny.png" alt="">
 					<p>Fanny</p>
 				</div>
-			{:else if user.double_fanny}
+			{/if}
+			{#if user.double_fanny}
 				<div class="achievement shadow-md p-5 rounded-lg">
 					<img src="./barbate.png" alt="">
 					<p>Double Fanny</p>
 				</div>
-			{:else}
+			{/if}
+			{#if !user.double_fanny && !user.fanny && !user.first_win}
 				<p class="no-achievement">
 					0 Achievement
 				</p>

@@ -5,8 +5,9 @@ import { WebSocketGateway, WebSocketServer, OnGatewayInit, OnGatewayConnection, 
 import { User } from "@prisma/client";
 import { Server, Socket } from "socket.io";
 import { PrismaService } from "src/prisma/prisma.service";
+import { first } from 'rxjs';
 
-const MAX_SCORE = 10;
+const MAX_SCORE = 3;
 
 @WebSocketGateway({
 	cors: true,
@@ -66,19 +67,33 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		return null;
 	}
 
-	async updateUser(client: Client, winner: boolean) {
-		const totalGamesWin = winner ? client.user.totalGamesWin + 1 : client.user.totalGamesWin;
-		const totalGames = client.user.totalGames + 1;
-		const level = winner ? client.user.level + 0.20 : client.user.level + 0.1;
+	async updateUser(user: User, userScore: number, otherScore: number, winner: boolean) {
+		const totalGamesWin = winner ? user.totalGamesWin + 1 : user.totalGamesWin;
+		const totalGames = user.totalGames + 1;
+		const level = winner ? user.level + 0.20 : user.level + 0.1;
+
+		let fanny: boolean = user.fanny;
+		let double_fanny: boolean = user.double_fanny;
+		let first_win: boolean = user.first_win;
+		if (userScore === 0 && !user.fanny)
+			fanny = true;
+		if (userScore === 0 && user.fanny)
+			double_fanny = true;
+		if (userScore > otherScore && !user.first_win)
+			first_win = true;
+
 		await this.prismaService.user.update({
 			where : {
-				id : client.user.id
+				id : user.id
 			},
 			data : {
 				totalGames : totalGames,
 				totalGamesWin : totalGamesWin,
 				level : parseFloat((level).toFixed(2)),
-				winrate : parseInt((totalGamesWin * 100 / (totalGames)).toString())
+				winrate : parseInt((totalGamesWin * 100 / (totalGames)).toString()),
+				fanny : fanny,
+				double_fanny : double_fanny,
+				first_win : first_win,
 			},
 			include : {
 				gameHistory : {
@@ -107,7 +122,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		});
 	}
 
-	async storeGameInDB(game: Game, winnerClient: Client, looserClient: Client) {
+	async storeGameInDB(game: Game, winnerClient: Client, looserClient: Client, winnerScore: number, looserScore: number) {
 		await this.prismaService.gameHistory.create({
 			data : {
 				user : {
@@ -133,9 +148,9 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 			}
 		})
 		.then(async () => {
-			await this.updateUser(winnerClient, true)
+			await this.updateUser(winnerClient.user, winnerScore, looserScore, true)
 			.then(async () => {
-				this.updateUser(looserClient, false)
+				await this.updateUser(looserClient.user, looserScore, winnerScore, false)
 				.catch((error) => {
 					console.log(error);
 				})
@@ -147,6 +162,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		.catch((error) => {
 			console.log(error);
 		});
+
 	}
 	
 	async gameLoop(game: Game) {
@@ -162,15 +178,26 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 				if (game.rightClient) {
 					game.rightClient.socket.emit('winner', {winner: winner, side: -1, forfeit: false});
 					if (game.leftClient.leftPaddle.score !== game.rightClient.rightPaddle.score)
-						await this.storeGameInDB(game, game.leftClient, game.rightClient);
+						await this.storeGameInDB(
+							game,
+							game.leftClient,
+							game.rightClient,
+							game.leftClient.leftPaddle.score,
+							game.rightClient.rightPaddle.score,
+						);
 				}
 			} else if (winner === game.rightClient.user.login) {
 				game.leftClient.socket.emit('winner', {winner: winner, side: 1, forfeit: false});
 				if (game.rightClient) {
 					game.rightClient.socket.emit('winner', {winner: winner, side: 1, forfeit: false});
 					if (game.leftClient.leftPaddle.score !== game.rightClient.rightPaddle.score)
-						await this.storeGameInDB(game, game.rightClient, game.leftClient);
-					
+						await this.storeGameInDB(
+							game,
+							game.rightClient,
+							game.leftClient,
+							game.rightClient.rightPaddle.score,
+							game.leftClient.leftPaddle.score,
+						);
 				}
 			}
 			return;

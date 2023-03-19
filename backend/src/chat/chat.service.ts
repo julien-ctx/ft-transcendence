@@ -62,6 +62,11 @@ export class ChatService {
 						}
 					}
 				})
+				// console.log(notIn.includes(elem.room));
+				for (let i = 0; i < notIn.length; i++) {
+					if (notIn[i].id === elem.room.id)
+						found = true;
+				}
 				if (found === false && banned === false && Public === true) {
 					notIn.push(elem.room);
 				}

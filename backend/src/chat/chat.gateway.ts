@@ -804,6 +804,41 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 
 	}
 
+	@SubscribeMessage('setPublic')
+	async handleSetPublic(@ConnectedSocket() client, @MessageBody() data: any) {
+		const token = client.handshake.query.token as string;
+		const user = this.jwt.decode(token);
+		if (user === undefined) return;
+
+		const User = await this.Service.getOneById(user['id']);
+		const Room = await this.chatService.getRoomByName(data.roomName);
+
+		const isIn = await this.chatService.isInRoom(User, Room);
+		if (isIn === false) return;
+		const verif = await this.chatService.getMyRelation(User.id_user, Room.name);
+		if (verif.owner !== true) return;
+
+		const newRoom = await this.prisma.room.update({
+			where : {
+				id : Room.id,
+			},
+			data : {
+				status : 'Public',
+				password : '',
+			}
+		});
+		this.Client.forEach((elem : any) => {
+			elem.client.emit('current-update', {
+				roomName : Room.name,
+				room : {
+					admin : verif.admin,
+					owner : verif.owner,
+					status : newRoom.status,
+				}
+			});
+		});
+	}
+
 	@UseGuards(UserGuardGateway)
 	@SubscribeMessage("write")
 	async write(@MessageBody() body : {user_receive : User [], room : any, login : string}) {

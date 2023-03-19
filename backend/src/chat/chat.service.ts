@@ -3,6 +3,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import * as argon2 from 'argon2';
 import { UserService } from 'src/user/user.service';
 import { Room, User } from '@prisma/client';
+import { truncateSync } from 'fs';
 
 @Injectable()
 export class ChatService {
@@ -29,6 +30,49 @@ export class ChatService {
 		return relation.map((elem) => {
 			return elem.user
 		})
+	}
+
+	async getPublics(id_user : number) {
+		const rooms = await this.prisma.roomToUser.findMany({
+			include : {
+				room : {
+					include : {
+						banned : true,
+					},
+				},
+				user : true,
+			}
+		});
+		let notIn = [];
+		rooms.forEach((elem) => {
+			let banned = false;
+			let Public = true;
+			if (elem.room.status !== 'Public')
+				Public = false;
+			elem.room.banned.forEach((ban) => {
+				if (ban.id_user === id_user)
+					banned = true;
+			});
+			if (elem.user.id_user !== id_user) {
+				let found = false;
+				rooms.forEach((other) => {
+					if (other.room.id === elem.room.id) {
+						if (other.user.id_user === id_user) {
+							found = true;
+						}
+					}
+				})
+				// console.log(notIn.includes(elem.room));
+				for (let i = 0; i < notIn.length; i++) {
+					if (notIn[i].id === elem.room.id)
+						found = true;
+				}
+				if (found === false && banned === false && Public === true) {
+					notIn.push(elem.room);
+				}
+			}
+		});
+		return notIn;	  
 	}
 
 	async getTimedMute(room : any, user : any) {

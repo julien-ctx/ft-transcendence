@@ -71,6 +71,7 @@
 		socketRoom.on("muted", (data : any) => {
 			Endmute = data;
 		});
+		
 	})
 
 	afterUpdate(() => {

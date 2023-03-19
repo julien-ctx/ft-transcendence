@@ -23,6 +23,7 @@ export class Game {
 		public leftPlayerID: number | null,
 		public rightPlayerID: number | null,
 		public interval: any,
+		public isProcessing: boolean,
 	) {}
 };
 

@@ -54,11 +54,6 @@
 			.then((res) => {
 				usersDataStore.set(res.data);
 			})
-
-			await GetAllUsers()
-			.then((res) => {
-				usersDataStore.set(res.data);
-			})
 		
 			await GetAllMyRoom()
 			.then((res) => {
@@ -69,6 +64,7 @@
 				path: "/event_user",
 				query : { token : getJwt()}
 			});
+
 			socketUser.on("notification_mp", (data : any) => {
 				let contain : Boolean = false;
 				if (!notifMp)

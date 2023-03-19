@@ -72,6 +72,7 @@
 			Endmute = data;
 			console.log('Endmute ->', Endmute);
 		});
+		
 	})
 
 	afterUpdate(() => {

@@ -15,6 +15,7 @@
     import SvgProfile from "../svgComponent/svgProfile.svelte";
     import { goto } from "$app/navigation";
     import { GetOneUser } from "$lib/userUtils";
+    import { empty } from "svelte/internal";
 
     let socket : any;
     // Messagerie : //
@@ -54,6 +55,8 @@
     let modalUsersRoom : boolean = false;
     let usersInModalRoom : any;
 
+    // Other Room //
+    let otherRoom : any = [];
     currentRoomStore.subscribe((val) => currentRoom = val);
     usersDataStore.subscribe((val) => allUsers = val);
     myProfileDataStore.subscribe((val) => myProfile = val);
@@ -68,11 +71,28 @@
                 }
             }).then((res : any) => {      
                 rooms = res.data;
-                console.log('rooms ->', rooms);
+                // console.log('rooms ->', rooms);
             });
         } catch (error) {
             console.log(error);
         }
+
+        try {
+            await axios.get(`${API_URL}/Chat/getPublics`, {
+                headers: {
+                    Authorization: `Bearer ${getJwt()}`
+                }
+            }).then((res : any) => {      
+                otherRoom = res.data;
+                // console.log('Public : ->', otherRoom);
+                otherRoom.forEach((elem : any) => {
+                    console.log('elem ->', elem.name);
+                })
+            });
+        } catch (error) {
+            console.log(error);
+        }
+
         // console.log(getJwt());
         socket = io(`${API_URL}`, {
             path : '/chat',
@@ -96,6 +116,10 @@
                 }
                 return room;
             });
+        });
+
+        socket.on('update-public-room', (receivedRoom : any) => {
+            otherRoom = otherRoom.filter((room : any) => room.name !== receivedRoom.roomName);
         });
 
         socket.on('errors', (receivedErr : any) => {
@@ -178,6 +202,12 @@
         JoinName = '';
         JoinPass = '';
         needPass = '';
+    }
+
+    function joinPublics(room : any) {
+        socket.emit('joinPublics', {
+            roomName : room.name,
+        });
     }
 
 	function leaveRoom(room : any) {
@@ -278,6 +308,33 @@
                             </div>
                         </div>
                     {/each}
+                    {#if otherRoom !== undefined && otherRoom.length > 0}
+                        <!-- <button on:click={() => {console.log(otherRoom)}}>T</button> -->
+                        <div class="header !justify-center backdrop:hover:underline">
+                            <div class="cursor-pointer hover:underline audio" style="font-family: 'Audiowide'">
+                                Other Channels
+                            </div>
+                        </div>
+                        {#each otherRoom as other}
+                            {#if other.name !== undefined}
+                                <div class="container-room">
+                                    <div>
+                                        {other.name.length > 10 ? other.name.substring(0, 10) + "..." : other.name}
+                                    </div>
+                                    <div>
+                                        <button class="button-open-dropdown">...</button>
+                                        <Dropdown class="bg-primary">
+                                            <DropdownItem defaultClass="button-rooms">
+                                                <button class="bg-primary border-none rounded-none p-2 font-sm hover:bg-secondary text-sm w-full text-left" on:click={() => joinPublics(other)}>
+                                                    Join room
+                                                </button>
+                                            </DropdownItem>
+                                        </Dropdown>
+                                    </div>
+                                </div>
+                            {/if}
+                        {/each}
+                    {/if}
                 </div>
             </div>
             <div class="container-action">
@@ -439,7 +496,7 @@
     </div>
 </Modal>
 
-<Modal bind:open={modalAdmin} title='{admin} Admin gestion panel' size={size} class="bg-primary" >
+<Modal bind:open={modalAdmin} title='{admin}' size={size} class="bg-primary" >
     <Members room={admin} socket={socket} infoChannel={rooms} bind:modalAdmin={modalAdmin}/>
         <div class="flex justify-center gap-8">
             <button class="button-actions" on:click={() => close()}>Close</button>

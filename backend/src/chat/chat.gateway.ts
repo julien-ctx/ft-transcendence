@@ -318,6 +318,13 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 			}
 		});
 		if (relation[0].owner === true) {
+			if (room.status === 'Public') {
+				this.server.emit('update-public-room', {
+					roomName : room.name,
+					room : room,
+					removed : true,
+				})
+			}
 			await this.prisma.roomToUser.deleteMany({
 				where : {
 					id_room : room.id,
@@ -508,6 +515,12 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 		}
 		else {
 			// console.log('Pass ->', data.pass);
+			if (Room.status === 'Public') {
+				this.server.emit('update-public-room', {
+					roomName : Room.name,
+					
+				});
+			}
 			let mdp = await this.chatService.hashedPass(data.pass);
 			const newRoom = await this.prisma.room.update({
 				where: {
@@ -529,6 +542,11 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 				status: newRoom.status, 
 				admin: relation.admin,
 			});
+			if (Room.status === 'Public') {
+				this.server.emit('update-public-room', {
+					roomName : Room.name,
+				})
+			}
 		}
 	}
 
@@ -734,6 +752,55 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 		// 	admin : false,
 		// 	id_user : data.member.id_user,
 		// });
+	}
+
+	@SubscribeMessage('joinPublics')
+	async handleJoinPublics(@ConnectedSocket() client, @MessageBody() data: any) {
+		const token = client.handshake.query.token as string;
+		const user = this.jwt.decode(token);
+		if (user === undefined) return;
+
+		const User = await this.Service.getOneById(user['id']);
+		const Room = await this.chatService.getRoomByName(data.roomName);
+
+		const isIn = await this.chatService.isInRoom(User, Room);
+		if (isIn === true)  {
+			client.emit('update-public-room', {
+				roomName : Room.name,
+				room : Room,
+				removed : true,
+			})
+			return;
+		}
+
+		const relation = await this.prisma.roomToUser.create({
+			data : {
+				id_user : User.id_user,
+				id_room : Room.id,
+			},
+			include : {
+				user : true,
+				room : true,
+			}
+		});
+		this.Client.forEach((elem : any) => {
+			elem.client.emit('newMembers', {
+				roomName : Room.name,
+				member : relation,
+			});
+		});
+		client.emit('rooms', {
+			name : Room.name,
+			owner : false,
+			status : Room.status,
+			admin : false,
+		});
+		client.emit('update-public-room', {
+			roomName : Room.name,
+			room : Room,
+			removed : true,
+		})
+
 	}
 
 	@UseGuards(UserGuardGateway)

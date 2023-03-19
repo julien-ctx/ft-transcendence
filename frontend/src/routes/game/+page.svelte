@@ -5,7 +5,8 @@
     import { getJwt, removeJwt } from "$lib/jwtUtils";
 	import io, { Socket } from 'socket.io-client';
     import { API_URL } from "$lib/env";
-    import { userProfileDataStore, usersDataStore } from "$lib/store/user";
+    import { myProfileDataStore, userProfileDataStore, usersDataStore } from "$lib/store/user";
+    import { UpdateProfileToStore } from "$lib/profileUtils";
 
 	const OBJ_COLOR: string = "#dcd3bc";
 	const BALL_COLOR: string = "#e39c9a";
@@ -58,9 +59,11 @@
 
 	let userProfile : any;
 	let allUsers : any;
+	let myProfile : any;
 
 	usersDataStore.subscribe(val => allUsers = val);
 	userProfileDataStore.subscribe(val => userProfile = val);
+	myProfileDataStore.subscribe(val => myProfile = val);
 
 	function connectSocket() {
 		socket = io(API_URL, {
@@ -69,22 +72,24 @@
 		});
 
 		socket.on("user_update", (data: any) => {
-			console.log(data);
-			
-			if (data.id && userProfile.id && data.id == userProfile.id)
+			if (data.id && data.id == myProfile.id)
+				UpdateProfileToStore(data);
+			else {
+				if (data.id && userProfile.id && data.id == userProfile.id)
 				userProfileDataStore.set(data);
-			if (allUsers && allUsers.length != 0) {
-				let arrId : number [] = [];
-				for (let i = 0; i < allUsers.length; i++) {
-					if (allUsers[i].id == data.id) {
-						allUsers[i] = data;
-						usersDataStore.set(allUsers);
-						arrId.push(data.id);
+				if (allUsers && allUsers.length != 0) {
+					let arrId : number [] = [];
+					for (let i = 0; i < allUsers.length; i++) {
+						if (allUsers[i].id == data.id) {
+							allUsers[i] = data;
+							usersDataStore.set(allUsers);
+							arrId.push(data.id);
+						}
 					}
-				}
-				if (arrId && !arrId.includes(data.id)) {
-					allUsers.push(data);
-					usersDataStore.set(allUsers);
+					if (arrId && !arrId.includes(data.id)) {
+						allUsers.push(data);
+						usersDataStore.set(allUsers);
+					}
 				}
 			}
 		});

@@ -36,49 +36,98 @@ body {
 	}
 }
 
-.rank-second {
-	float: left;
-	width: 33.33%;
-	height: auto;
-	padding-bottom: 20px;
-	background-color: rgba(222, 222, 222, 0.503);
-	-moz-box-shadow: 0 4px 10px -2px rgb(187, 187, 187);
-	-webkit-box-shadow: 0 4px 10px -2px rgb(187, 187, 187);
-	box-shadow: 0 4px 10px -2px rgb(187, 187, 187);
-	border-top-left-radius: 20px 20px;
-	border-bottom-left-radius: 20px 20px;
-}
-
-.rank-first {
-	float: left;
-	width: 33.33%;
-	height: auto;
-	padding-bottom: 20px;
-	background-color: rgb(188, 162, 102, 0.503);
-	-moz-box-shadow: 0 4px 10px -2px rgb(187, 187, 187);
-	-webkit-box-shadow: 0 4px 10px -2px rgb(187, 187, 187);
-	box-shadow: 0 4px 10px -2px rgb(187, 187, 187);
-}
-
-.rank-third {
-	float: left;
-	width:	33.33%;
-	height: auto;
-	padding-bottom: 20px;
-	background-color: rgb(217, 119, 70, 0.503);
-	-moz-box-shadow: 0 4px 10px -2px rgb(187, 187, 187);
-	-webkit-box-shadow: 0 4px 10px -2px rgb(187, 187, 187);
-	box-shadow: 0 4px 10px -2px rgb(187, 187, 187);
-	border-top-right-radius: 20px 20px;
-	border-bottom-right-radius: 20px 20px;
-}
-
 .ranking {
 	margin: 50px auto;
 	max-width: 800px;
 	clear: both;
 	font-family: 'Audiowide' !important;
 	display: flex;
+	align-items: flex-end;
+	h2 {
+		margin-bottom: 0 !important;
+	}
+	.rank-second {
+		min-height: 215px;
+		float: left;
+		width: 33.33%;
+		height: auto;
+		padding-bottom: 20px;
+		background-color: rgba(222, 222, 222, 0.7);
+		-moz-box-shadow: 0 4px 10px -2px rgb(187, 187, 187);
+		-webkit-box-shadow: 0 4px 10px -2px rgb(187, 187, 187);
+		box-shadow: 0 4px 10px -2px rgb(187, 187, 187);
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+		border-radius: 20px 0 0 0;
+	}
+	
+	.rank-first {
+		min-height: 255px;
+		float: left;
+		width: 33.33%;
+		height: auto;
+		padding-bottom: 20px;
+		background: rgba(231, 210, 124, 0.7);
+		-moz-box-shadow: 0 4px 10px -2px rgb(187, 187, 187);
+		-webkit-box-shadow: 0 4px 10px -2px rgb(187, 187, 187);
+		box-shadow: 0 4px 10px -2px rgb(187, 187, 187);
+		border-radius: 20px 20px 0 0;
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+	}
+	
+	.rank-third {
+		float: left;
+		width:	33.33%;
+		height: auto;
+		padding-bottom: 20px;
+		background-color: rgba(205, 127, 50, 0.7);
+		-moz-box-shadow: 0 4px 10px -2px rgb(187, 187, 187);
+		-webkit-box-shadow: 0 4px 10px -2px rgb(187, 187, 187);
+		box-shadow: 0 4px 10px -2px rgb(187, 187, 187);
+		border-radius: 0 20px 0 0;
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+	}
+
+	.ranking-player-info {
+		margin: 0 40px;
+		border: 3px solid rgba(255,255,255, 0.7);
+		border-radius: 10px;
+		padding: 10px 0 10px 16px;
+		.win-rate-ranking {
+			// font-family: 'Ubuntu', sans-serif;
+			font-size: 14px;
+			color: rgb(88, 88, 88);
+			font-weight: 500;
+			display: flex;
+			justify-content: space-between;
+			max-width: 140px;
+			.wr {
+				width: 100px;
+			}
+			margin-bottom: 5px;
+		}
+		.level-ranking {
+			// font-family: 'Ubuntu', sans-serif;
+			color: rgb(88, 88, 88);
+			font-size: 14px;
+			font-weight: 500;
+			display: flex;
+			justify-content: space-between;
+			max-width: 140px;
+			.level {
+				width: 100px;
+			}
+		}
+		.info {
+			// width: 60%;
+			text-align: center;
+		}
+	}
 }
 
 @media (max-width: 768px) {
@@ -109,34 +158,12 @@ body {
 	}
 }
 
-.win-rate-ranking {
-	font-family: 'Ubuntu', sans-serif;
-	color: rgb(88, 88, 88);
-	font-weight: 500;
-}
-
-.level-ranking {
-	font-family: 'Ubuntu', sans-serif;
-	color: rgb(88, 88, 88);	
-	font-weight: 500;
-}
-
 .ranking h2 {
 	color: rgb(88, 88, 88);	
 }
 
 .ranking-login {
 	font-size: 110%;
-}
-
-.ranking-player-info {
-	margin-top: 20px;
-	margin-left: 40px;
-	margin-right: 40px;
-	padding-top: 10px;
-	padding-bottom: 10px;
-	border: solid 5px rgba(0, 0, 0, 0.068);	
-	border-radius: 15px;
 }
 
 h1 {

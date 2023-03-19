@@ -150,6 +150,11 @@
 			current = current;
 		});
 
+		socket.on('current-update', (data : any) => {
+			if (data.roomName !== room) return;
+			current = data.room;
+		});
+
 		socket.on('successEdit', (data : any) => {
 			if (data.roomName !== room) return;
 			newPass = '';
@@ -244,6 +249,10 @@
 			socket.emit('changePass', {roomName: room, Pass: newPass, Cpass : newPassConfirm});
 	}
 	
+	function setPublic() {
+		socket.emit('setPublic', {roomName: room});
+	}
+
 	function userIsInRoomPrivate(user : any) {
 		if (!members)
 			return false;
@@ -418,7 +427,6 @@
 				{#if checkPassError !== ''}
 					<p class="flex justify-center text-red-500 text-sm">{checkPassError}</p>
 				{/if}
-				<div class="border-t"></div>
 			{:else}
 				<input class="rounded m-1" type="password" placeholder="New password" bind:value={newPass}>
 				<input class="rounded m-1" type="password" placeholder="Confirm password" bind:value={newPassConfirm}>
@@ -431,6 +439,13 @@
 				</div>
 			{/if}
 		</div>
+		{#if Me.owner === true}
+			<div class="flex justify-center">
+				<button class="border hover:underline audio p-2" on:click={() => setPublic()}>
+						reset channel to public
+				</button>
+			</div>
+		{/if}
 	{/if}
 <!-- {/if} -->
 

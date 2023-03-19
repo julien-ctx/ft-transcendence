@@ -77,11 +77,29 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 				winrate : parseInt((totalGamesWin * 100 / (totalGames)).toString())
 			},
 			include : {
-				gameHistory : true,
+				gameHistory : {
+					select : {
+						id : true,
+						createdAt : true,
+						user : true,
+						score_user1 : true,
+						id_user1 : true,
+						login_user1 : true,
+						img_link_user1 : true,
+						score_user2 : true,
+						id_user2 : true,
+						login_user2 : true,
+						img_link_user2 : true,
+						id_user_winner : true
+					}
+				},
 				notification : true,
 				roomMp : true,
 				RoomToUser : true
 			}
+		})
+		.then((user) => {
+			this.server.emit('user_update', user);
 		});
 	}
 

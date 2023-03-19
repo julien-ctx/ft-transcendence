@@ -30,16 +30,20 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	async handleDisconnect(socket: Socket) {
 		const data = this.removeFromGame(socket);
 		if (data) {
-			await this.updateUserState(data.game.leftClient.user.id, 1);
-			this.server.emit('user_update', data.game.leftClient.user);
+			await this.updateUserState(data.game.leftClient.user.id, 1)
+			.then((user) => {
+				this.server.emit('user_update', user);	
+			});
 			if (data.game.rightClient) {
 				data.client.socket.emit('winner', {
 					winner: data.client.user.login,
 					side: data.winnerSide,
 					forfeit: true,
 				});
-				await this.updateUserState(data.game.rightClient.user.id, 1);	
-				this.server.emit('user_update', data.game.rightClient.user);
+				await this.updateUserState(data.game.rightClient.user.id, 1)
+				.then((user) => {
+					this.server.emit('user_update', user);	
+				});
 			}
 			this.games.splice(data.index, 1);
 		}
@@ -362,8 +366,8 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 				game.rightClient.ball.direction.x *= randomBallDirectionX;
 				game.rightClient.ball.direction.y *= randomBallDirectionY;
 				await this.updateUserState(game.rightClient.user.id, 2)
-				.then(() => {
-					this.server.emit('user_update', game.rightClient.user);	
+				.then((user) => {
+					this.server.emit('user_update', user);	
 				});
 			}
 			game.interval = setInterval(this.gameLoop, 1, game);

@@ -136,8 +136,6 @@
 			});
 
 			socketGame.on("user_update", (data: any) => {
-				console.log(data);
-				
 				if (data.id && userProfile.id && data.id == userProfile.id)
 					userProfileDataStore.set(data);
 				if (allUsers && allUsers.length != 0) {

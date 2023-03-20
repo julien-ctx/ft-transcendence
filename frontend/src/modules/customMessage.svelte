@@ -9,7 +9,7 @@
 	let currentUser : {};
 	usersDataStore.subscribe(val => allUsers = val);
 	onMount(async () => {
-		console.log(idUser, Message);
+		// console.log(idUser, Message);
 		if (allUsers) {
 			allUsers.forEach((user : any) => {
 				if (user.id_user == idUser) {
@@ -17,7 +17,7 @@
 				}
 			})
 		}
-		console.log(currentUser);
+		// console.log(currentUser);
 	});
 </script>
 

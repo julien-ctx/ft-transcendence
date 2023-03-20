@@ -93,7 +93,7 @@
                 }
             }).then((res : any) => {      
                 otherRoom = res.data;
-                console.log('Public : ->', otherRoom);
+                // console.log('Public : ->', otherRoom);
                 // otherRoom.forEach((elem : any) => {
                 //     console.log('elem ->', elem.name);
                 // })

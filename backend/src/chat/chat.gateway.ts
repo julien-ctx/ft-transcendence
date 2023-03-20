@@ -47,7 +47,7 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 	forSameUser(user : any, event : string, params : any) {
 		const Same = this.Client.filter((elem : any) => {
 			// console.log(elem.user?.id, user.id_user);
-			if (elem.user.id === user.id_user)
+			if (elem.user?.id === user.id_user)
 				return elem;
 		});
 		// console.log('Same OUR ->', Same);
@@ -70,9 +70,11 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 
 	async handleConnection(client: any, ...args: any[]) {
 		const token = client.handshake.query.token as string;
-		// if (token === null) return;
+		if (token === null) return;
 		const user = this.jwt.decode(token);
 		if (user === undefined) return;
+		if (user === null) return;
+		// console.log({user});
 		this.Client.push({user, client});
 		// console.log(user);
 	}
@@ -464,6 +466,7 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 		// console.log(data);
 		const User = await this.Service.getOneById(user['id']);
 		const Room = await this.chatService.getRoomByName(data.roomName);
+		if (data.password === '') return ;
 		const valide = await this.chatService.verifyPass(data.password, Room.password);
 		// console.log(valide);
 		if (valide === false) 
@@ -544,18 +547,16 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 					password: mdp,
 				},
 			});
-			// console.log('newRoom ->', newRoom);
-			client.emit('successChangeStatus', {
+			this.forSameUser(User, 'successChangeStatus', {
 				roomName: Room.name,
 				status: 'Protected',
-			})
+			});
 			client.emit('updateRoom', {
 				name: Room.name, 
 				owner: relation.owner, 
 				status: newRoom.status, 
 				admin: relation.admin,
 			});
-			this.forSameUser
 			if (Room.status === 'Public') {
 				this.server.emit('update-public-room', {
 					roomName : Room.name,

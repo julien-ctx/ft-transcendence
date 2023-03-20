@@ -46,7 +46,7 @@
 	myProfileDataStore.subscribe(val => myProfile = val);
 
 	onMount(async () => {
-		console.log(modalAdmin);
+		// console.log(modalAdmin);
 		current = infoChannel.filter((Chan : any) => Chan.name === room)[0];
 		await axios.get(`${API_URL}/Chat/getMembers/${room}`, {
 			headers: {
@@ -87,9 +87,9 @@
 
 
 		socket.on('newMembers', (data : any) => {
-			console.log(data);
+			// console.log(data);
 			if (data.roomName !== room) return;
-			console.log('ok');
+			// console.log('ok');
 			members.push(data.member);
 			members = members;			
 		});
@@ -99,7 +99,7 @@
 
 		socket.on('newRight', (data : any) => {
 			if (data.roomName !== room) return;
-			console.log('newRight ->', data);
+			// console.log('newRight ->', data);
 			if (data.id_user === Me.id_user) {
 				if (Me.admin === true && data.admin === false) {
 					isAdmin = false;

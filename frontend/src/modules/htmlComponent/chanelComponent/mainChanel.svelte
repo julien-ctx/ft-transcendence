@@ -64,7 +64,7 @@
     socketUserStore.subscribe(val => socketUser = val);
 
     onMount(async () => {
-        if (getJwt() != undefined && getJwt() != "") {
+        if (getJwt() != undefined && getJwt() != "" || getJwt() != null) {
             try {
                 await axios.get(`${API_URL}/Chat/getRooms`, {
                     headers: {
@@ -93,7 +93,7 @@
                 }
             }).then((res : any) => {      
                 otherRoom = res.data;
-                console.log('Public : ->', otherRoom);
+                // console.log('Public : ->', otherRoom);
                 // otherRoom.forEach((elem : any) => {
                 //     console.log('elem ->', elem.name);
                 // })
@@ -132,7 +132,7 @@
             });
 
             socket.on('newPublicRoom', (receivedRoom : any) => {
-                console.log('newPublicRoom ->', receivedRoom);
+                // console.log('newPublicRoom ->', receivedRoom);
                 for (let i = 0; i < otherRoom.length; i++) {
                     if (otherRoom[i].name == receivedRoom.name) {
                         return;
@@ -161,9 +161,9 @@
             });
 
             socket.on('newRight', (data : any) => {
-                console.log(data.id_user, myProfile.id_user);
+                // console.log(data.id_user, myProfile.id_user);
                 if (data.id_user !== myProfile.id_user) {
-                    console.log('endend');
+                    // console.log('endend');
                     return;
                 } 
                 rooms = rooms.map((room : any) => {

@@ -68,7 +68,10 @@
 	function connectSocket() {
 		socket = io(API_URL, {
 			path: '/pong',
-			query: { token: jwt}
+			query: {
+				token: jwt,
+				game: true,
+			}
 		});
 	}
 
@@ -166,7 +169,7 @@
 	async function drawCounter() {
 		clearCanvas();
 		ctx.font = 'bold ' + canvas.width * 0.1 + 'px Audiowide';
-		for (let i = 3; i > 0; i--) {
+		for (let i = 3; i > 0 && currMsg === 1 || currMsg === 2 || currMsg === 3 || !currMsg; i--) {
 			currMsg = i;
 			ctx.fillText(i, canvas.width / 2 - ctx.measureText(i).width / 2, canvas.height / 2);
 			await new Promise(r => setTimeout(r, 800));
@@ -199,6 +202,7 @@
 
 	async function drawWinner(winnerMsg: string) {
 		currMsg = winnerMsg;
+		ctx.font = canvas.width * 0.04 + 'px Audiowide';
 		ctx.fillText(
 			currMsg,
 			canvas.width / 2 - ctx.measureText(currMsg).width / 2,
@@ -220,7 +224,7 @@
 		};
 	}
 
-	function gameLoop() {
+	async function gameLoop() {
 		if (gameStarted && dataInit) {
 			clearCanvas();
 			drawPaddles(gameLeftPaddle, gameRightPaddle);

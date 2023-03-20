@@ -63,6 +63,8 @@ export class GameService {
 	}
 
 	handleResize(client: Client, winWidth: number, winHeight: number) {
+		console.log('handleresize');
+		
 		try {
 			const width = client.canvas.width;
 			const height = client.canvas.height;

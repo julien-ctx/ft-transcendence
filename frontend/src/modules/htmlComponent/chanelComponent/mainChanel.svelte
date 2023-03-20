@@ -64,7 +64,7 @@
     socketUserStore.subscribe(val => socketUser = val);
 
     onMount(async () => {
-        if (getJwt() != undefined && getJwt() != "") {
+        if (getJwt() != undefined && getJwt() != "" || getJwt() != null) {
             try {
                 await axios.get(`${API_URL}/Chat/getRooms`, {
                     headers: {

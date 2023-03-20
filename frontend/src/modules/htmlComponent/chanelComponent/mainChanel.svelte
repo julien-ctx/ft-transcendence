@@ -335,7 +335,7 @@
                     {#if otherRoom !== undefined && otherRoom.length > 0}
                         <!-- <button on:click={() => {console.log(otherRoom)}}>T</button> -->
                         <div class="header !justify-center backdrop:hover:underline">
-                            <div class="cursor-pointer hover:underline audio" style="font-family: 'Audiowide'">
+                            <div style="font-family: 'Audiowide'">
                                 Other Channels
                             </div>
                         </div>

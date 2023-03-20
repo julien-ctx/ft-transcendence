@@ -116,34 +116,31 @@ body {
 		margin: 0 40px;
 		border: 3px solid rgba(255,255,255, 0.7);
 		border-radius: 10px;
-		padding: 10px 0 10px 16px;
+		padding: 10px 10px 10px 16px;
 		.win-rate-ranking {
-			// font-family: 'Ubuntu', sans-serif;
 			font-size: 14px;
 			color: rgb(88, 88, 88);
 			font-weight: 500;
 			display: flex;
 			justify-content: space-between;
-			max-width: 140px;
+			max-width: 95%;
 			.wr {
 				width: 100px;
 			}
 			margin-bottom: 5px;
 		}
 		.level-ranking {
-			// font-family: 'Ubuntu', sans-serif;
 			color: rgb(88, 88, 88);
 			font-size: 14px;
 			font-weight: 500;
 			display: flex;
 			justify-content: space-between;
-			max-width: 140px;
+			max-width: 95%;
 			.level {
 				width: 100px;
 			}
 		}
 		.info {
-			// width: 60%;
 			text-align: center;
 		}
 	}
@@ -152,28 +149,35 @@ body {
 @media (max-width: 768px) {
 	.ranking {
 		flex-direction: column;
-	}
-	.rank-first {
-		width: 90%;
-		margin-left: 5%;
-		border-radius: 0;
-		order: 1;
-		border-top-left-radius: 20px;
-		border-top-right-radius: 20px;
-	}
-	.rank-second {
-		width: 90%;
-		margin-left: 5%;
-		border-radius: 0;
-		order: 2;
-	}
-	.rank-third {
-		width: 90%;
-		margin-left: 5%;
-		border-radius: 0;
-		order: 3;
-		border-bottom-left-radius: 20px;
-		border-bottom-right-radius: 20px;
+		.rank-first {
+			width: 90%;
+			margin-left: 5%;
+			margin-right: 5%;
+			border-radius: 0;
+			order: 1;
+			border-top-left-radius: 20px;
+			border-top-right-radius: 20px;
+		}
+		.rank-second {
+			width: 90%;
+			margin-left: 5%;
+			margin-right: 5%;
+			border-radius: 0;
+			order: 2;
+		}
+		.rank-third {
+			width: 90%;
+			margin-left: 5%;
+			margin-right: 5%;
+			border-radius: 0;
+			order: 3;
+			border-bottom-left-radius: 20px;
+			border-bottom-right-radius: 20px;
+		}
+		.info {
+			text-align: center;
+		}
+		
 	}
 }
 
@@ -317,6 +321,9 @@ canvas {
 				display: flex;
 				flex-direction: column;
 				gap: 10px;
+				&::-webkit-scrollbar{
+					display: none;
+				}
 				.container-room {
 					background-color: $primary;
 					display: flex;
@@ -860,7 +867,6 @@ input[type=range]::-moz-range-thumb {
 
 .accordion {
 	border: none !important;
-	
 	h2 {
 		border: none !important;
 		&:hover {

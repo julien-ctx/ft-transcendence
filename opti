@@ -6,7 +6,7 @@ palier exp
 5 = 4800
 
 game:	
-		leave game running
-		protectection rightclient / try catch
-		time before ball launch
-		ball rebond
+		leave game running 3 2 1
+		intervals
+		socket de header dans game
+		clear url dans invite

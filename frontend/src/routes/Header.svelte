@@ -98,7 +98,7 @@
 						allUsers.push(data)
 						usersDataStore.set(allUsers);
 					}
-				}                                                                                            
+				}
 			})
 			socketUser.on("room-unblock", (data : any) => {
 				if (myRoomMp && myRoomMp.length != 0) {
@@ -132,29 +132,42 @@
 			
 			const socketGame = io(API_URL, {
 				path: "/pong",
-				query : { token : getJwt()}
+				query : {
+					token : getJwt(),
+					game : false,
+				}
 			});
 
 			socketGame.on("user_update", (data: any) => {
-				if (data.id && userProfile.id && data.id == userProfile.id)
-					userProfileDataStore.set(data);
-				if (allUsers && allUsers.length != 0) {
-					let arrId : number [] = [];
-					for (let i = 0; i < allUsers.length; i++) {
-						if (allUsers[i].id == data.id) {
-							allUsers[i] = data;
-							usersDataStore.set(allUsers);
-							arrId.push(data.id);
+				if (data.id && myProfile.id && data.id == myProfile.id)
+					UpdateProfileToStore(data);
+				else {
+					if (data.id && userProfile.id && data.id == userProfile.id)
+						userProfileDataStore.set(data);
+					if (allUsers && allUsers.length != 0) {
+						let arrId : number [] = [];
+						for (let i = 0; i < allUsers.length; i++) {
+							if (allUsers[i].id == data.id) {
+								allUsers[i] = data;
+								usersDataStore.set(allUsers);
+								arrId.push(data.id);
+							}
 						}
-					}
-					if (arrId && !arrId.includes(data.id)) {
-						allUsers.push(data);
-						usersDataStore.set(allUsers);
+						if (arrId && !arrId.includes(data.id)) {
+							allUsers.push(data);
+							usersDataStore.set(allUsers);
+						}
 					}
 				}
 			});
 		}
 	})
+
+	function handleSignOut() {
+		socketUser.emit("disconnect_user", myProfile);
+		removeJwt();
+		goto("/login");
+	}
 
 </script>
 
@@ -175,13 +188,12 @@
 			</DropdownHeader>
 			<DropdownItem href="/profile" defaultClass="font-medium py-2 px-4 text-sm hover:text-third block transition-colors duration-300">Profile</DropdownItem>
 			<DropdownDivider />
-			<DropdownItem href="/logout" defaultClass="font-medium py-2 px-4 text-sm hover:text-red-600 block transition-colors duration-300">Sign out</DropdownItem>
+			<DropdownItem defaultClass="font-medium py-2 px-4 text-sm hover:text-red-600 block transition-colors duration-300" on:click={handleSignOut}>Sign out</DropdownItem>
 		</Dropdown>
 		<NavUl {hidden} ulClass="bg-primary flex gap-5 flex-col sm:flex-row items-center !border-none nav-ul">
 			<NavLi href="/" active={$page.url.pathname === '/'? true : false}  activeClass="text-third hover:text-black transition-colors duration-300" nonActiveClass="text-black hover:text-third transition-colors duration-300">Home</NavLi>
 			<NavLi href="/users" active={$page.url.pathname === '/users'? true : false} activeClass="text-third hover:text-black transition-colors duration-300" nonActiveClass="text-black hover:text-third transition-colors duration-300">Users</NavLi>
 			<NavLi href="/game" active={$page.url.pathname === '/game'? true : false} activeClass="text-third hover:text-black transition-colors duration-300" nonActiveClass="text-black hover:text-third transition-colors duration-300">Game</NavLi>
-			<!-- <NavLi href="/chat" active={$page.url.pathname === '/chat'? true : false} activeClass="text-third hover:text-black transition-colors duration-300" nonActiveClass="text-black hover:text-third transition-colors duration-300">Chat</NavLi> -->
 		</NavUl>
 		</Navbar>
 	</div>
@@ -193,7 +205,7 @@
 						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg>
 					</button>
 				</svelte:fragment>
-				{notif.user_send.login} send you "{notif.content.length > 10 ? notif.content.substring(0, 10) + "..." : notif.content}"
+				{notif.user_send.login} sent you "{notif.content.length > 10 ? notif.content.substring(0, 10) + "..." : notif.content}"
 			</Toast>
 		{/each}
 	{/if}

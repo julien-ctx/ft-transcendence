@@ -32,32 +32,29 @@ export class ChatService {
 		})
 	}
 
+	forSameUserService(id : number, event : string, params : any, Client : any) {
+		const Same = Client.filter((elem : any) => {
+			if (elem.user.id === id)
+				return elem;
+		});
+		Same.forEach((elem : any) => {
+			elem.client.emit(event, params);
+		});
+	}
+
 	async updateBan(room : any, Client : any) {
-		console.log(room.banned);
 		room.banned.forEach(async (elem : any) => {
-			console.log('boucle');
 			let now = new Date();
-			console.log(elem.Endban, now, elem.Endban < now);
+			console.log(elem.endBan, now, elem.Endban < now);
 			if (elem.endBan < now) {
-				let who = room.banned.id_user;
-				console.log('unban');
+				let who = elem.id_user;
 				await this.prisma.banned.delete({
 					where : {
 						id : elem.id,
 					}
 				});
 				if (room.status === 'Public') {
-					console.log('Public');
-					let alreadySend = false;
-					Client.forEach((elem) => {
-						if (elem.user.id_user === who) {
-							console.log('send');
-							if (alreadySend === false) {
-								elem.client.emit('newPublicRoom', room);
-								alreadySend = true;
-							}
-						}
-					});
+					this.forSameUserService(who, 'newPublicRoom', room, Client);
 				}
 			}
 		});

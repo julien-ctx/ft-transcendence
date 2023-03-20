@@ -1,5 +1,4 @@
 import { PrismaService } from 'src/prisma/prisma.service';
-import { RoomClass } from './room.interface';
 
 export class Sanction {
     room : string;
@@ -50,7 +49,6 @@ export class Sanction {
     async handleSanction() {
         if (this.sanction !== 'kick')
             if (this.setEndOfSanction() === false) return;
-        console.log('test');
         switch (this.sanction) {
             case 'ban': 
                 await this.ban(); break;
@@ -95,11 +93,6 @@ export class Sanction {
                 endBan : this.endOfSanction,
             }
         });
-        // for (let i = 0; i < this.Clients.length; i++) {
-        //     if (this.Clients[i].user.login === User.login) {
-        //         this.Clients[i].client.emit('deletedRoom', Room.name);
-        //     }
-        // }
         this.Clients.forEach((elem : any) => {
             if (elem.user.id === this.member.id_user) 
                 elem.client.emit('deletedRoom', Room.name);
@@ -109,7 +102,6 @@ export class Sanction {
 
     // Same as ban but without the creation of the ban model
     async kick() {
-        // console.log('Kick');
         const User = await this.db.user.findUnique({
             where: {
                 id_user : this.member.id_user

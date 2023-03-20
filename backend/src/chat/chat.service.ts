@@ -45,7 +45,6 @@ export class ChatService {
 	async updateBan(room : any, Client : any) {
 		room.banned.forEach(async (elem : any) => {
 			let now = new Date();
-			console.log(elem.endBan, now, elem.Endban < now);
 			if (elem.endBan < now) {
 				let who = elem.id_user;
 				await this.prisma.banned.delete({

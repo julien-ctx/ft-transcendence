@@ -62,7 +62,7 @@ export class GameService {
 		return canvas;
 	}
 
-	handleResize( client: Client, winWidth: number, winHeight: number) {
+	handleResize(client: Client, winWidth: number, winHeight: number) {
 		try {
 			const width = client.canvas.width;
 			const height = client.canvas.height;
@@ -83,19 +83,12 @@ export class GameService {
 			client.ball.size = client.canvas.width * 0.02;
 			client.ball.x = client.ball.x * client.canvas.width / width;
 			client.ball.y = client.ball.y * client.canvas.height / height;
-			client.ball.direction = {
-				x: (client.canvas.width + client.canvas.height) * 0.0005,
-				y: (client.canvas.width + client.canvas.height) * 0.0007,	
-			}
-			client.ball.speed = {
-				x: (client.canvas.width + client.canvas.height) * 0.0003,
-				y: (client.canvas.width + client.canvas.height) * 0.0003,
-			};
+
 			client.socket.emit('paddlesData', {leftPaddle: client.leftPaddle, rightPaddle: client.rightPaddle});
 			client.socket.emit('ballData', {ball: client.ball});
 			client.socket.emit('scoresData', {leftScore: client.leftPaddle.score, rightScore: client.rightPaddle.score});
 		} catch(error) {
-			return console.log(error);
+			console.log(error);
 		}
 	}
 
@@ -164,7 +157,7 @@ export class GameService {
 		client.rightPaddle.y = client.canvas.height / 2 - client.rightPaddle.height / 2;
 	}
 
-	checkBallPosition(game: Game, randomBallDirection: number) {
+	async checkBallPosition(game: Game, randomBallDirection: number) {
 		if (game.leftClient.ball.x < 0) {
 			this.resetPaddles(game.leftClient);
 			this.resetBall(game.leftClient, -1, randomBallDirection);

@@ -3,6 +3,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import * as argon2 from 'argon2';
 import { UserService } from 'src/user/user.service';
 import { Room, User } from '@prisma/client';
+import { truncateSync } from 'fs';
 
 @Injectable()
 export class ChatService {
@@ -31,6 +32,77 @@ export class ChatService {
 		})
 	}
 
+	forSameUserService(id : number, event : string, params : any, Client : any) {
+		const Same = Client.filter((elem : any) => {
+			if (elem.user.id === id)
+				return elem;
+		});
+		Same.forEach((elem : any) => {
+			elem.client.emit(event, params);
+		});
+	}
+
+	async updateBan(room : any, Client : any) {
+		room.banned.forEach(async (elem : any) => {
+			let now = new Date();
+			console.log(elem.endBan, now, elem.Endban < now);
+			if (elem.endBan < now) {
+				let who = elem.id_user;
+				await this.prisma.banned.delete({
+					where : {
+						id : elem.id,
+					}
+				});
+				if (room.status === 'Public') {
+					this.forSameUserService(who, 'newPublicRoom', room, Client);
+				}
+			}
+		});
+	}
+
+	async getPublics(id_user : number) {
+		const rooms = await this.prisma.roomToUser.findMany({
+			include : {
+				room : {
+					include : {
+						banned : true,
+					},
+				},
+				user : true,
+			}
+		});
+		let notIn = [];
+		rooms.forEach((elem) => {
+			let banned = false;
+			let Public = true;
+			if (elem.room.status !== 'Public')
+				Public = false;
+			elem.room.banned.forEach((ban) => {
+				if (ban.id_user === id_user)
+					banned = true;
+			});
+			if (elem.user.id_user !== id_user) {
+				let found = false;
+				rooms.forEach((other) => {
+					if (other.room.id === elem.room.id) {
+						if (other.user.id_user === id_user) {
+							found = true;
+						}
+					}
+				})
+				// console.log(notIn.includes(elem.room));
+				for (let i = 0; i < notIn.length; i++) {
+					if (notIn[i].id === elem.room.id)
+						found = true;
+				}
+				if (found === false && banned === false && Public === true) {
+					notIn.push(elem.room);
+				}
+			}
+		});
+		return notIn;	  
+	}
+
 	async getTimedMute(room : any, user : any) {
 		const relation = await this.prisma.roomToUser.findFirst({
 			where : {
@@ -48,6 +120,7 @@ export class ChatService {
 				id_user : user.id_user,
 			}
 		});
+		if (relation === null) return false;
 		if (relation.Muted === true) {
 			let now : Date = new Date();
 			if (now > relation.EndMute) {
@@ -67,6 +140,44 @@ export class ChatService {
 		}
 		else 
 			return true;
+	}
+
+	getDateMute(EndMute : Date) {
+		let time = {Years: '', Months: '', Days: '', Hours: '', Minutes: '', Seconds: ''};
+		time.Years = EndMute.getFullYear().toString();
+		time.Months = EndMute.getMonth().toString();
+		time.Days = EndMute.getDate().toString();
+		time.Hours = EndMute.getHours().toString();
+		time.Minutes = EndMute.getMinutes().toString();
+		time.Seconds = EndMute.getSeconds().toString();
+		time.Years = time.Years.length === 1 ? '0' + time.Years : time.Years;
+		time.Months = time.Months.length === 1 ? '0' + time.Months : time.Months;
+		time.Days = time.Days.length === 1 ? '0' + time.Days : time.Days;
+		time.Hours = time.Hours.length === 1 ? '0' + time.Hours : time.Hours;
+		time.Minutes = time.Minutes.length === 1 ? '0' + time.Minutes : time.Minutes;
+		time.Seconds = time.Seconds.length === 1 ? '0' + time.Seconds : time.Seconds;
+		return time; 
+	}
+
+	async getMyRelation(id : number, room : string) {
+		const Room = await this.getRoomByName(room);
+		const relation = await this.prisma.roomToUser.findFirst({
+			where : {
+				id_room : Room.id,
+				id_user : id,
+			}
+		});
+		return relation;
+	}
+
+	async isInRoom(user : any, room : any) {
+		const relation = await this.prisma.roomToUser.findFirst({
+			where : {
+				id_room : room.id,
+				id_user : user.id_user,
+			}
+		});
+		return relation !== null;
 	}
 
 	async getAllUsersRooms(room : string) {

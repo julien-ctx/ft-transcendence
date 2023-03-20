@@ -18,7 +18,11 @@ const config = {
 			"light_blue" : "#8171E3",
 			"light_green" : "#64D989",
 			"light_yellow" : "#AED250",
-		}
+		},
+
+		fontFamily: {
+			"ubuntu" : ["Ubuntu", "sans-serif"],
+		},
 	},
 	plugins: [
 	  require('flowbite/plugin')

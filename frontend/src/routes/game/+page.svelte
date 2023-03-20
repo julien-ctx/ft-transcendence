@@ -5,10 +5,10 @@
     import { getJwt, removeJwt } from "$lib/jwtUtils";
 	import io, { Socket } from 'socket.io-client';
     import { API_URL } from "$lib/env";
-    import { userProfileDataStore, usersDataStore } from "$lib/store/user";
+    import { myProfileDataStore, userProfileDataStore, usersDataStore } from "$lib/store/user";
 
 	const OBJ_COLOR: string = "#dcd3bc";
-	const BALL_COLOR: string = "#e36c5d";
+	const BALL_COLOR: string = "#e39c9a";
 
 	let isLogged: boolean = false;
 	let canvas: HTMLCanvasElement;
@@ -48,6 +48,8 @@
 	let gamePlayerSide: number = 0;
 	
 	let playerNumber: number = 0;
+	let idSend: any = -1;
+	let idReceive: any = -1;
 
 	let socket: Socket;	
 	let jwt: any;
@@ -56,49 +58,48 @@
 
 	let userProfile : any;
 	let allUsers : any;
+	let myProfile : any;
 
 	usersDataStore.subscribe(val => allUsers = val);
 	userProfileDataStore.subscribe(val => userProfile = val);
+	myProfileDataStore.subscribe(val => myProfile = val);
 
 	function connectSocket() {
 		socket = io(API_URL, {
 			path: '/pong',
-			query: { token: jwt}
-		});
-
-		socket.on("user_update", (data : any) => {
-			console.log(data);
-			if (data.id && userProfile.id && data.id == userProfile.id)
-				userProfileDataStore.set(data);
-			if (allUsers && allUsers.length != 0) {
-				let arrId : number [] = [];
-				for (let i = 0; i < allUsers.length; i++) {
-					if (allUsers[i].id == data.id) {
-						allUsers[i] = data;
-						usersDataStore.set(allUsers)
-						arrId.push(data.id);
-					}
-				}
-				if (arrId && !arrId.includes(data.id)) {
-					allUsers.push(data)
-					usersDataStore.set(allUsers);
-				}
+			query: {
+				token: jwt,
+				game: true,
 			}
-			socket.emit('gameStoredInDB', ({}));
-		})
+		});
 	}
 
 	onMount(async () => {
-		AuthGuard()
+		jwt = getJwt();
+		connectSocket();
+		const URL = new URLSearchParams(window.location.search);
+		if (URL.has('id_send') && URL.has('id_receive')) {
+			idSend = URL.get('id_send');
+			if (idSend) {
+				idSend = parseInt(idSend);
+			}
+			idReceive = URL.get('id_receive');
+			if (idReceive) {
+				idReceive = parseInt(idReceive);
+			}
+		}
+		await AuthGuard()
 		.then((res) => {
 			isLogged = true;
 		})
 		.catch((err) => {
 			removeJwt();
 			goto("/login")
-		})
-		jwt = getJwt();
-		connectSocket();
+		});
+    	history.replaceState(null, '', 'game');
+		if (idSend !== -1 && idReceive !== -1) {
+			createCanvas(2);
+		}
 	});	
 	
 	function handleResize() {
@@ -150,7 +151,6 @@
 		ctx.beginPath();
 		ctx.arc(ball.x + ball.size / 2, ball.y + ball.size / 2, radius, 0, 2 * Math.PI);
 		ctx.fill();
-		ctx.stroke();
 		ctx.fillStyle = OBJ_COLOR;
 	}
 		
@@ -169,7 +169,7 @@
 	async function drawCounter() {
 		clearCanvas();
 		ctx.font = 'bold ' + canvas.width * 0.1 + 'px Audiowide';
-		for (let i = 3; i > 0; i--) {
+		for (let i = 3; i > 0 && currMsg === 1 || currMsg === 2 || currMsg === 3 || !currMsg; i--) {
 			currMsg = i;
 			ctx.fillText(i, canvas.width / 2 - ctx.measureText(i).width / 2, canvas.height / 2);
 			await new Promise(r => setTimeout(r, 800));
@@ -202,6 +202,7 @@
 
 	async function drawWinner(winnerMsg: string) {
 		currMsg = winnerMsg;
+		ctx.font = canvas.width * 0.04 + 'px Audiowide';
 		ctx.fillText(
 			currMsg,
 			canvas.width / 2 - ctx.measureText(currMsg).width / 2,
@@ -211,19 +212,7 @@
 		currMsg = null;
 	}
 
-	function playAgain() {
-		clearCanvas();
-		currMsg = 'Click to play again';
-		ctx.fillText(currMsg, canvas.width / 2 - ctx.measureText(currMsg).width / 2, canvas.height / 2);
-		canvas.onclick = () => {
-			if (!gameStarted && !dataInit) {	
-				clearCanvas();
-				isReady();
-			}
-		};
-	}
-
-	function gameLoop() {
+	async function gameLoop() {
 		if (gameStarted && dataInit) {
 			clearCanvas();
 			drawPaddles(gameLeftPaddle, gameRightPaddle);
@@ -234,16 +223,11 @@
 		animationFrame = requestAnimationFrame(gameLoop);
 	}
 
-	async function drawSide(side: number) {
-		clearCanvas();
-		currMsg = side < 0 ? 'You play on the left' : 'You play on the right';
-		ctx.fillText(
-			currMsg,
-			canvas.width / 2 - ctx.measureText(currMsg).width / 2,
-			canvas.height / 2 
-		);
-		await new Promise(r => setTimeout(r, 2000));
-		currMsg = null;	
+	function resetData() {
+		clickMode = false;
+		canvas.remove();
+		idSend = -1;
+		idReceive = -1;
 	}
 
 	async function startGame() {
@@ -253,11 +237,7 @@
 		});
 		socket.on('ballData', ({ball}) => {
 			gameBall = ball;
-		});
-		socket.on('scoresData', ({leftScore, rightScore}) => {
-			gameLeftPaddle.score = leftScore;
-			gameRightPaddle.score = rightScore;
-		});
+		});	
 		socket.on('winner', async ({winner, side, forfeit}) => {
 			gameStarted = false;
 			dataInit = false;
@@ -270,7 +250,6 @@
 			removeEvents();
 			socket.disconnect();
 			connectSocket();
-			drawScores(gameLeftPaddle.score, gameRightPaddle.score);
 			gameLeftPaddle.score = 0;	
 			gameRightPaddle.score = 0;
 			cancelAnimationFrame(animationFrame);
@@ -279,7 +258,7 @@
 				winMsg += ' by forfeit!';
 			}
 			await drawWinner(winMsg);
-			playAgain();
+			resetData();
 		});
 		if (gamePlayerSide === -1) {
 			await drawOpponent(`${gamePlayerLogin} VS ${gameOpponentLogin}`);
@@ -306,7 +285,26 @@
 				dataInit = true;	
 				startGame();
 			});
-			socket.emit('ready', {width: canvas.width, height: canvas.height, playerNumber, botLevel});
+			if (idSend) {
+				socket.emit('ready', {
+					width: canvas.width,
+					height: canvas.height,
+					playerNumber: playerNumber,
+					botLevel: botLevel,
+					leftPlayerID: idSend,
+					rightPlayerID: idReceive,
+				});
+				
+			} else {
+				socket.emit('ready', {
+					width: canvas.width,
+					height: canvas.height,
+					playerNumber: playerNumber,
+					botLevel: botLevel,
+					LeftPlayerID: null,
+					RightPlayerID: null,
+				});
+			}
 			if (playerNumber === 2) {
 				drawWaitingForOpponent();
 			}
@@ -336,7 +334,6 @@
 		ctx.fillStyle = OBJ_COLOR;
 	
 		containerCanvas.appendChild(canvas)
-		
 		playerNumber = userNb;
 		isReady();
 	}

@@ -34,14 +34,26 @@ model User {
 	banned Banned[]
 	roomMp RoomMessagePrivate[] @relation("RoomUserMessagePrivate")
 	gameHistory GameHistory[] @relation("GameHistoryRelation")
+	fanny Boolean @default(false)
+	double_fanny Boolean @default(false)
+	first_win Boolean @default(false)
 }
 
 model GameHistory {
 	id Int @id @default(autoincrement())
 	createdAt DateTime @default(now())
 	user User[] @relation("GameHistoryRelation")
+	
 	score_user1 Int
+	id_user1 Int
+	login_user1 String
+	img_link_user1 String
+
 	score_user2 Int
+	id_user2 Int
+	login_user2 String
+	img_link_user2 String
+
 	id_user_winner Int
 }
 
@@ -64,9 +76,9 @@ model Banned {
 	room Room @relation(fields: [id_room], references: [id])
 	id_room Int
 	user User @relation(fields: [id_user], references: [id_user])
-	id_user Int
+	id_user Int 
 
-	endBan DateTime
+	endBan DateTime @default(now())
 }
 
 model RoomToUser {
@@ -114,13 +126,13 @@ model MessagePrivate {
 }
 
 model Notification {
-  id Int @id @default(autoincrement())
-  user  User @relation(fields: [id_user_receive], references: [id])
-  id_user_receive Int
-  id_user_send Int
-  name_room_private String @default("")
-  is_read Boolean @default(false)
-  login_send String
-  img_link String
-  type Int
+	id Int @id @default(autoincrement())
+	user User @relation(fields: [id_user_receive], references: [id])
+	id_user_receive Int
+	id_user_send Int
+	name_room_private String @default("")
+	is_read Boolean @default(false)
+	login_send String
+	img_link String
+	type Int
 }

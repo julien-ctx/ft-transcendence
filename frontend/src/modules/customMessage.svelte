@@ -3,16 +3,11 @@
 	import { onMount } from 'svelte';
 	import { Avatar, Hr } from 'flowbite-svelte';
     import axios from 'axios';
-
 	export let idUser : any;
 	export let Message : any;
-
 	let allUsers : any;
-
 	let currentUser : {};
-
 	usersDataStore.subscribe(val => allUsers = val);
-
 	onMount(async () => {
 		console.log(idUser, Message);
 		if (allUsers) {
@@ -34,4 +29,3 @@
 	</div>
 	<Hr width="w-full" height="h-1"/>
 {/if}
-

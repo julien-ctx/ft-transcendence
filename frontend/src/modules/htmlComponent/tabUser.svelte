@@ -1,9 +1,8 @@
 <script lang="ts">
-	import { Accordion, AccordionItem, Avatar, Tooltip, Card, Dropdown, MenuButton, TabItem, Tabs } from "flowbite-svelte";
+	import { Accordion, AccordionItem, TabItem, Tabs } from "flowbite-svelte";
     import UserCard from "../../modules/htmlComponent/userCard.svelte";
     import HeaderUserCard from "../../modules/htmlComponent/headerUserCard.svelte";
-    import { myProfileDataStore, userProfileDataStore, usersDataStore } from "$lib/store/user";
-    import { onMount } from "svelte";
+    import { myProfileDataStore, usersDataStore } from "$lib/store/user";
     import GameHistory from "./gameHistory.svelte";
 
 	export let user : any;
@@ -16,19 +15,15 @@
 </script>
 
 <Tabs defaultClass="w-full flex flex-row gap-2 mt-10 !border-0 tabs-item" contentClass="w-full">
-	<TabItem title="Friend" open defaultClass="w-full"> 
+	<TabItem title="Friends" open defaultClass="w-full"> 
 		<Accordion defaultClass="w-full mt-5 accordion">
 			<AccordionItem>
 				<span slot="header">{user.friend_id.length}
-					{#if user.friend_id.length == 0} 
-						Friend
-					{:else}
-						Friends
-					{/if}
+					Friends
 				</span>
 				<div class="flex flex-col gap-5 p-5">
 				{#if user.friend_id && user.friend_id.length == 0}
-					No friend
+					No friends
 				{:else}
 					<HeaderUserCard />
 					{#each allUsers as friend}
@@ -41,7 +36,7 @@
 			</AccordionItem>
 			{#if user.id == myProfile.id}
 				<AccordionItem>
-					<span slot="header">{(user.notification) ? user.notification.length : '0'} Pending request</span>
+					<span slot="header">{(user.notification) ? user.notification.length : '0'} Pending requests</span>
 					{#if user.notification && user.notification.length > 0}
 						<HeaderUserCard />
 						{#each user.notification as notif}
@@ -56,7 +51,7 @@
 					{/if}
 				</AccordionItem>
 				<AccordionItem>
-					<span slot="header">{(user.req_send_friend) ? user.req_send_friend.length : '0'} Request send</span>
+					<span slot="header">{(user.req_send_friend) ? user.req_send_friend.length : '0'} Requests sent</span>
 					{#if user.req_send_friend && user.req_send_friend.length > 0}
 						<div class="flex flex-col gap-5 p-5">
 							<HeaderUserCard />
@@ -82,6 +77,31 @@
 			{/if}
 		</div>
 	</TabItem>
-	<TabItem title="Achievement" defaultClass="w-full">
+	<TabItem title="Achievements" defaultClass="w-full">
+		<div class="container-achievements">
+			{#if user.first_win}
+				<div class="achievement shadow-md p-5 rounded-lg">
+					<img src="./first-win.png" alt="">
+					<p>First Win</p>
+				</div>
+			{/if}
+			{#if user.fanny}
+				<div class="achievement shadow-md p-5 rounded-lg">
+					<img src="./fanny.png" alt="">
+					<p>Fanny</p>
+				</div>
+			{/if}
+			{#if user.double_fanny}
+				<div class="achievement shadow-md p-5 rounded-lg">
+					<img src="./barbate.png" alt="">
+					<p>Double Fanny</p>
+				</div>
+			{/if}
+			{#if !user.double_fanny && !user.fanny && !user.first_win}
+				<p class="no-achievement">
+					0 Achievement
+				</p>
+			{/if}
+		</div>
 	</TabItem>
 </Tabs>

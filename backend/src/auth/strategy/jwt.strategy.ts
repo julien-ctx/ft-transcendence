@@ -21,7 +21,20 @@ export class JwtStrategy extends PassportStrategy(Strategy, "jwt-two-factor"){
 				notification: true,
 				RoomToUser: true,
 				roomMp : true,
-				gameHistory : true
+				gameHistory :{
+					select : {
+						user : true,
+						score_user1 : true,
+						id_user1 : true,
+						login_user1 : true,
+						img_link_user1 : true,
+						score_user2 : true,
+						id_user2 : true,
+						login_user2 : true,
+						img_link_user2: true,
+						id_user_winner : true
+					}
+				}
 			}
 		})
 		if (!user)

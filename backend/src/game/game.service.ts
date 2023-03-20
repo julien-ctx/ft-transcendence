@@ -47,8 +47,8 @@ export class GameService {
 				y: (canvas.width + canvas.height) * 0.0007,
 			},
 			{
-				x: (canvas.width + canvas.height) * 0.0003,
-				y: (canvas.width + canvas.height) * 0.0003,
+				x: (canvas.width + canvas.height) * 0.0003 * 2,
+				y: (canvas.width + canvas.height) * 0.0003 * 2,
 			},
 		);
 		return ball;

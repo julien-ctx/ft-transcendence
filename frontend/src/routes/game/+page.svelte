@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from "svelte";
+	import { onMount, afterUpdate } from "svelte";
 	import { AuthGuard } from "$lib/store/AuthGuard";
     import { goto } from "$app/navigation";
     import { getJwt, removeJwt } from "$lib/jwtUtils";

@@ -1,4 +1,4 @@
-import { Body, Controller, ForbiddenException, Get, Param, Post, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
+import { Body, Controller, ForbiddenException, Get, MaxFileSizeValidator, Param, ParseFilePipe, Post, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { UserService } from "./user.service";
 import { UserDec } from "./user.decorator";
@@ -33,7 +33,11 @@ export class UserController{
 
 	@Post("updateImg")
 	@UseInterceptors(FileInterceptor('file'))
-	async uploadFile(@UploadedFile() file: Express.Multer.File, @UserDec() user : User) {
+	async uploadFile(@UploadedFile(new ParseFilePipe({
+		validators: [
+		  new MaxFileSizeValidator({ maxSize: 100000 })
+		],
+	  }),) file: Express.Multer.File, @UserDec() user : User) {
 		const allowedMimeTypes = ['image/png', 'image/jpeg', 'image/bmp', 'image/x-icon', 'image/svg+xml', 'image/webp']
 		const bytes = file.buffer;
 		const mimetype = file.mimetype;

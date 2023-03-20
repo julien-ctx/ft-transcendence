@@ -57,7 +57,9 @@
 		socketUser.emit("delete-notification", {id_notif : notif.id, user : myProfile});
 	}
 
-	function handleAcceptGame(notif : any) {
+	async function handleAcceptGame(notif : any) {
+		goto("/users");
+		await new Promise(r => setTimeout(r, 100));
 		goto(`/game?id_send=${notif.id_user_send}&id_receive=${notif.id_user_receive}`);
 		socketUser.emit("delete-notification", {id_notif : notif.id, user : myProfile});
 	}

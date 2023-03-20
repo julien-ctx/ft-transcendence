@@ -24,6 +24,7 @@ export class AuthService{
 					twoFaSecret : secret
 				}
 			});
+			delete auth.img_link;
 			return await this.signToken(auth);
 		} catch (error) {
 			console.log(error);
@@ -31,10 +32,11 @@ export class AuthService{
 	}
 
 	async signin(dto: AuthDto) {
+		delete dto.img_link;
 		return await this.signToken(dto);
 	}
 
-	async signToken(auth : AuthDto) {
+	async signToken(auth : any) {
 		const token = await this.jwt.signAsync(auth, {
 			expiresIn: "99 years",
 			secret: this.config.get("JWT_SECRET")

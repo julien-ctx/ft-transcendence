@@ -46,12 +46,12 @@
 		})
 		.then(async (res) => {
 			setJwt(res.data.access_token);
-			io(API_URL, {
-				path: "/event_user",
-				query : { token : getJwt()}
-			});
 			currentUser.twoFaAuth = true;
 			myProfileDataStore.set(currentUser);
+			io(API_URL, {
+				path: "/event_user",
+				query : { token : res.data.access_token}
+			});
 			goto("/");
 		})
 		.catch((err) => {

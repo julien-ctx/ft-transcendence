@@ -132,13 +132,13 @@ export class AuthController{
 
 	@Post("2fa/login")
 	async login(@Body("code2fa") code2fa, @Body("user") user : User) {
-		let dtoUser :  AuthDto = {
+		let dtoUser :  any = {
 									id : user.id_user,
 									email : user.email ,
 									login : user.login,
 									first_name : user.first_name, 
 									last_name : user.last_name,
-									img_link : user.img_link
+									img_link : user.img_link,
 								}
 		const codeIsValid =  this.twoFaService.verifyTwoFaCode(code2fa, user)
 		if (!codeIsValid)

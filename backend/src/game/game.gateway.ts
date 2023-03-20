@@ -6,7 +6,7 @@ import { User } from "@prisma/client";
 import { Server, Socket } from "socket.io";
 import { PrismaService } from "src/prisma/prisma.service";
 
-const MAX_SCORE = 2;
+const MAX_SCORE = 11;
 
 @WebSocketGateway({
 	cors: true,

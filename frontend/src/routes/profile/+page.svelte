@@ -25,6 +25,7 @@
 	let socketUser : any;
 	let errorLogin : boolean = false;
 	let errorImage : boolean = false;
+	let strErrorImage : string = "";
 	let qrCode : string;
 	let code2fa : string;
 	let qrCodeModal : boolean = false;
@@ -48,6 +49,10 @@
 			errorImage = false;
 		})
 		.catch((err) => {
+			if (err.response.status == 400)
+				strErrorImage = "Payload too large";
+			else
+				strErrorImage = "Unsupported Mimetype"
 			errorImage = true;
 		})
 	}
@@ -136,7 +141,7 @@
                     <div class="space-y-2">
 						<p class="text-red-500">
 							{#if errorImage}
-								Unsupported mimetype
+								{strErrorImage}
 							{/if}
 						</p>
 						<button class="button-card-user">...</button>

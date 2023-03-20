@@ -44,7 +44,7 @@ services:
       - transcendence
     depends_on:
       - nest-api
-    # restart: always
+    restart: always
 
 networks:
   transcendence:

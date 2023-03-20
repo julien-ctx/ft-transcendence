@@ -98,7 +98,7 @@
 						allUsers.push(data)
 						usersDataStore.set(allUsers);
 					}
-				}                                                                                            
+				}
 			})
 			socketUser.on("room-unblock", (data : any) => {
 				if (myRoomMp && myRoomMp.length != 0) {
@@ -163,6 +163,12 @@
 		}
 	})
 
+	function handleSignOut() {
+		socketUser.emit("disconnect_user", myProfile);
+		removeJwt();
+		goto("/login");
+	}
+
 </script>
 
 {#if myProfile && myProfile.first_name}
@@ -182,13 +188,12 @@
 			</DropdownHeader>
 			<DropdownItem href="/profile" defaultClass="font-medium py-2 px-4 text-sm hover:text-third block transition-colors duration-300">Profile</DropdownItem>
 			<DropdownDivider />
-			<DropdownItem href="/logout" defaultClass="font-medium py-2 px-4 text-sm hover:text-red-600 block transition-colors duration-300">Sign out</DropdownItem>
+			<DropdownItem defaultClass="font-medium py-2 px-4 text-sm hover:text-red-600 block transition-colors duration-300" on:click={handleSignOut}>Sign out</DropdownItem>
 		</Dropdown>
 		<NavUl {hidden} ulClass="bg-primary flex gap-5 flex-col sm:flex-row items-center !border-none nav-ul">
 			<NavLi href="/" active={$page.url.pathname === '/'? true : false}  activeClass="text-third hover:text-black transition-colors duration-300" nonActiveClass="text-black hover:text-third transition-colors duration-300">Home</NavLi>
 			<NavLi href="/users" active={$page.url.pathname === '/users'? true : false} activeClass="text-third hover:text-black transition-colors duration-300" nonActiveClass="text-black hover:text-third transition-colors duration-300">Users</NavLi>
 			<NavLi href="/game" active={$page.url.pathname === '/game'? true : false} activeClass="text-third hover:text-black transition-colors duration-300" nonActiveClass="text-black hover:text-third transition-colors duration-300">Game</NavLi>
-			<!-- <NavLi href="/chat" active={$page.url.pathname === '/chat'? true : false} activeClass="text-third hover:text-black transition-colors duration-300" nonActiveClass="text-black hover:text-third transition-colors duration-300">Chat</NavLi> -->
 		</NavUl>
 		</Navbar>
 	</div>

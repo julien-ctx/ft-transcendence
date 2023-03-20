@@ -27,6 +27,22 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
 	handleConnection(socket : Socket) {}
 
+	@SubscribeMessage('check')
+	handleRouteChange(socket: Socket, userProfile: User) {
+		let client: Client | null = null;
+		for (let i = 0; i < this.games.length; i++) {
+			if (this.games[i].leftClient.user.id === userProfile.id) {
+				client = this.games[i].leftClient;
+			} else if (this.games[i].rightClient && this.games[i].rightClient.user.id === userProfile.id) {
+				client = this.games[i].rightClient;
+			}
+		}
+		if (client && client.socket) {
+			this.handleDisconnect(client.socket);
+			// client.socket.disconnect();
+		}
+	}
+	
 	async handleDisconnect(socket: Socket) {
 		const data = this.removeFromGame(socket);
 		if (data) {

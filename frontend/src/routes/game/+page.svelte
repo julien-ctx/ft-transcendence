@@ -213,18 +213,6 @@
 		currMsg = null;
 	}
 
-	function playAgain() {
-		clearCanvas();
-		currMsg = 'Click to play again';
-		ctx.fillText(currMsg, canvas.width / 2 - ctx.measureText(currMsg).width / 2, canvas.height / 2);
-		canvas.onclick = () => {
-			if (!gameStarted && !dataInit) {	
-				clearCanvas();
-				isReady();
-			}
-		};
-	}
-
 	async function gameLoop() {
 		if (gameStarted && dataInit) {
 			clearCanvas();
@@ -236,6 +224,13 @@
 		animationFrame = requestAnimationFrame(gameLoop);
 	}
 
+	function resetData() {
+		clickMode = false;
+		canvas.remove();
+		idSend = -1;
+		idReceive = -1;
+	}
+
 	async function startGame() {
 		socket.on('paddlesData', ({leftPaddle, rightPaddle}) => {
 			gameLeftPaddle = leftPaddle;
@@ -243,7 +238,7 @@
 		});
 		socket.on('ballData', ({ball}) => {
 			gameBall = ball;
-		});
+		});	
 		socket.on('winner', async ({winner, side, forfeit}) => {
 			gameStarted = false;
 			dataInit = false;
@@ -255,8 +250,6 @@
 			clearCanvas();
 			removeEvents();
 			socket.disconnect();
-			idSend = -1;
-			idReceive = -1;
 			connectSocket();
 			gameLeftPaddle.score = 0;	
 			gameRightPaddle.score = 0;
@@ -266,7 +259,7 @@
 				winMsg += ' by forfeit!';
 			}
 			await drawWinner(winMsg);
-			playAgain();
+			resetData();
 		});
 		if (gamePlayerSide === -1) {
 			await drawOpponent(`${gamePlayerLogin} VS ${gameOpponentLogin}`);

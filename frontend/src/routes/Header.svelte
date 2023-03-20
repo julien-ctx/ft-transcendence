@@ -20,6 +20,7 @@
 	let allUsers : any;
 	let socketUser : any;
 	let socketFriend : any;
+	let socketGame : any;
 	let socketMp : any;
 	let myRoomMp : any;
 
@@ -130,7 +131,7 @@
 			});
 			socketFriendStore.set(socketFriend);
 			
-			const socketGame = io(API_URL, {
+			socketGame = io(API_URL, {
 				path: "/pong",
 				query : {
 					token : getJwt(),
@@ -169,12 +170,15 @@
 		goto("/login");
 	}
 
+	function changeRoute() {
+		socketGame.emit('check', myProfile);
+	}
 </script>
 
 {#if myProfile && myProfile.first_name}
 	<div class="relative">
 		<Navbar let:hidden let:toggle navClass="!bg-primary !border-secondary border-b w-full px-2 sm:px-4 py-2.5">
-		<NavBrand href="/">
+		<NavBrand href="/" on:click={changeRoute}>
 			<h2 class="title-nav">PONG 🏓</h2>
 		</NavBrand>
 		<div class="flex items-center md:order-2 gap-4">
@@ -186,13 +190,13 @@
 			<DropdownHeader>
 			<span class="block capitalize">{myProfile.login}</span>
 			</DropdownHeader>
-			<DropdownItem href="/profile" defaultClass="font-medium py-2 px-4 text-sm hover:text-third block transition-colors duration-300">Profile</DropdownItem>
+			<DropdownItem href="/profile" defaultClass="font-medium py-2 px-4 text-sm hover:text-third block transition-colors duration-300" on:click={changeRoute}>Profile</DropdownItem>
 			<DropdownDivider />
-			<DropdownItem defaultClass="font-medium py-2 px-4 text-sm hover:text-red-600 block transition-colors duration-300" on:click={handleSignOut}>Sign out</DropdownItem>
+			<DropdownItem defaultClass="font-medium py-2 px-4 text-sm hover:text-red-600 block transition-colors duration-300" on:click={() => {changeRoute(); handleSignOut()}}>Sign out</DropdownItem>
 		</Dropdown>
 		<NavUl {hidden} ulClass="bg-primary flex gap-5 flex-col sm:flex-row items-center !border-none nav-ul">
-			<NavLi href="/" active={$page.url.pathname === '/'? true : false}  activeClass="text-third hover:text-black transition-colors duration-300" nonActiveClass="text-black hover:text-third transition-colors duration-300">Home</NavLi>
-			<NavLi href="/users" active={$page.url.pathname === '/users'? true : false} activeClass="text-third hover:text-black transition-colors duration-300" nonActiveClass="text-black hover:text-third transition-colors duration-300">Users</NavLi>
+			<NavLi on:click={changeRoute} href="/" active={$page.url.pathname === '/'? true : false}  activeClass="text-third hover:text-black transition-colors duration-300" nonActiveClass="text-black hover:text-third transition-colors duration-300">Home</NavLi>
+			<NavLi on:click={changeRoute} href="/users" active={$page.url.pathname === '/users'? true : false} activeClass="text-third hover:text-black transition-colors duration-300" nonActiveClass="text-black hover:text-third transition-colors duration-300">Users</NavLi>
 			<NavLi href="/game" active={$page.url.pathname === '/game'? true : false} activeClass="text-third hover:text-black transition-colors duration-300" nonActiveClass="text-black hover:text-third transition-colors duration-300">Game</NavLi>
 		</NavUl>
 		</Navbar>

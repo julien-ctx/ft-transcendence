@@ -12,7 +12,8 @@ services:
     networks:
       - transcendence
     depends_on:
-      - db
+      db:
+        condition: service_started
     restart: always
 
   db:

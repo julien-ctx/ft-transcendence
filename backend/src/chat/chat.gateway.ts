@@ -44,26 +44,46 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 	private Client : any = [];
 	private Rooms : RoomClass [] = [];
 
+	forSameUser(user : any, event : string, params : any) {
+		const Same = this.Client.filter((elem : any) => {
+			// console.log(elem.user?.id, user.id_user);
+			if (elem.user.id === user.id_user)
+				return elem;
+		});
+		// console.log('Same OUR ->', Same);
+		Same.forEach((elem : any) => {
+			elem.client.emit(event, params);
+		});
+	}
+
+	forOtherUser(user : any, event : string, params : any) {
+		const Same = this.Client.filter((elem : any) => {
+			// console.log(elem.user.id, user.id);
+			if (elem.user.id !== user.id_user)
+				return elem;
+		});
+		// console.log('Same OTHER -> ', Same);
+		Same.forEach((elem : any) => {
+			elem.client.emit(event, params);
+		});
+	}
 
 	async handleConnection(client: any, ...args: any[]) {
 		const token = client.handshake.query.token as string;
 		// if (token === null) return;
 		const user = this.jwt.decode(token);
-		if (user === undefined || null) return;
-		// console.log('token ->', token)
-		// console.log('Conncted user :', {user});
+		if (user === undefined) return;
 		this.Client.push({user, client});
-		// console.log('Conncted user :', {user});
-
+		// console.log(user);
 	}
 
 
 	@SubscribeMessage('createRoom')
 	async handleCreateRoom(@ConnectedSocket() client, @MessageBody() data: any) {
 		const token = client.handshake.query.token as string;
-		const user = await this.jwt.decode(token);
+		const user = this.jwt.decode(token);
 		if (user === undefined) return;
-		
+		// console.log('USER->', user);
 		let err = new errors(data.roomStatus, data.roomName, data.roomDesc, data.roomPass, data.roomPassConfirm);
 		err.handle();
 		let already = await this.chatService.alreadyExist(data.roomName);
@@ -111,28 +131,12 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 				admin : true,
 		}
 		});
-		// this.Client.forEach((elem : any) => {
-		// 	if (elem.user.id === idUser)
-		// 		elem.client.emit('successCreate');
-		// });
+		const Room = await this.chatService.getRoomByName(data.roomName);
+		const params = {name : room.name, owner : true, status : room.status, admin : true};
 		client.emit('successCreate');
-		// this.Client.forEach((elem : any) => {
-		// 	console.log(elem.user.id, idUser, client.id, elem.client.id)
-		// 	if (elem.user.id === idUser && elem.client.id !== client.id) {
-		// 		client.emit('rooms', {
-		// 			name : room.name,
-		// 			owner : true,
-		// 			status : room.status,
-		// 			admin : true,
-		// 		});
-		// 	}
-		// });
-		client.emit('rooms', {
-			name : room.name,
-			owner : true,
-			status : room.status,
-			admin : true,
-		});
+		this.forSameUser(User, 'rooms', params);
+		if (Room.status === 'Public')
+			this.forOtherUser(User, 'newPublicRoom', Room);
 	}
 
 	@SubscribeMessage('joinRoom')
@@ -229,7 +233,7 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 		}
 		});
 		client.emit('successJoin');
-		client.emit('rooms', {
+		this.forSameUser(User, 'rooms', {
 			name : room.name,
 			owner : false,
 			status : room.status,
@@ -251,6 +255,7 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 				member : newUser,
 			});
 		});
+
 		return ;
 	}
 
@@ -284,16 +289,12 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 				user : true
 			}
 		});
-		this.Client.forEach((elem) => {
-			if (elem.user.id === User.id_user) {
-				elem.client.emit('rooms', {
-					name : Room.name,
-					owner : false,
-					status : Room.status,
-					admin : false,
-				})
-			}
-		})
+		this.forSameUser(User, 'rooms', {
+			name : Room.name,
+			owner : false,
+			status : Room.status,
+			admin : false,
+			});
 		this.server.emit('newMembers', {
 			member : createRelation,
 			roomName : Room.name,
@@ -321,6 +322,7 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 				id_room: room.id,
 			}
 		});
+		if (relation[0] === undefined) return ;
 		if (relation[0].owner === true) {
 			if (room.status === 'Public') {
 				this.server.emit('update-public-room', {
@@ -363,7 +365,12 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 				}
 			})
 		}
+		// client.emit('deletedRoom', data.roomName);
+		this.forSameUser(User, 'deletedRoom', data.roomName);
 		client.emit('deletedRoom', data.roomName);
+		if (room.status === 'Public') {
+			this.forSameUser(User, 'newPublicRoom', room);
+		}
 		this.server.emit("memberLeaveRoom", "ok")
 	}
 
@@ -548,6 +555,7 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 				status: newRoom.status, 
 				admin: relation.admin,
 			});
+			this.forSameUser
 			if (Room.status === 'Public') {
 				this.server.emit('update-public-room', {
 					roomName : Room.name,
@@ -745,19 +753,12 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 			},
 		});
 		this.Client.forEach((elem) => {
-			// if (elem.user.id === data.member.id_user) {
-				elem.client.emit('newRight', {
-					roomName : data.roomName,
-					admin : false,
-					id_user : data.member.id_user,
-				});
-			// }
+			elem.client.emit('newRight', {
+				roomName : data.roomName,
+				admin : false,
+				id_user : data.member.id_user,
+			});
 		});
-		// client.emit('newRight', {
-		// 	roomName : data.roomName,
-		// 	admin : false,
-		// 	id_user : data.member.id_user,
-		// });
 	}
 
 	@SubscribeMessage('joinPublics')
@@ -795,18 +796,17 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 				member : relation,
 			});
 		});
-		client.emit('rooms', {
+		this.forSameUser(User, 'rooms', {
 			name : Room.name,
 			owner : false,
 			status : Room.status,
 			admin : false,
 		});
-		client.emit('update-public-room', {
+		this.forSameUser(User, 'update-public-room', {
 			roomName : Room.name,
 			room : Room,
 			removed : true,
 		})
-
 	}
 
 	@SubscribeMessage('setPublic')

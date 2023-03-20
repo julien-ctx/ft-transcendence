@@ -47,8 +47,11 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 
 	async handleConnection(client: any, ...args: any[]) {
 		const token = client.handshake.query.token as string;
+		// if (token === null) return;
 		const user = this.jwt.decode(token);
-		if (user === undefined) return;
+		if (user === undefined || null) return;
+		// console.log('token ->', token)
+		// console.log('Conncted user :', {user});
 		this.Client.push({user, client});
 		// console.log('Conncted user :', {user});
 
@@ -108,7 +111,22 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 				admin : true,
 		}
 		});
+		// this.Client.forEach((elem : any) => {
+		// 	if (elem.user.id === idUser)
+		// 		elem.client.emit('successCreate');
+		// });
 		client.emit('successCreate');
+		// this.Client.forEach((elem : any) => {
+		// 	console.log(elem.user.id, idUser, client.id, elem.client.id)
+		// 	if (elem.user.id === idUser && elem.client.id !== client.id) {
+		// 		client.emit('rooms', {
+		// 			name : room.name,
+		// 			owner : true,
+		// 			status : room.status,
+		// 			admin : true,
+		// 		});
+		// 	}
+		// });
 		client.emit('rooms', {
 			name : room.name,
 			owner : true,
@@ -146,6 +164,7 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 			client.emit('errors', {already : 'Room does not exist'});
 			return ;
 		}
+		await this.chatService.updateBan(room, this.Client);
 		let alreadyJoin = await this.prisma.roomToUser.findMany({
 			where: {
 				id_user: User.id_user,
@@ -158,6 +177,10 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 		}
 		else if (alreadyJoin.length > 0) {
 			client.emit('errors', {already : 'You already join this room'});
+			return ;
+		}
+		if (room.status === 'Private') {
+			client.emit('errors', {already : 'This channel is private'});
 			return ;
 		}
 		let Ban = false;
@@ -212,6 +235,22 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 			status : room.status,
 			admin : false,
 		});
+		const newUser = await this.prisma.roomToUser.findFirst({
+			where : {
+				id_user : User.id_user,
+				id_room : room.id,
+			},
+			include : {
+				user : true,
+				room : true,
+			}
+		})
+		this.Client.forEach((elem : any) => {
+			elem.client.emit('newMembers', {
+				roomName : room.name,
+				member : newUser,
+			});
+		});
 		return ;
 	}
 
@@ -227,6 +266,7 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 			},
 		});
 		const Room = await this.chatService.getRoomByName(data.roomName);
+		await this.chatService.updateBan(Room, this.Client);
 		const createRelation = await this.prisma.roomToUser.create({
 			data: {
 				room: {
@@ -265,7 +305,7 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 	async handleLeaveRoom(@ConnectedSocket() client, @MessageBody() data: any) {
 		const token = client.handshake.query.token as string;
 		const user = this.jwt.decode(token);
-		if (user === undefined) return;
+		if (user === undefined || user === null) return;
 
 		const idUser : number = user['id'];
 		const User = await this.prisma.user.findUnique({
@@ -274,6 +314,7 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 			}
 		});
 		const room = await this.chatService.getRoomByName(data.roomName);
+		await this.chatService.updateBan(room, this.Client);
 		const relation = await this.prisma.roomToUser.findMany({
 			where: {
 				id_user: User.id_user,
@@ -281,6 +322,13 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 			}
 		});
 		if (relation[0].owner === true) {
+			if (room.status === 'Public') {
+				this.server.emit('update-public-room', {
+					roomName : room.name,
+					room : room,
+					removed : true,
+				})
+			}
 			await this.prisma.roomToUser.deleteMany({
 				where : {
 					id_room : room.id,
@@ -343,7 +391,7 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 		const idUser : number = user['id'];
 		const User = await this.Service.getOneById(idUser);
 		const Room = await this.chatService.getRoomByName(data.roomName);
-		
+		await this.chatService.updateBan(Room, this.Client);
 		// console.log(this.findRoom(Room.name));
 		let roomInstance = this.findRoom(Room.name);
 		if (roomInstance === undefined) {
@@ -374,30 +422,15 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 		
 		const User = await this.Service.getOneById(user['id']);
 		const Room = await this.chatService.getRoomByName(data.roomName);
-		// console.log({data}, {User});
+		await this.chatService.updateBan(Room, this.Client);
 		if (await this.chatService.muteUpdate(Room, User) === false) {
-			// console.log('Muted');
 			const relation = await this.prisma.roomToUser.findFirst({
 				where: {
 					id_user: User.id_user,
 					id_room: Room.id,
 				}
 			});
-			let time = {Years: '', Months: '', Days: '', Hours: '', Minutes: '', Seconds: ''};
-			time.Years = relation.EndMute.getFullYear().toString();
-			time.Months = relation.EndMute.getMonth().toString();
-			time.Days = relation.EndMute.getDate().toString();
-			time.Hours = relation.EndMute.getHours().toString();
-			time.Minutes = relation.EndMute.getMinutes().toString();
-			time.Seconds = relation.EndMute.getSeconds().toString();
-			time.Years = time.Years.length === 1 ? '0' + time.Years : time.Years;
-			time.Months = time.Months.length === 1 ? '0' + time.Months : time.Months;
-			time.Days = time.Days.length === 1 ? '0' + time.Days : time.Days;
-			time.Hours = time.Hours.length === 1 ? '0' + time.Hours : time.Hours;
-			time.Minutes = time.Minutes.length === 1 ? '0' + time.Minutes : time.Minutes;
-			time.Seconds = time.Seconds.length === 1 ? '0' + time.Seconds : time.Seconds;                                                                                                                                                                                                    
-			// console.log(relation);
-			// console.log(time);
+			const time = this.chatService.getDateMute(relation.EndMute);
 			client.emit('muted', time);
 			return ;
 		}
@@ -406,7 +439,9 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 		const userInRoom = await this.chatService.getUsersRooms(User.id, roomInstance.name);
 		this.Client.forEach((elem : any) => {
 			userInRoom.forEach((oneUser : User) => {
-				if (elem.user.id == oneUser.id_user) {
+				if (elem.user === null)
+					return ;				
+				else if (elem.user.id == oneUser.id_user) {
 					elem.client.emit("update-room", roomInstance);
 				}
 			})
@@ -425,7 +460,10 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 		const valide = await this.chatService.verifyPass(data.password, Room.password);
 		// console.log(valide);
 		if (valide === false) 
-			client.emit('wrongEdit', 'Wrong password');
+			client.emit('wrongEdit', {
+				roomName: Room.name,
+				error : 'Wrong password',
+			});
 		else
 			client.emit('successVerify');
 	}
@@ -438,7 +476,16 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 
 		const User = await this.Service.getOneById(user['id']);
 		const Room = await this.chatService.getRoomByName(data.roomName);
-		
+		await this.chatService.updateBan(Room, this.Client);
+
+		if (data.Pass !== data.Cpass) {
+			client.emit('badChangePass', {
+				roomName: Room.name,
+				error : 'Password must match',
+			})
+			return;
+		}
+
 		let mdp = await this.chatService.hashedPass(data.Pass);
 		// console.log(mdp);
 		await this.prisma.room.update({
@@ -449,7 +496,64 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 				password: mdp,
 			},
 		});
-		client.emit('successEdit');
+		client.emit('successEdit', {
+			roomName: Room.name,
+		});
+	}
+
+	@SubscribeMessage('changeStatus')
+	async handleChangeStatus(@ConnectedSocket() client, @MessageBody() data: any) {
+		const token = client.handshake.query.token as string;
+		const user = this.jwt.decode(token);
+		if (user === undefined) return;
+
+		const User = await this.Service.getOneById(user['id']);
+		const Room = await this.chatService.getRoomByName(data.roomName);
+		const relation = await this.chatService.getMyRelation(User.id_user, Room.name);
+
+		if (relation.admin !== true) return ;
+		if (data.pass !== data.cpass) {
+			client.emit('badPass', {
+				roomName : Room.name,
+				error : 'Password must match',
+			});
+			return ;
+		}
+		else {
+			// console.log('Pass ->', data.pass);
+			if (Room.status === 'Public') {
+				this.server.emit('update-public-room', {
+					roomName : Room.name,
+					
+				});
+			}
+			let mdp = await this.chatService.hashedPass(data.pass);
+			const newRoom = await this.prisma.room.update({
+				where: {
+					id: Room.id,
+				},
+				data: {
+					status: 'Protected',
+					password: mdp,
+				},
+			});
+			// console.log('newRoom ->', newRoom);
+			client.emit('successChangeStatus', {
+				roomName: Room.name,
+				status: 'Protected',
+			})
+			client.emit('updateRoom', {
+				name: Room.name, 
+				owner: relation.owner, 
+				status: newRoom.status, 
+				admin: relation.admin,
+			});
+			if (Room.status === 'Public') {
+				this.server.emit('update-public-room', {
+					roomName : Room.name,
+				})
+			}
+		}
 	}
 
 	@SubscribeMessage('sanction')
@@ -460,20 +564,26 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 
 		const User = await this.Service.getOneById(user['id']);
 		const Room = await this.chatService.getRoomByName(data.roomName);
-
-		const t = new Sanction(this.Rooms, this.Client, data, this.prisma, client);
-		t.handleSanction();
+		const isIn = await this.chatService.isInRoom(User, Room);
+		if (isIn === false) return;
+		const relation = await this.chatService.getMyRelation(User.id_user, Room.name);
+		if (relation.admin !== true) return;
+		new Sanction(this.Rooms, this.Client, data, this.prisma, client).handleSanction();
 	}
 
-	// @UseGuards(UserGuardGateway)
 	@SubscribeMessage('mute')
 	async handleMute(@ConnectedSocket() client, @MessageBody() data: any) {
 		const token = client.handshake.query.token as string;
 		const user = this.jwt.decode(token);
 		if (user === undefined) return;
 
-		// const User = await this.Service.getOneById(user['id']);
+		const User = await this.Service.getOneById(user['id']);
 		const Room = await this.chatService.getRoomByName(data.roomName);
+
+		const isIn = await this.chatService.isInRoom(User, Room);
+		if (isIn === false) return;
+		const relation = await this.chatService.getMyRelation(User.id_user, Room.name);
+		if (relation.admin !== true) return;
 
 		const relate = await this.prisma.roomToUser.findMany({
 			where: {
@@ -487,7 +597,6 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 		});
 		let Sanction : Date = new Date();
 		let error : boolean = false;
-		console.log({data});
 		switch (data.duration) {
 			case 'Second':
 				Sanction.setSeconds(Sanction.getSeconds() + data.time); break;
@@ -516,7 +625,9 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 					room : true,
 				}
 			});
-			client.emit('mute', newUser);
+			this.Client.forEach((elem : any) => {
+				elem.client.emit('mute', newUser)
+			});
 		} else return;
 	}
 
@@ -526,7 +637,14 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 		const user = this.jwt.decode(token);
 		if (user === undefined) return;
 
+		const User = await this.Service.getOneById(user['id']);
 		const room = await this.chatService.getRoomByName(data.roomName);
+
+		const isIn = await this.chatService.isInRoom(User, room);
+		if (isIn === false) return;
+		const verif = await this.chatService.getMyRelation(User.id_user, room.name);
+		if (verif.admin !== true) return;
+
 		const relation = await this.prisma.roomToUser.findFirst({
 			where : {
 				id_user : data.member.id_user,
@@ -546,7 +664,9 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 				room : true,
 			}
 		});
-		client.emit('unmute', newUser);
+		this.Client.forEach((elem : any) => {
+			elem.client.emit('unmute', newUser)
+		});
 	}
 
 	@SubscribeMessage('OP')
@@ -559,6 +679,11 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 		const Room = await this.chatService.getRoomByName(data.roomName);
 
 		// console.log({data});
+
+		const isIn = await this.chatService.isInRoom(User, Room);
+		if (isIn === false) return;
+		const verif = await this.chatService.getMyRelation(User.id_user, Room.name);
+		if (verif.admin !== true) return;
 
 		const relation = await this.prisma.roomToUser.findMany({
 			where: {
@@ -575,19 +700,20 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 			},
 		});
 		this.Client.forEach((elem) => {
-			if (elem.user.id === data.member.id_user) {
+			// console.log(elem.user);
+			// if (elem.user.id === data.member.id_user) {
 				elem.client.emit('newRight', {
 					roomName : data.roomName,
 					admin : true,
 					id_user : data.member.id_user,
 				});
-			}
+			// }
 		});
-		client.emit('newRight', {
-			roomName : data.roomName,
-			admin : true,
-			id_user : data.member.id_user,
-		});
+		// client.emit('newRight', {
+		// 	roomName : data.roomName,
+		// 	admin : true,
+		// 	id_user : data.member.id_user,
+		// });
 	}
 
 	@SubscribeMessage('DEOP')
@@ -598,6 +724,11 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 
 		const User = await this.Service.getOneById(user['id']);
 		const Room = await this.chatService.getRoomByName(data.roomName);
+
+		const isIn = await this.chatService.isInRoom(User, Room);
+		if (isIn === false) return;
+		const verif = await this.chatService.getMyRelation(User.id_user, Room.name);
+		if (verif.admin !== true) return;
 
 		const relation = await this.prisma.roomToUser.findMany({
 			where: {
@@ -614,18 +745,102 @@ export class ChatGateway implements OnGatewayDisconnect , OnGatewayConnection {
 			},
 		});
 		this.Client.forEach((elem) => {
-			if (elem.user.id === data.member.id_user) {
+			// if (elem.user.id === data.member.id_user) {
 				elem.client.emit('newRight', {
 					roomName : data.roomName,
 					admin : false,
 					id_user : data.member.id_user,
 				});
+			// }
+		});
+		// client.emit('newRight', {
+		// 	roomName : data.roomName,
+		// 	admin : false,
+		// 	id_user : data.member.id_user,
+		// });
+	}
+
+	@SubscribeMessage('joinPublics')
+	async handleJoinPublics(@ConnectedSocket() client, @MessageBody() data: any) {
+		const token = client.handshake.query.token as string;
+		const user = this.jwt.decode(token);
+		if (user === undefined) return;
+
+		const User = await this.Service.getOneById(user['id']);
+		const Room = await this.chatService.getRoomByName(data.roomName);
+
+		const isIn = await this.chatService.isInRoom(User, Room);
+		if (isIn === true)  {
+			client.emit('update-public-room', {
+				roomName : Room.name,
+				room : Room,
+				removed : true,
+			})
+			return;
+		}
+
+		const relation = await this.prisma.roomToUser.create({
+			data : {
+				id_user : User.id_user,
+				id_room : Room.id,
+			},
+			include : {
+				user : true,
+				room : true,
 			}
 		});
-		client.emit('newRight', {
-			roomName : data.roomName,
+		this.Client.forEach((elem : any) => {
+			elem.client.emit('newMembers', {
+				roomName : Room.name,
+				member : relation,
+			});
+		});
+		client.emit('rooms', {
+			name : Room.name,
+			owner : false,
+			status : Room.status,
 			admin : false,
-			id_user : data.member.id_user,
+		});
+		client.emit('update-public-room', {
+			roomName : Room.name,
+			room : Room,
+			removed : true,
+		})
+
+	}
+
+	@SubscribeMessage('setPublic')
+	async handleSetPublic(@ConnectedSocket() client, @MessageBody() data: any) {
+		const token = client.handshake.query.token as string;
+		const user = this.jwt.decode(token);
+		if (user === undefined) return;
+
+		const User = await this.Service.getOneById(user['id']);
+		const Room = await this.chatService.getRoomByName(data.roomName);
+
+		const isIn = await this.chatService.isInRoom(User, Room);
+		if (isIn === false) return;
+		const verif = await this.chatService.getMyRelation(User.id_user, Room.name);
+		if (verif.owner !== true) return;
+
+		const newRoom = await this.prisma.room.update({
+			where : {
+				id : Room.id,
+			},
+			data : {
+				status : 'Public',
+				password : '',
+			}
+		});
+		this.Client.forEach((elem : any) => {
+			elem.client.emit('current-update', {
+				roomName : Room.name,
+				room : {
+					admin : verif.admin,
+					owner : verif.owner,
+					status : newRoom.status,
+				}
+			});
 		});
 	}
 

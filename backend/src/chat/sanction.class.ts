@@ -27,10 +27,8 @@ export class Sanction {
 
     setEndOfSanction() {
         let now = new Date();
-        // console.log(now);
-        // console.log('-> Arg time : ', this.time, this.duration);
         if (this.time === '' || this.duration === '') 
-            return null;
+            return false;
         switch (this.duration) {
             case 'Second':
                 now.setSeconds(now.getSeconds() + parseInt(this.time)); break;
@@ -46,17 +44,16 @@ export class Sanction {
                 break;
         }
         this.endOfSanction = now;
-        // console.log(now);
+        return true;
     }
 
     async handleSanction() {
-        this.setEndOfSanction();
-        // console.log(this.sanction);
+        if (this.sanction !== 'kick')
+            if (this.setEndOfSanction() === false) return;
+        console.log('test');
         switch (this.sanction) {
             case 'ban': 
                 await this.ban(); break;
-            case 'mute':
-                await this.mute(); break;
             case 'kick':
                 await this.kick(); break;
             default:
@@ -65,7 +62,6 @@ export class Sanction {
     }
 
     async ban() {
-        // console.log('ban');
         // Delete relation
         const User = await this.db.user.findUnique({
             where: {
@@ -90,8 +86,8 @@ export class Sanction {
                 id: relation[0].id,
             }
         });
+
         // Create Ban model
-        // console.log(this.endOfSanction);
         await this.prisma.banned.create({
             data : {
                 id_user: User.id_user,
@@ -99,20 +95,16 @@ export class Sanction {
                 endBan : this.endOfSanction,
             }
         });
-        // console.log(this.Clients)
-        for (let i = 0; i < this.Clients.length; i++) {
-            // console.log(this.Clients[i].user);
-            if (this.Clients[i].user.login === User.login) {
-                this.Clients[i].client.emit('deletedRoom', Room.name);
-            }
-        }
-        this.By.emit('deletedMember', this.member);
-    }
-
-    async mute() {
-        // Set mute to true
-
-        // Set the endMutetime
+        // for (let i = 0; i < this.Clients.length; i++) {
+        //     if (this.Clients[i].user.login === User.login) {
+        //         this.Clients[i].client.emit('deletedRoom', Room.name);
+        //     }
+        // }
+        this.Clients.forEach((elem : any) => {
+            if (elem.user.id === this.member.id_user) 
+                elem.client.emit('deletedRoom', Room.name);
+            elem.client.emit('deletedMember', this.member)
+        });
     }
 
     // Same as ban but without the creation of the ban model
@@ -141,14 +133,15 @@ export class Sanction {
                 id: relation[0].id,
             }
         });
-        // console.log(this.Clients)
-        for (let i = 0; i < this.Clients.length; i++) {
-            // console.log(this.Clients[i].user);
-            if (this.Clients[i].user.login === User.login) {
-                this.Clients[i].client.emit('deletedRoom', Room.name);
+        this.Clients.forEach((elem : any) => {
+            if (elem.user === null) return ;
+            if (elem.user?.id === this.member.id_user) {
+                elem.client.emit('deletedRoom', Room.name);
+                if (Room.status === 'Public')
+                    elem.client.emit('newPublicRoom', Room);
             }
-        }
-        this.By.emit('deletedMember', this.member);
+            elem.client.emit('deletedMember', this.member)
+        });
     }
 
     findRoom(roomName : string) {

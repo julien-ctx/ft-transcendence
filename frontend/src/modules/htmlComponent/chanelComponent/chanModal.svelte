@@ -1,18 +1,21 @@
 <script lang="ts">
     import { goto } from "$app/navigation";
+    import { API_URL } from "$lib/env";
+    import { getJwt } from "$lib/jwtUtils";
     import { currentRoomStore } from "$lib/store/roomStore";
-    import { socketFriendStore, socketUserStore } from "$lib/store/socket";
+    import { socketFriendStore, socketRoomStore, socketUserStore } from "$lib/store/socket";
     import { userProfileDataStore, usersDataStore } from "$lib/store/user";
     import { GetOneUser } from "$lib/userUtils";
+    import axios from "axios";
     import { Avatar, Dropdown, DropdownItem } from "flowbite-svelte";
 	import { afterUpdate, onDestroy, onMount } from "svelte";
     import { element } from "svelte/internal";
     import SvgCancel from "../svgComponent/svgCancel.svelte";
 
 	export let myProfile : any;
-	export let socketRoom : any;
 	export let usersRoom : any;
 
+	let socketRoom : any;
 	let currentRoom : any;
 	let active : string = "";
 	let divBody : any;
@@ -28,8 +31,18 @@
 	usersDataStore.subscribe((val) => allUsers = val);
 	socketFriendStore.subscribe((val) => socketFriend = val);
 	socketUserStore.subscribe(val => socketUser = val);
+	socketRoomStore.subscribe(val => socketRoom = val);
 
 	onMount(async () => {
+		await axios.get(`${API_URL}/Chat/AllUsers/${currentRoom.name}`, {
+			headers: {
+				Authorization : `Bearer ${getJwt()}`
+			}
+		})
+		.then((res) => {
+			usersRoom = res.data            
+		})
+
 		socketRoom.on("event-write", (data : any) => {
             if (data.write) {
 				for (let i = 0; i < data.write.length; i++) {
@@ -41,15 +54,24 @@
 				loginWrite = "";
         })
 
-		socketRoom.on("update-room", (data : any) => {
-			if (currentRoom != null)
+		socketRoom.on("update-room", async (data : any) => {
+			if (currentRoom != null) {
 				currentRoomStore.set(data);
+				await axios.get(`${API_URL}/Chat/AllUsers/${currentRoom.name}`, {
+				headers: {
+					Authorization : `Bearer ${getJwt()}`
+				}
+				})
+				.then((res) => {
+					usersRoom = res.data            
+				})
+			}
 		})
 
 		socketRoom.on("muted", (data : any) => {
 			Endmute = data;
-			console.log('Endmute ->', Endmute);
 		});
+		
 	})
 
 	afterUpdate(() => {
@@ -88,8 +110,6 @@
 	function submitMp() {
 		if (inputMp != "") {
 			Endmute = null;
-			console.log(inputMp, currentRoom.name);
-			
 			socketRoom.emit('sendMessage', {
 				roomName : currentRoom.name, 
 				message : inputMp
@@ -220,7 +240,7 @@
 			{/if}
 			<div class="typing {(loginWrite && myProfile.block_id && !myProfile.block_id.includes(returnIdUserFromLogin(loginWrite)))? 'active' : ''}">
 				<span class="login">{loginWrite}</span>
-				<span>write a msg</span> 
+				<span>is writing</span> 
 				<div class="dot-typing"></div>
 			</div>
 			{#if currentRoom.Message && currentRoom.Message.length == 0}

@@ -198,19 +198,27 @@ export class UserEventGateway implements OnGatewayInit, OnGatewayConnection, OnG
 	@UseGuards(UserGuardGateway)
 	@SubscribeMessage("notification_mp")
 	async notificationMp(@MessageBody() body : {user_send : User, user_receive : User , id_room : number, content : string}) {
-		const notif = await this.prisma.notification.findFirst({
-			where : {
-				id_user_send : body.user_send.id,
-				id_user_receive : body.user_receive.id,
-				type : 1
-			}
-		})
-		if (!notif) {
-			await this.userService.addNotifMsg(body.user_send, body.user_receive)
-			.then((userUpdate) => {
-				this.emitToClient(userUpdate, "update_me");
+		// const notif = await this.prisma.notification.findFirst({
+		// 	where : {
+		// 		id_user_send : body.user_send.id,
+		// 		id_user_receive : body.user_receive.id,
+		// 		type : 1
+		// 	}
+		// })
+		// if (!notif) {
+		// 	await this.userService.addNotifMsg(body.user_send, body.user_receive)
+		// 	.then((userUpdate) => {
+		// 		this.emitToClient(userUpdate, "update_me");
+		// 	})
+		// }
+		await this.userService.getOne(body.user_receive.id)
+		.then((user : User) => {
+			this.usersArr.forEach(elem => {
+				if (elem.user.id == user.id) {
+					elem.client.emit("notification_mp", {user, content : body.content, user_send : body.user_send})
+				}
 			})
-		}
+		})
 	}
 
 	@UseGuards(UserGuardGateway)

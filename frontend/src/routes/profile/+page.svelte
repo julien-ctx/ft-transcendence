@@ -38,7 +38,6 @@
 	socketFriendStore.subscribe(val => socketFriend = val);
 	socketUserStore.subscribe(val => socketUser = val);
 
-
 	async function submitFormImg() {
 		const formData = new FormData();
 		formData.append('file', fileInput.files[0]);
@@ -152,7 +151,7 @@
                     <div class="flex gap-3 items-center">
                         <UserActivity user={myProfile}/>
 						{#if !isEditLogin}
-							<div class="capitalize">{myProfile.login}</div>
+							<div>{myProfile.login}</div>
 							<button on:click={() => isEditLogin = true}>
 								<SvgEdit />
 							</button>
@@ -194,7 +193,7 @@
 	</div>
 {/if}
 
-<Modal bind:open={qrCodeModal} size="xs" autoclose={false} class="w-full !bg-primary modal-2fa" permanent={true} backdropClasses="bg-primary">
+<Modal bind:open={qrCodeModal} autoclose size="xs" class="w-full !bg-primary modal-2fa">
 	<div class="flex flex-col justify-center gap-5">
 		<div>
 			<h2>Save this qrcode in google authenticator</h2>

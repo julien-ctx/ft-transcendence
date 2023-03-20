@@ -12,10 +12,6 @@
 	let error : string = '';
 	let succesFirst = false;
 
-	onMount(() => {
-		console.log(room.name);
-	})
-
 	function verifPassword(event : KeyboardEvent) {
 		if (event.key == "Enter" && password !== '') 
 			socket.emit('verifPassword', {roomName: room, password: password});

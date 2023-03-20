@@ -398,6 +398,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		await new Promise(r => setTimeout(r, 100));
 		try {
 			let game = this.games[this.games.length - 1];
+			if (!game) return;
 			let randomBallDirectionX = this.gameService.randomBallDirection();
 			let randomBallDirectionY = this.gameService.randomBallDirection();
 			if (!game.leftClient || !game.leftClient.ball) return;

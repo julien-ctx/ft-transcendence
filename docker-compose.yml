@@ -1,14 +1,54 @@
 version: '3.8'
 services:
-  dev-db:
-    image: postgres:13
+  nest-api:
+    container_name: nest-api
+    build:
+      context: backend
+      dockerfile: Dockerfile
     ports:
-      - 5432:5432
+      - 4545:4545
+    env_file:
+      - .env
+    networks:
+      - transcendence
+    depends_on:
+      db:
+        condition: service_started
+    restart: always
+
+  db:
+    container_name: db
+    image: postgres:13
+    expose:
+      - 5432
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - db-data:/var/lib/postgresql/data
     networks:
-      - transcendance
+      - transcendence
+    restart: always
+
+  svelte:
+    container_name: svelte
+    build:
+      context: frontend
+      dockerfile: Dockerfile
+    ports:
+      - 5173:5173
+    env_file:
+      - .env
+    networks:
+      - transcendence
+    depends_on:
+      - nest-api
+    restart: always
+
 networks:
-  transcendance:
+  transcendence:
+    driver: bridge
+
+volumes:
+  db-data:

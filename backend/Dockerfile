@@ -1,9 +1,19 @@
-FROM node:18-alpine
+FROM node:alpine
 
-WORKDIR /app
+WORKDIR /usr/src/app
 
-COPY . .
+COPY package*.json ./
+COPY prisma ./prisma/
 
 RUN npm install
 
-CMD ["npm", "run", "start:dev"]
+COPY . .
+
+RUN npm run build
+
+COPY entry.sh /
+
+RUN chmod +x /entry.sh
+
+EXPOSE 4545
+CMD [ "/entry.sh" ]

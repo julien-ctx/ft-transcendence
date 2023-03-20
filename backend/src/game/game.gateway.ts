@@ -384,7 +384,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 			let game = this.games[this.games.length - 1];
 			let randomBallDirectionX = this.gameService.randomBallDirection();
 			let randomBallDirectionY = this.gameService.randomBallDirection();
-			if (!game.leftClient.ball) return;
+			if (!game.leftClient || !game.leftClient.ball) return;
 			game.leftClient.ball.direction.x *= randomBallDirectionX;
 			game.leftClient.ball.direction.y *= randomBallDirectionY;
 			await this.updateUserState(game.leftClient.user.id, 2)
@@ -392,7 +392,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 				this.server.emit('user_update', user);	
 			});
 			if (game.playerNumber === 2) {
-			if (!game.rightClient.ball) return;
+			if (!game.rightClient || !game.rightClient.ball) return;
 				game.rightClient.ball.direction.x *= randomBallDirectionX;
 				game.rightClient.ball.direction.y *= randomBallDirectionY;
 				await this.updateUserState(game.rightClient.user.id, 2)

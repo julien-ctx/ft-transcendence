@@ -96,7 +96,8 @@
 		.catch((err) => {
 			removeJwt();
 			goto("/login")
-		})
+		});
+    	history.replaceState(null, '', 'game');
 		if (idSend !== -1 && idReceive !== -1) {
 			createCanvas(2);
 		}
@@ -254,6 +255,8 @@
 			clearCanvas();
 			removeEvents();
 			socket.disconnect();
+			idSend = -1;
+			idReceive = -1;
 			connectSocket();
 			gameLeftPaddle.score = 0;	
 			gameRightPaddle.score = 0;

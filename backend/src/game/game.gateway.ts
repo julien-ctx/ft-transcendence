@@ -5,9 +5,8 @@ import { WebSocketGateway, WebSocketServer, OnGatewayInit, OnGatewayConnection, 
 import { User } from "@prisma/client";
 import { Server, Socket } from "socket.io";
 import { PrismaService } from "src/prisma/prisma.service";
-import { first } from 'rxjs';
 
-const MAX_SCORE = 3;
+const MAX_SCORE = 2;
 
 @WebSocketGateway({
 	cors: true,
@@ -281,6 +280,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
 	@SubscribeMessage('ready')
 	async startGame(socket: Socket, data: {width, height, playerNumber, botLevel, leftPlayerID, rightPlayerID}) {
+		if (!socket.handshake.query.game) return;
 		const DBUser = await this.getDBUser(socket, data);
 		if (!DBUser) return console.log('Undefined DBUser');
 		const client = await this.getClient(socket, data, DBUser);
@@ -379,10 +379,12 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	
 	@SubscribeMessage('gameLoop')
 	async launchGameLoop(socket: Socket) {
+		await new Promise(r => setTimeout(r, 100));
 		try {
 			let game = this.games[this.games.length - 1];
 			let randomBallDirectionX = this.gameService.randomBallDirection();
 			let randomBallDirectionY = this.gameService.randomBallDirection();
+			if (!game.leftClient || !game.leftClient.ball) return;
 			game.leftClient.ball.direction.x *= randomBallDirectionX;
 			game.leftClient.ball.direction.y *= randomBallDirectionY;
 			await this.updateUserState(game.leftClient.user.id, 2)
@@ -390,6 +392,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 				this.server.emit('user_update', user);	
 			});
 			if (game.playerNumber === 2) {
+			if (!game.rightClient || !game.rightClient.ball) return;
 				game.rightClient.ball.direction.x *= randomBallDirectionX;
 				game.rightClient.ball.direction.y *= randomBallDirectionY;
 				await this.updateUserState(game.rightClient.user.id, 2)

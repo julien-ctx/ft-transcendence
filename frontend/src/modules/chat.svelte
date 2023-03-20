@@ -26,7 +26,6 @@
 
 	socket.on('getMessages', (receivedMsg : any) => {
 		messageBody.push({message : receivedMsg.message, user : receivedMsg.user});
-		console.log(messageBody);
 		messageBody = [...messageBody];
 		// console.log({messages})
 		// messages = [...messages];

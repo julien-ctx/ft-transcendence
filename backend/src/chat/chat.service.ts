@@ -33,7 +33,7 @@ export class ChatService {
 	}
 
 	async updateBan(room : any, Client : any) {
-		console.log(room.banned);
+		// console.log(room.banned);
 		room.banned.forEach(async (elem : any) => {
 			console.log('boucle');
 			let now = new Date();

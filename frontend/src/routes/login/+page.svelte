@@ -80,7 +80,7 @@
 	<div class="flex flex-col justify-center gap-5">
 		<div>
 			<!-- <img src={qrCode} alt="" class="mx-auto"> -->
-			<h2>Enter you code 2FA</h2>
+			<h2>Enter your code 2FA</h2>
 		</div>	
 		<div class="flex flex-col justify-center items-center gap-5">
 			<div>

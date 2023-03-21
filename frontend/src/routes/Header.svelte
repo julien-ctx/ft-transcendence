@@ -140,24 +140,24 @@
 			});
 
 			socketGame.on("user_update", (data: any) => {
+				console.log(data, data.id == myProfile.id);
+				
 				if (data.id && myProfile.id && data.id == myProfile.id)
 					UpdateProfileToStore(data);
-				else {
-					if (data.id && userProfile.id && data.id == userProfile.id)
-						userProfileDataStore.set(data);
-					if (allUsers && allUsers.length != 0) {
-						let arrId : number [] = [];
-						for (let i = 0; i < allUsers.length; i++) {
-							if (allUsers[i].id == data.id) {
-								allUsers[i] = data;
-								usersDataStore.set(allUsers);
-								arrId.push(data.id);
-							}
-						}
-						if (arrId && !arrId.includes(data.id)) {
-							allUsers.push(data);
+				if (data.id && userProfile.id && data.id == userProfile.id)
+					userProfileDataStore.set(data);
+				if (allUsers && allUsers.length != 0) {
+					let arrId : number [] = [];
+					for (let i = 0; i < allUsers.length; i++) {
+						if (allUsers[i].id == data.id) {
+							allUsers[i] = data;
 							usersDataStore.set(allUsers);
+							arrId.push(data.id);
 						}
+					}
+					if (arrId && !arrId.includes(data.id)) {
+						allUsers.push(data);
+						usersDataStore.set(allUsers);
 					}
 				}
 			});

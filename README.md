@@ -13,7 +13,7 @@ The site was built with **NestJS** for the backend, and **SvelteJS** for the fro
 - Ranking system, friends, and invitation notifications.
 - Responsive single page application with dynamic content update.
 
-<img src="https://github.com/julien-ctx/ft-transcendence/blob/master/assets/transcendence.gif" width="80%">
+<img src="https://github.com/julien-ctx/ft-transcendence/blob/master/assets/transcendence.gif" width="100%">
 
 *NB: this is an overview of the website as a .gif file. The real site is way better and smoother!*
 
